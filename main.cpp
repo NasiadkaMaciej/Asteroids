@@ -46,7 +46,7 @@ int
 main(){
   // create fullscreen window
   sf::ContextSettings settings;
-  settings.antialiasingLevel = 32.0;
+  settings.antialiasingLevel = 8.0;
   sf::RenderWindow window(sf::VideoMode(desktopMode.width,
                                         desktopMode.height,
                                         desktopMode.bitsPerPixel),
@@ -85,11 +85,12 @@ main(){
   float x = player.getPosition().x, y = player.getPosition().y;
   float x_speed = 0.0, y_speed = 0.0, angle = 0;
   bool thrust = false;
-
+  bool rotateRight = false, rotateLeft = false;
+  float rotateSpeed;
   float degToRad = M_PI / 180;
 
   // sf::Clock deltaClock;
-
+window.setKeyRepeatEnabled(true);
   while (window.isOpen()) {
     // sf::Time deltaTime = deltaClock.restart();
     sf::Event event;
@@ -100,14 +101,20 @@ main(){
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        angle += 3;
+        rotateRight = true;
+	  else rotateRight = false;
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        angle -= 3;
+        rotateLeft = true;
+	  else rotateLeft = false;
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
         thrust = true;
       else
         thrust = false;
     }
+	if(rotateRight) player.setRotation(player.getRotation()+2);
+	if(rotateLeft) player.setRotation(player.getRotation()-2);
+	angle=player.getRotation()-90;
+	
 
     if (thrust) {
       x_speed += cos(angle * degToRad) * 0.2;
@@ -137,7 +144,6 @@ main(){
       y = desktopMode.height;
 
     player.setPosition(x, y);
-    player.setRotation(angle + 90);
 
     for (auto i = asteroids.begin(); i != asteroids.end();) {
       // Entity* e = *i;
@@ -157,11 +163,8 @@ main(){
     text.setFont(font);
     text.setString(
       std::to_string(x) + ":" + std::to_string(y) + "\n" +
-      std::to_string(desktopMode.width) + ":" +
-      std::to_string(desktopMode.height) + "\n" + std::to_string(x_speed) +
-      ":" +
-      std::to_string(
-        y_speed)
+      std::to_string(desktopMode.width) + ":" + std::to_string(desktopMode.height) + "\n" + 
+	  std::to_string(x_speed) + ":" + std::to_string(y_speed)
 	);
     text.setCharacterSize(50);
     text.setFillColor(sf::Color::White);
