@@ -237,12 +237,12 @@ main()
         deltaShoot = 0;
       }
     // Check bullets and asteroids collisons
-    for (auto a : asteroids)
-      for (auto b : bullets)
+    for (auto a : asteroids) {
+      for (auto b : bullets) {
         if (Collision::PixelPerfectTest(a->sprite, b->sprite)) {
           a->life = false;
           b->life = false;
-          if (a->sprite.getTexture() == &tAsteroid)
+          if (a->sprite.getTexture() == &tAsteroid) {
             for (int i = 0; i < 3; i++) {
               Asteroid* e = new Asteroid(a->x,
                                          a->y,
@@ -250,18 +250,18 @@ main()
                                          random(6, 3),
                                          rand() % 360,
                                          &tAsteroidSmall);
-              e->sprite.setOrigin(e->sprite.getGlobalBounds().width / 2,
-                                  e->sprite.getGlobalBounds().height / 2);
               asteroids.push_back(e);
             }
-          if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
-            p.sprite.setPosition(window.getView().getCenter());
-            p.x = p.sprite.getPosition().x, p.y = p.sprite.getPosition().y;
-            p.x_speed = 0;
-            p.y_speed = 0;
           }
         }
-
+      }
+      if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
+        p.sprite.setPosition(window.getView().getCenter());
+        p.x = p.sprite.getPosition().x, p.y = p.sprite.getPosition().y;
+        p.x_speed = 0;
+        p.y_speed = 0;
+      }
+    }
     p.update();
 
     for (auto i = asteroids.begin(); i != asteroids.end();) {
@@ -288,8 +288,9 @@ main()
         font.loadFromFile("UbuntuMono-B.ttf");
         sf::Text text;
         text.setFont(font);
-        text.setString(std::to_string(p.x) + ":" + std::to_string(p.y) + "\n" +
-                       std::to_string(desktopMode.width) + ":" +
+        text.setString(std::to_string(p.x) + ":" + std::to_string(p.y) +
+       "\n"
+       + std::to_string(desktopMode.width) + ":" +
                        std::to_string(desktopMode.height) + "\n" +
                        std::to_string(p.x_speed) + ":" +
        std::to_string(p.y_speed)); text.setCharacterSize(50);
