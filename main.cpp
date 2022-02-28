@@ -10,6 +10,17 @@ bool thrust = false, isShooting = false;
 bool rotateRight = false, rotateLeft = false;
 int shootCount;
 
+// returns random value excluding 0
+int
+random(int range, int modifier)
+{
+  int x;
+  do {
+    x = rand() % range - modifier;
+  } while (x == 0);
+  return x;
+}
+
 // general class for all existing entities
 class Entity
 {
@@ -181,17 +192,20 @@ main()
   for (int i = 0; i < 15; i++) {
     Asteroid* a = new Asteroid(rand() % desktopMode.width,
                                rand() % desktopMode.height,
-                               rand() % 8 - 4,
-                               rand() % 8 - 4,
+                               random(8, 4),
+                               random(8, 4),
                                rand() % 360,
                                &tAsteroid);
     asteroids.push_back(a);
   }
 
-  // sf::Clock deltaClock;
+  sf::Clock deltaClock;
+  sf::Time deltaTime;
+  float deltaShoot;
   window.setKeyRepeatEnabled(true);
   while (window.isOpen()) {
-    // sf::Time deltaTime = deltaClock.restart();
+    deltaTime = deltaClock.restart();
+    deltaShoot += deltaTime.asMilliseconds();
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
@@ -216,43 +230,37 @@ main()
       else
         isShooting = false;
     }
-    if (isShooting) {
-      shootCount++;
-      if (shootCount >= 20) {
+    if (isShooting)
+      if (deltaShoot >= 300) {
         Bullet* b = new Bullet(p.x, p.y, p.angle, &tBullet);
         bullets.push_back(b);
-		shootCount=0;
+        deltaShoot = 0;
       }
-    } else
-      shootCount = 0;
     // Check bullets and asteroids collisons
-    for (auto a : asteroids) {
-      for (auto b : bullets) {
+    for (auto a : asteroids)
+      for (auto b : bullets)
         if (Collision::PixelPerfectTest(a->sprite, b->sprite)) {
-          /*          if (a->sprite.getGlobalBounds().intersects(
-                        b->sprite.getGlobalBounds())) { */
           a->life = false;
           b->life = false;
-          if (a->sprite.getTexture() == &tAsteroid) {
-            Asteroid* e = new Asteroid(a->x,
-                                       a->y,
-                                       rand() % 6 - 3,
-                                       rand() % 6 - 3,
-                                       rand() % 360,
-                                       &tAsteroidSmall);
-            e->sprite.setOrigin(e->sprite.getGlobalBounds().width / 2,
-                                e->sprite.getGlobalBounds().height / 2);
-            asteroids.push_back(e);
+          if (a->sprite.getTexture() == &tAsteroid)
+            for (int i = 0; i < 3; i++) {
+              Asteroid* e = new Asteroid(a->x,
+                                         a->y,
+                                         random(6, 3),
+                                         random(6, 3),
+                                         rand() % 360,
+                                         &tAsteroidSmall);
+              e->sprite.setOrigin(e->sprite.getGlobalBounds().width / 2,
+                                  e->sprite.getGlobalBounds().height / 2);
+              asteroids.push_back(e);
+            }
+          if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
+            p.sprite.setPosition(window.getView().getCenter());
+            p.x = p.sprite.getPosition().x, p.y = p.sprite.getPosition().y;
+            p.x_speed = 0;
+            p.y_speed = 0;
           }
         }
-      }
-      if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
-        p.sprite.setPosition(window.getView().getCenter());
-        p.x = p.sprite.getPosition().x, p.y = p.sprite.getPosition().y;
-        p.x_speed = 0;
-        p.y_speed = 0;
-      }
-    }
 
     p.update();
 
@@ -290,8 +298,8 @@ main()
     if (asteroids.size() <= 15) {
       Asteroid* a = new Asteroid(rand() % desktopMode.width,
                                  rand() % desktopMode.height,
-                                 rand() % 8 - 4,
-                                 rand() % 8 - 4,
+                                 random(8, 4),
+                                 random(4, 4),
                                  rand() % 360,
                                  &tAsteroid);
       asteroids.push_back(a);
