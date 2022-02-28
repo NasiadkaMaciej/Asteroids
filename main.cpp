@@ -1,21 +1,40 @@
 //#include "entities.hpp"
+#include "Collision.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <list>
 #include <math.h>
-
 sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 float degToRad = M_PI / 180;
+bool thrust = false, isShooting = false;
+bool rotateRight = false, rotateLeft = false;
+int shootCount;
 
 // general class for all existing entities
 class Entity
 {
 public:
   float x, y, x_speed, y_speed, angle;
-  bool life;
+  bool life = true;
   sf::Sprite sprite;
 
-  Entity() { life = true; }
+  Entity(float X,
+         float Y,
+         float X_SPEED,
+         float Y_SPEED,
+         float ANGLE,
+         sf::Texture* TEXTURE)
+  {
+    x = X;
+    y = Y;
+    x_speed = X_SPEED;
+    y_speed = Y_SPEED;
+    angle = ANGLE;
+    sprite.setTexture(*TEXTURE, true);
+    sprite.setOrigin(sprite.getGlobalBounds().width / 2,
+                     sprite.getGlobalBounds().height / 2);
+  }
+  // Entity() { life = true; }
 
   virtual void update(){};
 
@@ -26,17 +45,62 @@ public:
     window.draw(sprite);
   }
 };
+class Player : public Entity
+{
+public:
+  Player(float X,
+         float Y,
+         float X_SPEED,
+         float Y_SPEED,
+         float ANGLE,
+         sf::Texture* TEXTURE)
+    : Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE){};
+  void update()
+  {
+    if (rotateRight)
+      sprite.setRotation(sprite.getRotation() + 2);
+    if (rotateLeft)
+      sprite.setRotation(sprite.getRotation() - 2);
+    angle = sprite.getRotation() - 90;
+
+    if (thrust) {
+      x_speed += cos(angle * degToRad) * 0.2;
+      y_speed += sin(angle * degToRad) * 0.2;
+    } else {
+      x_speed *= 0.985;
+      y_speed *= 0.985;
+    }
+
+    int maxSpeed = 15;
+    float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
+    if (speed > maxSpeed) {
+      x_speed *= maxSpeed / speed;
+      y_speed *= maxSpeed / speed;
+    }
+
+    x += x_speed;
+    y += y_speed;
+
+    if (x >= desktopMode.width)
+      x = 0;
+    else if (x <= 0)
+      x = desktopMode.width;
+    if (y >= desktopMode.height)
+      y = 0;
+    else if (y <= 0)
+      y = desktopMode.height;
+  }
+};
 class Asteroid : public Entity
 {
 public:
-  Asteroid(float xx, float yy, float xx_speed, float yy_speed, float aangle)
-  {
-    x = xx;
-    y = yy;
-    x_speed = xx_speed;
-    y_speed = yy_speed;
-    angle = aangle;
-  }
+  Asteroid(float X,
+           float Y,
+           float X_SPEED,
+           float Y_SPEED,
+           float ANGLE,
+           sf::Texture* TEXTURE)
+    : Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE){};
   void update()
   {
     x += x_speed;
@@ -54,6 +118,17 @@ public:
 class Bullet : public Entity
 {
 public:
+  /* Bullet(float X, float Y, float ANGLE, sf::Texture* TEXTURE){
+          Entity:Entity(X, Y, cos(angle * degToRad) * 10, sin(angle * degToRad)
+  * 10, angle, TEXTURE);
+  } */
+  Bullet(float X, float Y, float ANGLE, sf::Texture* TEXTURE)
+    : Entity(X,
+             Y,
+             cos(angle * degToRad) * 10,
+             cos(angle * degToRad) * 10,
+             ANGLE,
+             TEXTURE){};
   void update()
   {
     x_speed = cos(angle * degToRad) * 10;
@@ -93,12 +168,12 @@ main()
   tAsteroidSmall.setSmooth(true);
   tBullet.setSmooth(true);
 
-  // set player sprite
-  sf::Sprite player;
-  player.setTexture(tPlayer);
-  player.setOrigin(player.getGlobalBounds().width / 2,
-                   player.getGlobalBounds().height / 2);
-  player.setPosition(window.getView().getCenter());
+  Player p(window.getView().getCenter().x,
+           window.getView().getCenter().y,
+           0,
+           0,
+           0,
+           &tPlayer);
 
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
@@ -106,20 +181,12 @@ main()
   for (int i = 0; i < 15; i++) {
     Asteroid* a = new Asteroid(rand() % desktopMode.width,
                                rand() % desktopMode.height,
-                               rand() % 6 - 3,
-                               rand() % 6 - 3,
-                               rand() % 360);
-    a->sprite.setTexture(tAsteroid);
-    a->sprite.setOrigin(a->sprite.getGlobalBounds().width / 2,
-                        a->sprite.getGlobalBounds().height / 2);
+                               rand() % 8 - 4,
+                               rand() % 8 - 4,
+                               rand() % 360,
+                               &tAsteroid);
     asteroids.push_back(a);
   }
-  // float x,y;
-  float x = player.getPosition().x, y = player.getPosition().y;
-  float x_speed = 0.0, y_speed = 0.0, angle = 0;
-  bool thrust = false;
-  bool rotateRight = false, rotateLeft = false;
-  float rotateSpeed;
 
   // sf::Clock deltaClock;
   window.setKeyRepeatEnabled(true);
@@ -144,67 +211,50 @@ main()
         thrust = true;
       else
         thrust = false;
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-        Bullet* b = new Bullet();
-        b->sprite.setTexture(tBullet);
-        b->x = x;
-        b->y = y;
-        b->angle = angle;
-        bullets.push_back(b);
-      }
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+        isShooting = true;
+      else
+        isShooting = false;
     }
-
+    if (isShooting) {
+      shootCount++;
+      if (shootCount >= 20) {
+        Bullet* b = new Bullet(p.x, p.y, p.angle, &tBullet);
+        bullets.push_back(b);
+		shootCount=0;
+      }
+    } else
+      shootCount = 0;
     // Check bullets and asteroids collisons
     for (auto a : asteroids) {
       for (auto b : bullets) {
-        if (a->sprite.getGlobalBounds().intersects(
-              b->sprite.getGlobalBounds())) {
+        if (Collision::PixelPerfectTest(a->sprite, b->sprite)) {
+          /*          if (a->sprite.getGlobalBounds().intersects(
+                        b->sprite.getGlobalBounds())) { */
           a->life = false;
           b->life = false;
           if (a->sprite.getTexture() == &tAsteroid) {
-            Asteroid* e = new Asteroid(
-              a->x, a->y, rand() % 6 - 3, rand() % 6 - 3, rand() % 360);
-            e->sprite.setTexture(tAsteroidSmall);
+            Asteroid* e = new Asteroid(a->x,
+                                       a->y,
+                                       rand() % 6 - 3,
+                                       rand() % 6 - 3,
+                                       rand() % 360,
+                                       &tAsteroidSmall);
+            e->sprite.setOrigin(e->sprite.getGlobalBounds().width / 2,
+                                e->sprite.getGlobalBounds().height / 2);
             asteroids.push_back(e);
           }
         }
       }
+      if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
+        p.sprite.setPosition(window.getView().getCenter());
+        p.x = p.sprite.getPosition().x, p.y = p.sprite.getPosition().y;
+        p.x_speed = 0;
+        p.y_speed = 0;
+      }
     }
 
-    if (rotateRight)
-      player.setRotation(player.getRotation() + 2);
-    if (rotateLeft)
-      player.setRotation(player.getRotation() - 2);
-    angle = player.getRotation() - 90;
-
-    if (thrust) {
-      x_speed += cos(angle * degToRad) * 0.2;
-      y_speed += sin(angle * degToRad) * 0.2;
-    } else {
-      x_speed *= 0.985;
-      y_speed *= 0.985;
-    }
-
-    int maxSpeed = 15;
-    float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
-    if (speed > maxSpeed) {
-      x_speed *= maxSpeed / speed;
-      y_speed *= maxSpeed / speed;
-    }
-
-    x += x_speed;
-    y += y_speed;
-
-    if (x >= desktopMode.width)
-      x = 0;
-    else if (x <= 0)
-      x = desktopMode.width;
-    if (y >= desktopMode.height)
-      y = 0;
-    else if (y <= 0)
-      y = desktopMode.height;
-
-    player.setPosition(x, y);
+    p.update();
 
     for (auto i = asteroids.begin(); i != asteroids.end();) {
       // Entity* e = *i;
@@ -226,37 +276,49 @@ main()
         i++;
     }
     // display debug info
-    sf::Font font;
-    font.loadFromFile("UbuntuMono-B.ttf");
-    sf::Text text;
-    text.setFont(font);
-    text.setString(std::to_string(x) + ":" + std::to_string(y) + "\n" +
-                   std::to_string(desktopMode.width) + ":" +
-                   std::to_string(desktopMode.height) + "\n" +
-                   std::to_string(x_speed) + ":" + std::to_string(y_speed));
-    text.setCharacterSize(50);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(100, 100);
+    /*     sf::Font font;
+        font.loadFromFile("UbuntuMono-B.ttf");
+        sf::Text text;
+        text.setFont(font);
+        text.setString(std::to_string(p.x) + ":" + std::to_string(p.y) + "\n" +
+                       std::to_string(desktopMode.width) + ":" +
+                       std::to_string(desktopMode.height) + "\n" +
+                       std::to_string(p.x_speed) + ":" +
+       std::to_string(p.y_speed)); text.setCharacterSize(50);
+        text.setFillColor(sf::Color::White);
+        text.setPosition(100, 100); */
+    if (asteroids.size() <= 15) {
+      Asteroid* a = new Asteroid(rand() % desktopMode.width,
+                                 rand() % desktopMode.height,
+                                 rand() % 8 - 4,
+                                 rand() % 8 - 4,
+                                 rand() % 360,
+                                 &tAsteroid);
+      asteroids.push_back(a);
+    }
 
+    int i;
     for (auto i = asteroids.begin(); i != asteroids.end();) {
       Asteroid* e = *i;
       e->update();
       i++;
     }
+
     for (auto i = bullets.begin(); i != bullets.end();) {
       Bullet* e = *i;
       e->update();
       i++;
     }
+
     window.clear();
-    window.draw(player);
-    window.draw(text);
+    // window.draw(text);
     for (const auto& i : asteroids) {
       i->draw(window);
     }
     for (const auto& i : bullets) {
       i->draw(window);
     }
+    p.draw(window);
     window.display();
   }
   return 0;
