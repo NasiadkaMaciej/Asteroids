@@ -1,157 +1,14 @@
-//#include "entities.hpp"
 #include "Collision.h"
+#include "entities.hpp"
+#include "textures.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <list>
 #include <math.h>
 
-sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
-float degToRad = M_PI / 180;
-
-// returns random value excluding 0
-int
-random(int range, int modifier)
-{
-  int x;
-  do {
-    x = rand() % range - modifier;
-  } while (x == 0);
-  return x;
-}
-
-// general class for all existing entities
-class Entity
-{
-public:
-  float x, y, x_speed, y_speed, angle;
-  bool life = true;
-  sf::Sprite sprite;
-
-  Entity(float X,
-         float Y,
-         float X_SPEED,
-         float Y_SPEED,
-         float ANGLE,
-         sf::Texture* TEXTURE)
-  {
-    x = X;
-    y = Y;
-    x_speed = X_SPEED;
-    y_speed = Y_SPEED;
-    angle = ANGLE;
-    sprite.setTexture(*TEXTURE, true);
-    sprite.setOrigin(sprite.getGlobalBounds().width / 2,
-                     sprite.getGlobalBounds().height / 2);
-  }
-
-  virtual void update(){};
-
-  void draw(sf::RenderWindow& window)
-  {
-    sprite.setPosition(x, y);
-    sprite.setRotation(angle + 90);
-    window.draw(sprite);
-  }
-};
-class Player : public Entity
-{
-public:
-  bool thrust = false, isShooting = false;
-  bool rotateRight = false, rotateLeft = false;
-  int points = 0;
-  Player(float X,
-         float Y,
-         float X_SPEED,
-         float Y_SPEED,
-         float ANGLE,
-         sf::Texture* TEXTURE)
-    : Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE)
-  {
-    sprite.scale(0.5, 0.5);
-  };
-  void update()
-  {
-    if (rotateRight)
-      sprite.setRotation(sprite.getRotation() + 2);
-    if (rotateLeft)
-      sprite.setRotation(sprite.getRotation() - 2);
-    angle = sprite.getRotation() - 90;
-
-    if (thrust) {
-      x_speed += cos(angle * degToRad) * 0.2;
-      y_speed += sin(angle * degToRad) * 0.2;
-    } else {
-      x_speed *= 0.985;
-      y_speed *= 0.985;
-    }
-
-    int maxSpeed = 15;
-    float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
-    if (speed > maxSpeed) {
-      x_speed *= maxSpeed / speed;
-      y_speed *= maxSpeed / speed;
-    }
-
-    x += x_speed;
-    y += y_speed;
-
-    if (x >= desktopMode.width)
-      x = 0;
-    else if (x <= 0)
-      x = desktopMode.width;
-    if (y >= desktopMode.height)
-      y = 0;
-    else if (y <= 0)
-      y = desktopMode.height;
-  }
-};
-class Asteroid : public Entity
-{
-public:
-  Asteroid(float X,
-           float Y,
-           float X_SPEED,
-           float Y_SPEED,
-           float ANGLE,
-           sf::Texture* TEXTURE)
-    : Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE)
-  {
-    sprite.scale(0.5, 0.5);
-  };
-  void update()
-  {
-    x += x_speed;
-    y += y_speed;
-    if (x >= desktopMode.width)
-      x = 0;
-    else if (x <= 0)
-      x = desktopMode.width;
-    if (y >= desktopMode.height)
-      y = 0;
-    else if (y <= 0)
-      y = desktopMode.height;
-  }
-};
-class Bullet : public Entity
-{
-public:
-  Bullet(float X, float Y, float ANGLE, sf::Texture* TEXTURE)
-    : Entity(X,
-             Y,
-             cos(angle * degToRad) * 10,
-             cos(angle * degToRad) * 10,
-             ANGLE,
-             TEXTURE){};
-  void update()
-  {
-    x_speed = cos(angle * degToRad) * 10;
-    y_speed = sin(angle * degToRad) * 10;
-    x += x_speed;
-    y += y_speed;
-    if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
-      life = false;
-  }
-};
+// game start values;
+int bigAsteroids = 6;
+int roundNum = 1;
 
 int
 main()
@@ -168,22 +25,15 @@ main()
   window.setVerticalSyncEnabled(true);
   window.setFramerateLimit(60);
 
-  // load textures
-  sf::Texture tPlayer, tAsteroid, tAsteroidMedium, tAsteroidSmall, tBullet;
-  tPlayer.loadFromFile("player.png");
-  tAsteroid.loadFromFile("asteroidBig.png");
-  tAsteroidMedium.loadFromFile("asteroidMedium.png");
-  tAsteroidSmall.loadFromFile("asteroidSmall.png");
-  tBullet.loadFromFile("bullet.png");
-  tPlayer.setSmooth(true);
-  tAsteroid.setSmooth(true);
-  tAsteroidMedium.setSmooth(true);
-  tAsteroidSmall.setSmooth(true);
-  tBullet.setSmooth(true);
+  loadTextures();
 
   sf::Font font;
-  // font.loadFromFile("UbuntuMono-B.ttf");
+  sf::Text text;
   font.loadFromFile("Hyperspace.otf");
+  text.setFont(font);
+  text.setCharacterSize(50);
+  text.setFillColor(sf::Color::White);
+  text.setPosition(60, 60);
 
   Player p(window.getView().getCenter().x,
            window.getView().getCenter().y,
@@ -195,14 +45,8 @@ main()
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
 
-  for (int i = 0; i < 15; i++) {
-    Asteroid* a = new Asteroid(rand() % desktopMode.width,
-                               rand() % desktopMode.height,
-                               random(4, 2),
-                               random(4, 2),
-                               rand() % 360,
-                               &tAsteroid);
-    asteroids.push_back(a);
+  for (int i = 0; i < bigAsteroids; i++) {
+    asteroids.push_back(generateBigAsteroids(&tAsteroid));
   }
 
   srand(time(NULL));
@@ -244,6 +88,7 @@ main()
         bullets.push_back(b);
         deltaShoot = 0;
       }
+
     // Check bullets and asteroids collisons
     for (auto a : asteroids) {
       for (auto b : bullets) {
@@ -305,34 +150,23 @@ main()
       } else
         i++;
     }
-    sf::Text text;
-    text.setFont(font);
-    std::string aaaaaa = std::to_string(p.points);
-    /*     text.setString(std::to_string(p.x) + ":" + std::to_string(p.y) + "\n"
-       + std::to_string(desktopMode.width) + ":" +
-                       std::to_string(desktopMode.height) + "\n" +
-                       std::to_string(p.x_speed) + ":" +
-       std::to_string(p.y_speed)); */
+
+    std::string sPoints = std::to_string(p.points);
     std::string sTime = std::to_string(time.asMilliseconds() / 10);
+    std::string sLevel = std::to_string(roundNum);
     if (sTime.length() > 2)
       sTime.insert(sTime.length() - 2, ".");
     else
       sTime = "0." + sTime;
-    text.setString(sTime + "\n" + aaaaaa +
-                   " points"); // + std::to_string(deltaShoot));
-    // text.setString(std::to_string(time.asMilliseconds()/10));
-    text.setCharacterSize(50);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(60, 60);
+    text.setString(sTime + "\n" + sPoints + " points" + "\n" +
+                   "Round: " + sLevel);
 
-    if (asteroids.size() <= 15) {
-      Asteroid* a = new Asteroid(rand() % desktopMode.width,
-                                 rand() % desktopMode.height,
-                                 random(8, 4),
-                                 random(4, 4),
-                                 rand() % 360,
-                                 &tAsteroid);
-      asteroids.push_back(a);
+    if (asteroids.size() == 0) {
+      bigAsteroids += 2;
+      roundNum++;
+      for (int i = 0; i < bigAsteroids; i++) {
+        asteroids.push_back(generateBigAsteroids(&tAsteroid));
+      }
     }
 
     int i;
@@ -347,6 +181,7 @@ main()
       e->update();
       i++;
     }
+	
     window.clear();
     window.draw(text);
     for (const auto& i : asteroids) {
