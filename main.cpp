@@ -1,31 +1,18 @@
 #include "Collision.h"
 #include "entities.hpp"
 #include "menu.hpp"
-#include "textures.hpp"
-#include <SFML/Graphics.hpp>
-#include <iostream>
 #include <list>
-#include <math.h>
 
 // game start values;
 int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starging, 1 is added
-bool isMenu = true;
+sf::Clock deltaClock;
+float deltaShoot;
 int
 main()
 {
-  // create fullscreen window
-  sf::ContextSettings settings;
-  // settings.antialiasingLevel = 8.0;
-  sf::RenderWindow window(sf::VideoMode(desktopMode.width,
-                                        desktopMode.height,
-                                        desktopMode.bitsPerPixel),
-                          "Asteroids - Macieson",
-                          sf::Style::Fullscreen,
-                          settings);
-  window.setVerticalSyncEnabled(true);
   window.setFramerateLimit(60);
-
+  window.setVerticalSyncEnabled(true);
   loadTextures();
 
   font.loadFromFile("Hyperspace.otf");
@@ -40,14 +27,13 @@ main()
            0,
            0,
            &tPlayer);
+
   Menu menu(desktopMode.width, desktopMode.height);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
 
   srand(time(NULL));
-  sf::Clock deltaClock;
   sf::Time deltaTime, time;
-  float deltaShoot;
 
   while (window.isOpen()) {
     if (isMenu) {
@@ -56,13 +42,13 @@ main()
         if (event.type == sf::Event::Closed)
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          window.close();
+          isMenu = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
           menu.move(up);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
           menu.move(down);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)) {
-          isMenu = false;
+          menu.click();
         }
         window.clear();
         if (isMenu) {
@@ -79,7 +65,7 @@ main()
         if (event.type == sf::Event::Closed)
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          isMenu=true;
+          isMenu = true;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
           p.rotateRight = true;
         else
@@ -97,43 +83,29 @@ main()
         else
           p.isShooting = false;
       }
-      if (p.isShooting)
-        if (deltaShoot >= 250) {
+      if (p.isShooting) {
+        if (deltaShoot >= p.bulletFreq) {
           Bullet* b = new Bullet(p.x, p.y, p.angle, &tBullet);
           bullets.push_back(b);
           deltaShoot = 0;
         }
-
+      }
       // Check bullets and asteroids collisons
       for (auto a : asteroids) {
         for (auto b : bullets) {
           if (Collision::PixelPerfectTest(a->sprite, b->sprite)) {
             a->life = false;
             b->life = false;
-            if (a->sprite.getTexture() == &tAsteroid) {
+            sf::Texture* tmpTxt;
+            if (a->sprite.getTexture() == &tAsteroid[big])
               p.points += 20;
-              for (int i = 0; i < 2; i++) {
-                Asteroid* e = new Asteroid(a->x,
-                                           a->y,
-                                           random(6, 3),
-                                           random(6, 3),
-                                           rand() % 360,
-                                           &tAsteroidMedium);
-                asteroids.push_back(e);
-              }
-            } else if (a->sprite.getTexture() == &tAsteroidMedium) {
+            else if (a->sprite.getTexture() == &tAsteroid[medium])
               p.points += 50;
-              for (int i = 0; i < 2; i++) {
-                Asteroid* e = new Asteroid(a->x,
-                                           a->y,
-                                           random(6, 3),
-                                           random(6, 3),
-                                           rand() % 360,
-                                           &tAsteroidSmall);
-                asteroids.push_back(e);
-              }
-            } else if (a->sprite.getTexture() == &tAsteroidSmall)
+            else if (a->sprite.getTexture() == &tAsteroid[small])
               p.points += 100;
+
+            for (int i = 0; i < 2; i++)
+			 if(generateAsteroids(*a)!=NULL) asteroids.push_back(generateAsteroids(*a));
           }
         }
         if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
@@ -147,7 +119,6 @@ main()
       p.update();
 
       for (auto i = asteroids.begin(); i != asteroids.end();) {
-        // Entity* e = *i;
         Asteroid* e = *i;
         e->update();
         if (e->life == false) {
@@ -180,11 +151,10 @@ main()
         bigAsteroids += 2;
         roundNum++;
         for (int i = 0; i < bigAsteroids; i++) {
-          asteroids.push_back(generateBigAsteroids(&tAsteroid));
+          asteroids.push_back(generateBigAsteroids(&tAsteroid[big]));
         }
       }
 
-      int i;
       for (auto i = asteroids.begin(); i != asteroids.end();) {
         Asteroid* e = *i;
         e->update();
@@ -198,10 +168,10 @@ main()
       }
       window.clear();
       window.draw(text);
-      for (const auto& i : asteroids) {
+      for (auto& i : asteroids) {
         i->draw(window);
       }
-      for (const auto& i : bullets) {
+      for (auto& i : bullets) {
         i->draw(window);
       }
       p.draw(window);

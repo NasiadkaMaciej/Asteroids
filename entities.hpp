@@ -1,8 +1,10 @@
-#include <SFML/Graphics.hpp>
+#include "textures.hpp"
 #include <math.h>
 
 sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 float degToRad = M_PI / 180;
+
+float asteroidMaxSpeed[3] = { 4, 5, 6 }, asteroidDiffSpeed[3] = { 2, 2.5, 3 };
 
 // returns random value excluding 0
 int
@@ -54,7 +56,7 @@ class Player : public Entity
 public:
   bool thrust = false, isShooting = false, rotateRight = false,
        rotateLeft = false;
-  int points = 0, maxSpeed = 15;
+  int points = 0, maxSpeed = 15, bulletFreq = 250;
 
   Player(float X,
          float Y,
@@ -104,6 +106,7 @@ public:
 class Asteroid : public Entity
 {
 public:
+  // Angle is unused, becouse it's set by speed
   Asteroid(float X,
            float Y,
            float X_SPEED,
@@ -151,7 +154,7 @@ public:
 
 // Generates asteroid at random edge of the screen
 Asteroid*
-generateBigAsteroids(sf::Texture* tAsteroid)
+generateBigAsteroids(sf::Texture* texture)
 {
   int side = rand() % 4;
   float x, y;
@@ -174,6 +177,44 @@ generateBigAsteroids(sf::Texture* tAsteroid)
     } break;
   }
   Asteroid* a =
-    new Asteroid(x, y, random(4, 2), random(4, 2), rand() % 360, tAsteroid);
+    new Asteroid(x,
+                 y,
+                 random(asteroidMaxSpeed[big], asteroidDiffSpeed[big]),
+                 random(asteroidMaxSpeed[big], asteroidDiffSpeed[big]),
+                 rand() % 360,
+                 texture);
+  return a;
+}
+float moreOrLess(float value){
+	int xd = rand()%2;
+	if(xd==0)
+		return value*2;
+	if(xd==1)
+		return value*0.5;
+	return 0;
+}
+Asteroid*
+generateAsteroids(Asteroid asteroid)
+{
+  int asteroidNum = 0;
+  if (asteroid.sprite.getTexture() == &tAsteroid[big])
+    asteroidNum = medium;
+  else if (asteroid.sprite.getTexture() == &tAsteroid[medium])
+    asteroidNum = small;
+  else
+    return NULL;
+  Asteroid* a = new Asteroid(
+    asteroid.x,
+    asteroid.y,
+	//moreOrLess(asteroid.x_speed),
+	//moreOrLess(asteroid.y_speed),
+	//random(asteroid.x_speed*0.5,asteroid.x_speed),
+	//random(asteroid.y_speed*0.5,asteroid.y_speed),
+	//random(asteroid.x_speed,0),
+	//random(asteroid.y_speed,0),
+	random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+    random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+	rand() % 360,
+    &tAsteroid[asteroidNum]);
   return a;
 }
