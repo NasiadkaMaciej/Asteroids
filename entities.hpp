@@ -4,7 +4,9 @@
 sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 float degToRad = M_PI / 180;
 
-float asteroidMaxSpeed[3] = { 4, 5, 6 }, asteroidDiffSpeed[3] = { 2, 2.5, 3 };
+bool isMenu = true;
+
+float asteroidMaxSpeed[3] = { 4, 6, 8 }, asteroidDiffSpeed[3] = { 2, 3, 4 };
 
 // returns random value excluding 0
 int
@@ -56,7 +58,7 @@ class Player : public Entity
 public:
   bool thrust = false, isShooting = false, rotateRight = false,
        rotateLeft = false;
-  int points = 0, maxSpeed = 15, bulletFreq = 250;
+  int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
 
   Player(float X,
          float Y,
@@ -102,18 +104,44 @@ public:
     else if (y <= 0)
       y = desktopMode.height;
   }
+  void givePoints(int x)
+  {
+    points += x;
+    if (points / 10000 >= earnedLifes) {
+      earnedLifes++;
+      lifes++;
+    }
+  }
+  void die()
+  {
+    sprite.setPosition(desktopMode.width / 2, desktopMode.height / 2);
+    x = sprite.getPosition().x, y = sprite.getPosition().y;
+    x_speed = 0;
+    y_speed = 0;
+    lifes--;
+    if (lifes <= 0) {
+      isMenu = true;
+    }
+  }
+  void reset()
+  {
+    x = desktopMode.width / 2;
+    y = desktopMode.height / 2;
+    x_speed = 0;
+    y_speed = 0;
+    angle = 90;
+    life = true;
+    thrust = false, isShooting = false, rotateRight = false,
+         rotateLeft = false;
+    points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
+  }
 };
 class Asteroid : public Entity
 {
 public:
   // Angle is unused, becouse it's set by speed
-  Asteroid(float X,
-           float Y,
-           float X_SPEED,
-           float Y_SPEED,
-           float ANGLE,
-           sf::Texture* TEXTURE)
-    : Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE)
+  Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture* TEXTURE)
+    : Entity(X, Y, X_SPEED, Y_SPEED, 0, TEXTURE)
   {
     sprite.scale(0.5, 0.5);
   };
@@ -181,17 +209,8 @@ generateBigAsteroids(sf::Texture* texture)
                  y,
                  random(asteroidMaxSpeed[big], asteroidDiffSpeed[big]),
                  random(asteroidMaxSpeed[big], asteroidDiffSpeed[big]),
-                 rand() % 360,
                  texture);
   return a;
-}
-float moreOrLess(float value){
-	int xd = rand()%2;
-	if(xd==0)
-		return value*2;
-	if(xd==1)
-		return value*0.5;
-	return 0;
 }
 Asteroid*
 generateAsteroids(Asteroid asteroid)
@@ -206,15 +225,8 @@ generateAsteroids(Asteroid asteroid)
   Asteroid* a = new Asteroid(
     asteroid.x,
     asteroid.y,
-	//moreOrLess(asteroid.x_speed),
-	//moreOrLess(asteroid.y_speed),
-	//random(asteroid.x_speed*0.5,asteroid.x_speed),
-	//random(asteroid.y_speed*0.5,asteroid.y_speed),
-	//random(asteroid.x_speed,0),
-	//random(asteroid.y_speed,0),
-	random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
     random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-	rand() % 360,
+    random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
     &tAsteroid[asteroidNum]);
   return a;
 }

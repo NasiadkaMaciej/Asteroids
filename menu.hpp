@@ -8,8 +8,6 @@ const int MENU_ITEMS = 5;
 sf::Font font;
 sf::Text text;
 
-bool isMenu = true;
-
 // create fullscreen window
 sf::ContextSettings settings;
 // settings.antialiasingLevel = 8.0;
@@ -19,9 +17,6 @@ sf::RenderWindow window(sf::VideoMode(desktopMode.width,
                         "Asteroids - Macieson",
                         sf::Style::Fullscreen,
                         settings);
-						
-/*   window.setVerticalSyncEnabled(true);
-  window.setFramerateLimit(60); */
 
 class Menu
 {

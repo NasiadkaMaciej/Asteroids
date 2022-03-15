@@ -8,6 +8,7 @@ int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starging, 1 is added
 sf::Clock deltaClock;
 float deltaShoot;
+
 int
 main()
 {
@@ -50,11 +51,16 @@ main()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)) {
           menu.click();
         }
-        window.clear();
-        if (isMenu) {
-          menu.draw(window);
-          window.display();
+        if (!isMenu && p.lifes <= 0) {
+          asteroids.clear();
+          bullets.clear();
+          p.reset();
+          bigAsteroids = 4;
+          roundNum = 0;
         }
+        window.clear();
+        menu.draw(window);
+        window.display();
       }
     } else {
       time += deltaTime;
@@ -66,6 +72,13 @@ main()
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
           isMenu = true;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::N)) {
+          asteroids.clear();
+          bullets.clear();
+          p.reset();
+          bigAsteroids = 4;
+          roundNum = 0;
+        }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
           p.rotateRight = true;
         else
@@ -83,36 +96,31 @@ main()
         else
           p.isShooting = false;
       }
-      if (p.isShooting) {
+      if (p.isShooting)
         if (deltaShoot >= p.bulletFreq) {
           Bullet* b = new Bullet(p.x, p.y, p.angle, &tBullet);
           bullets.push_back(b);
           deltaShoot = 0;
         }
-      }
       // Check bullets and asteroids collisons
       for (auto a : asteroids) {
-        for (auto b : bullets) {
+        for (auto b : bullets)
           if (Collision::PixelPerfectTest(a->sprite, b->sprite)) {
             a->life = false;
             b->life = false;
-            sf::Texture* tmpTxt;
             if (a->sprite.getTexture() == &tAsteroid[big])
-              p.points += 20;
+              p.givePoints(20);
             else if (a->sprite.getTexture() == &tAsteroid[medium])
-              p.points += 50;
+              p.givePoints(50);
             else if (a->sprite.getTexture() == &tAsteroid[small])
-              p.points += 100;
+              p.givePoints(100);
 
             for (int i = 0; i < 2; i++)
-			 if(generateAsteroids(*a)!=NULL) asteroids.push_back(generateAsteroids(*a));
+              if (generateAsteroids(*a) != NULL)
+                asteroids.push_back(generateAsteroids(*a));
           }
-        }
         if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
-          p.sprite.setPosition(window.getView().getCenter());
-          p.x = p.sprite.getPosition().x, p.y = p.sprite.getPosition().y;
-          p.x_speed = 0;
-          p.y_speed = 0;
+          p.die();
           time = sf::seconds(0);
         }
       }
@@ -140,19 +148,19 @@ main()
       std::string sPoints = std::to_string(p.points);
       std::string sTime = std::to_string(time.asMilliseconds() / 10);
       std::string sLevel = std::to_string(roundNum);
+      std::string sLifes = std::to_string(p.lifes);
       if (sTime.length() > 2)
         sTime.insert(sTime.length() - 2, ".");
       else
         sTime = "0." + sTime;
-      text.setString(sTime + "\n" + sPoints + " points" + "\n" +
-                     "Round: " + sLevel);
+      text.setString(sTime + " sec" + "\n" + sPoints + " points" + "\n" +
+                     "Round: " + sLevel + "\n" + sLifes + " lifes");
 
       if (asteroids.size() == 0) {
         bigAsteroids += 2;
         roundNum++;
-        for (int i = 0; i < bigAsteroids; i++) {
+        for (int i = 0; i < bigAsteroids; i++)
           asteroids.push_back(generateBigAsteroids(&tAsteroid[big]));
-        }
       }
 
       for (auto i = asteroids.begin(); i != asteroids.end();) {
@@ -168,12 +176,10 @@ main()
       }
       window.clear();
       window.draw(text);
-      for (auto& i : asteroids) {
+      for (auto& i : asteroids)
         i->draw(window);
-      }
-      for (auto& i : bullets) {
+      for (auto& i : bullets)
         i->draw(window);
-      }
       p.draw(window);
       window.display();
     }
