@@ -1,26 +1,14 @@
 #include "Collision.h"
+#include "basevalues.hpp"
 #include "entities.hpp"
 #include "menu.hpp"
 #include <list>
 
-// game start values;
-int bigAsteroids = 4; // when generating, 2 more are created
-int roundNum = 0;     // when starging, 1 is added
-sf::Clock deltaClock;
-float deltaShoot;
-
 int
 main()
 {
-  window.setFramerateLimit(60);
-  window.setVerticalSyncEnabled(true);
+  loadBase();
   loadTextures();
-
-  font.loadFromFile("Hyperspace.otf");
-  text.setFont(font);
-  text.setCharacterSize(50);
-  text.setFillColor(sf::Color::White);
-  text.setPosition(60, 60);
 
   Player p(window.getView().getCenter().x,
            window.getView().getCenter().y,
@@ -34,7 +22,6 @@ main()
   std::list<Bullet*> bullets;
 
   srand(time(NULL));
-  sf::Time deltaTime, time;
 
   while (window.isOpen()) {
     if (isMenu) {
@@ -43,7 +30,7 @@ main()
         if (event.type == sf::Event::Closed)
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          isMenu = false;
+          resume();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
           menu.move(up);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
@@ -51,19 +38,19 @@ main()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)) {
           menu.click();
         }
-        if (!isMenu && p.lifes <= 0) {
-          asteroids.clear();
-          bullets.clear();
-          p.reset();
-          bigAsteroids = 4;
-          roundNum = 0;
-        }
-        window.clear();
-        menu.draw(window);
-        window.display();
       }
+      if (p.lifes <= 0) {
+        asteroids.clear();
+        bullets.clear();
+        p.reset();
+        bigAsteroids = 4;
+        roundNum = 0;
+      }
+      window.clear();
+      menu.draw(window);
+      window.display();
     } else {
-      time += deltaTime;
+      p.aliveTime += deltaTime;
       deltaTime = deltaClock.restart();
       deltaShoot += deltaTime.asMilliseconds();
       sf::Event event;
@@ -71,7 +58,7 @@ main()
         if (event.type == sf::Event::Closed)
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          isMenu = true;
+          pause();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::N)) {
           asteroids.clear();
           bullets.clear();
@@ -98,8 +85,7 @@ main()
       }
       if (p.isShooting)
         if (deltaShoot >= p.bulletFreq) {
-          Bullet* b = new Bullet(p.x, p.y, p.angle, &tBullet);
-          bullets.push_back(b);
+          bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
           deltaShoot = 0;
         }
       // Check bullets and asteroids collisons
@@ -114,17 +100,18 @@ main()
               p.givePoints(50);
             else if (a->sprite.getTexture() == &tAsteroid[small])
               p.givePoints(100);
-
             for (int i = 0; i < 2; i++)
               if (generateAsteroids(*a) != NULL)
                 asteroids.push_back(generateAsteroids(*a));
           }
         if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
-          p.die();
-          time = sf::seconds(0);
+          a->life = false;
+          p.life = false;
+          for (int i = 0; i < 2; i++)
+            if (generateAsteroids(*a) != NULL)
+              asteroids.push_back(generateAsteroids(*a));
         }
       }
-      p.update();
 
       for (auto i = asteroids.begin(); i != asteroids.end();) {
         Asteroid* e = *i;
@@ -145,8 +132,17 @@ main()
           i++;
       }
 
+      p.update();
+
+      if (asteroids.size() == 0) {
+        bigAsteroids += 2;
+        roundNum++;
+        for (int i = 0; i < bigAsteroids; i++)
+          asteroids.push_back(generateBigAsteroids(&tAsteroid[big]));
+      }
+
       std::string sPoints = std::to_string(p.points);
-      std::string sTime = std::to_string(time.asMilliseconds() / 10);
+      std::string sTime = std::to_string(p.aliveTime.asMilliseconds() / 10);
       std::string sLevel = std::to_string(roundNum);
       std::string sLifes = std::to_string(p.lifes);
       if (sTime.length() > 2)
@@ -156,24 +152,6 @@ main()
       text.setString(sTime + " sec" + "\n" + sPoints + " points" + "\n" +
                      "Round: " + sLevel + "\n" + sLifes + " lifes");
 
-      if (asteroids.size() == 0) {
-        bigAsteroids += 2;
-        roundNum++;
-        for (int i = 0; i < bigAsteroids; i++)
-          asteroids.push_back(generateBigAsteroids(&tAsteroid[big]));
-      }
-
-      for (auto i = asteroids.begin(); i != asteroids.end();) {
-        Asteroid* e = *i;
-        e->update();
-        i++;
-      }
-
-      for (auto i = bullets.begin(); i != bullets.end();) {
-        Bullet* e = *i;
-        e->update();
-        i++;
-      }
       window.clear();
       window.draw(text);
       for (auto& i : asteroids)

@@ -7,6 +7,7 @@ The level ends after destroying all visible asteroids.
 The large asteroid breaks down into 2 medium asteroids, which in turn break down into 2 small ones.
 Asteroids spawn at the edge of the screen.
 Each level has 2 more asteroids than the previous one.
+Use arrows to move, spacebar to shoot, N for new game, ESC for entering and exiting menu and Enter for choosing menu entry
 
 ## Building
 You need SFML installed

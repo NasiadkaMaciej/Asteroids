@@ -1,22 +1,49 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-const int MENU_ITEMS = 5;
+#include <string>
+#ifdef _WIN32
+static int platform = 1;
+#elif _WIN64
+static int platform = 1;
+#elif __linux__
+static int platform = 2;
+#elif __APPLE__
+static int platform = 3;
+#else
+static int platform = 0;
+#endif
+
+void
+openInBrowser()
+{
+  std::string str;
+  std::string p = "https://github.com/NasiadkaMaciej/Asteroids";
+  if (platform)
+    switch (platform) {
+      case 1:
+        str = "explorer";
+        break;
+      case 2:
+        str = "xdg-open";
+        break;
+      case 3:
+        str = "open";
+        break;
+      default:
+        str =
+          "Unknown operating system, for info enter: "
+          "https://github.com/NasiadkaMaciej/Asteroids"; // Should never happen
+                                                         // on the 3 defined
+                                                         // platforms
+    }
+  str.append(" " + p);
+  std::system(str.c_str());
+}
+
+#define MENU_ITEMS 5
 #define up 1
 #define down 2
-
-sf::Font font;
-sf::Text text;
-
-// create fullscreen window
-sf::ContextSettings settings;
-// settings.antialiasingLevel = 8.0;
-sf::RenderWindow window(sf::VideoMode(desktopMode.width,
-                                      desktopMode.height,
-                                      desktopMode.bitsPerPixel),
-                        "Asteroids - Macieson",
-                        sf::Style::Fullscreen,
-                        settings);
 
 class Menu
 {
@@ -84,7 +111,11 @@ public:
   {
     switch (selectedItemIndex) {
       case 0:
-        isMenu = false;
+        resume();
+        // deltaClock.restart();
+        break;
+      case 3:
+        openInBrowser();
         break;
       case 4:
         window.close();
