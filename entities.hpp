@@ -135,9 +135,8 @@ public:
 class Asteroid : public Entity
 {
 public:
-  // Angle is unused, becouse it's set by speed
   Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture* TEXTURE)
-    : Entity(X, Y, X_SPEED, Y_SPEED, 0, TEXTURE){};
+    : Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
   void update()
   {
     x += x_speed;

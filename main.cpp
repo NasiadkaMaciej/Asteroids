@@ -7,6 +7,7 @@
 int
 main()
 {
+
   loadBase();
   loadTextures();
 
@@ -20,8 +21,15 @@ main()
   Menu menu(desktopMode.width, desktopMode.height);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
-
   srand(time(NULL));
+
+  auto reset = [&]() {
+    asteroids.clear();
+    bullets.clear();
+    p.reset();
+    bigAsteroids = 4;
+    roundNum = 0;
+  };
 
   while (window.isOpen()) {
     if (isMenu) {
@@ -39,13 +47,10 @@ main()
           menu.click();
         }
       }
-      if (p.lifes <= 0) {
-        asteroids.clear();
-        bullets.clear();
-        p.reset();
-        bigAsteroids = 4;
-        roundNum = 0;
-      }
+
+      if (p.lifes <= 0)
+        reset();
+
       window.clear();
       menu.draw(window);
       window.display();
@@ -59,13 +64,8 @@ main()
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
           pause();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::N)) {
-          asteroids.clear();
-          bullets.clear();
-          p.reset();
-          bigAsteroids = 4;
-          roundNum = 0;
-        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
+          reset();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
           p.rotateRight = true;
         else
