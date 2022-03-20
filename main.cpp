@@ -7,7 +7,6 @@
 int
 main()
 {
-
   loadBase();
   loadTextures();
 
@@ -17,8 +16,8 @@ main()
            0,
            0,
            &tPlayer);
-
-  Menu menu;
+  Menu menu(menuEntriesCount, menuEntries);
+  GameOver gameOver(gameOverEntriesCount, gameOverEntries);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
   srand(time(NULL));
@@ -35,11 +34,21 @@ main()
     if (!isPlaying) {
       if (p.lifes > 0)
         menu.show();
+      else if (p.lifes <= 0) {
+        // I don't like that solution, check if you can find any better
+        gameOver.active = true;
+        gameOver.entries[0] = "Your score " + std::to_string(p.points);
+        gameOver.move(0);
+        gameOver.show();
 
-      else if (p.lifes <= 0)
-        reset();
-      // gameOver.show();
-
+        if (gameOver.active == false) {
+          reset();
+          resume();
+        } else if (isPlaying) {
+          resume();
+          reset();
+        }
+      }
     } else {
       p.aliveTime += deltaTime;
       deltaTime = deltaClock.restart();

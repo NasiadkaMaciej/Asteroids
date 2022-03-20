@@ -1,7 +1,7 @@
+#include "menu.h"
 #include <SFML/Graphics.hpp>
-#include <iostream>
-
 #include <string>
+
 #ifdef _WIN32
 static int platform = 1;
 #elif _WIN64
@@ -44,79 +44,87 @@ openInBrowser()
 #define up 1
 #define down 2
 
+const int menuEntriesCount = 5, gameOverEntriesCount = 3;
+sf::String menuEntries[menuEntriesCount]{ "Play",
+                                          "Leaderboard",
+                                          "Settings",
+                                          "Info",
+                                          "Exit" },
+  gameOverEntries[gameOverEntriesCount]{ "Your score", "New game", "Menu" };
+
 class Menu
 {
 public:
-  int selectedItemIndex = 0;
-  const static int items = 5;
-  sf::Text menuPos[items];
-  sf::String sMenu[items]{ "Play", "Leaderboard", "Settings", "Info", "Exit" };
-
-  Menu()
+  int activeEntry = 0;
+  // eventually
+  int entriesCount;
+  sf::Text* entryText;
+  sf::String* entries;
+  Menu(int ENTRIESCOUNT, sf::String ENTRIES[])
   {
-    for (int i = 0; i < items; i++) {
-      menuPos[i].setString(sMenu[i]);
-      menuPos[i].setFont(font);
-      menuPos[i].setCharacterSize(50);
-      menuPos[i].setFillColor(sf::Color::White);
-      menuPos[i].setOrigin(menuPos[i].getGlobalBounds().width / 2,
-                           menuPos[i].getGlobalBounds().height / 2);
-      menuPos[i].setPosition(sf::Vector2f(
-        desktopMode.width / 2, desktopMode.height / (items + 1) * (i + 1)));
+    entries = ENTRIES;
+    entriesCount = ENTRIESCOUNT;
+    entryText = new sf::Text[entriesCount];
+    for (int i = 0; i < entriesCount; i++) {
+      entryText[i].setString(entries[i]);
+      entryText[i].setFont(font);
+      entryText[i].setCharacterSize(50);
+      entryText[i].setFillColor(sf::Color::White);
+      entryText[i].setOrigin(entryText[i].getGlobalBounds().width / 2,
+                             entryText[i].getGlobalBounds().height / 2);
+      entryText[i].setPosition(
+        sf::Vector2f(desktopMode.width / 2,
+                     desktopMode.height / (entriesCount + 1) * (i + 1)));
     }
-    menuPos[0].setFillColor(sf::Color::Red);
-    menuPos[0].setString("> " + menuPos[0].getString() + " <");
-    menuPos[0].setOrigin(menuPos[0].getGlobalBounds().width / 2,
-                         menuPos[0].getGlobalBounds().height / 2);
+    // Make active entry look like active one
+    entryText[0].setFillColor(sf::Color::Red);
+    entryText[0].setString("> " + entryText[0].getString() + " <");
+    entryText[0].setOrigin(entryText[0].getGlobalBounds().width / 2,
+                           entryText[0].getGlobalBounds().height / 2);
   }
   void draw(sf::RenderWindow& window)
   {
-    for (int i = 0; i < items; i++)
-      window.draw(menuPos[i]);
+    for (int i = 0; i < entriesCount; i++)
+      window.draw(entryText[i]);
   }
   void move(int direction)
   {
+    // actually move
     switch (direction) {
       case up:
-        if (selectedItemIndex - 1 >= 0) {
-          menuPos[selectedItemIndex].setFillColor(sf::Color::White);
-          selectedItemIndex--;
-          menuPos[selectedItemIndex].setFillColor(sf::Color::Red);
+        if (activeEntry - 1 >= 0) {
+          entryText[activeEntry].setFillColor(sf::Color::White);
+          activeEntry--;
+          entryText[activeEntry].setFillColor(sf::Color::Red);
+        } else if (activeEntry - 1 < 0) {
+          entryText[activeEntry].setFillColor(sf::Color::White);
+          activeEntry = entriesCount - 1;
+          entryText[activeEntry].setFillColor(sf::Color::Red);
         }
         break;
       case down:
-        if (selectedItemIndex + 1 < items) {
-          menuPos[selectedItemIndex].setFillColor(sf::Color::White);
-          selectedItemIndex++;
-          menuPos[selectedItemIndex].setFillColor(sf::Color::Red);
+        if (activeEntry + 1 < entriesCount) {
+          entryText[activeEntry].setFillColor(sf::Color::White);
+          activeEntry++;
+          entryText[activeEntry].setFillColor(sf::Color::Red);
+        } else if (activeEntry + 1 >= entriesCount) {
+          entryText[activeEntry].setFillColor(sf::Color::White);
+          activeEntry = 0;
+          entryText[activeEntry].setFillColor(sf::Color::Red);
         }
         break;
     }
-    for (int i = 0; i < items; i++) {
-      menuPos[i].setString(sMenu[i]);
-      menuPos[i].setOrigin(menuPos[i].getGlobalBounds().width / 2,
-                           menuPos[i].getGlobalBounds().height / 2);
+    // format and color entries
+    for (int i = 0; i < entriesCount; i++) {
+      entryText[i].setString(entries[i]);
+      entryText[i].setOrigin(entryText[i].getGlobalBounds().width / 2,
+                             entryText[i].getGlobalBounds().height / 2);
     }
-    menuPos[selectedItemIndex].setString(
-      "> " + menuPos[selectedItemIndex].getString() + " <");
-    menuPos[selectedItemIndex].setOrigin(
-      menuPos[selectedItemIndex].getGlobalBounds().width / 2,
-      menuPos[selectedItemIndex].getGlobalBounds().height / 2);
-  };
-  void click()
-  {
-    switch (selectedItemIndex) {
-      case 0:
-        resume();
-        // deltaClock.restart();
-        break;
-      case 3:
-        openInBrowser();
-        break;
-      case 4:
-        window.close();
-        break;
-    }
+    entryText[activeEntry].setString("> " + entryText[activeEntry].getString() +
+                                     " <");
+    entryText[activeEntry].setOrigin(
+      entryText[activeEntry].getGlobalBounds().width / 2,
+      entryText[activeEntry].getGlobalBounds().height / 2);
   }
   void show()
   {
@@ -130,12 +138,49 @@ public:
         move(up);
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
         move(down);
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)) {
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
         click();
-      }
     }
     window.clear();
     draw(window);
     window.display();
+  }
+  // only valid for actual Menu
+  virtual void click()
+  {
+    switch (activeEntry) {
+      case 0:
+        resume();
+        break;
+      case 3:
+        openInBrowser();
+        break;
+      case 4:
+        window.close();
+        break;
+    }
+  }
+};
+
+class GameOver : public Menu
+{
+public:
+  bool active = false;
+  GameOver(int EntriesCount, sf::String entries[])
+    : Menu(EntriesCount, entries){};
+  void click()
+  {
+    switch (activeEntry) {
+      case 0:
+        // Save score
+        break;
+      case 1: {
+        active = false;
+      } break;
+      case 2: {
+        resume();
+
+      } break;
+    }
   }
 };
