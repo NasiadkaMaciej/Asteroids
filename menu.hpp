@@ -41,7 +41,6 @@ openInBrowser()
   std::system(str.c_str());
 }
 
-#define MENU_ITEMS 5
 #define up 1
 #define down 2
 
@@ -49,24 +48,21 @@ class Menu
 {
 public:
   int selectedItemIndex = 0;
-  sf::Text menuPos[MENU_ITEMS];
-  sf::String sMenu[MENU_ITEMS]{ "Play",
-                                "Leaderboard",
-                                "Settings",
-                                "Info",
-                                "Exit" };
+  const static int items = 5;
+  sf::Text menuPos[items];
+  sf::String sMenu[items]{ "Play", "Leaderboard", "Settings", "Info", "Exit" };
 
-  Menu(float width, float height)
+  Menu()
   {
-    for (int i = 0; i < MENU_ITEMS; i++) {
+    for (int i = 0; i < items; i++) {
       menuPos[i].setString(sMenu[i]);
       menuPos[i].setFont(font);
       menuPos[i].setCharacterSize(50);
       menuPos[i].setFillColor(sf::Color::White);
       menuPos[i].setOrigin(menuPos[i].getGlobalBounds().width / 2,
                            menuPos[i].getGlobalBounds().height / 2);
-      menuPos[i].setPosition(
-        sf::Vector2f(width / 2, height / (MENU_ITEMS + 1) * (i + 1)));
+      menuPos[i].setPosition(sf::Vector2f(
+        desktopMode.width / 2, desktopMode.height / (items + 1) * (i + 1)));
     }
     menuPos[0].setFillColor(sf::Color::Red);
     menuPos[0].setString("> " + menuPos[0].getString() + " <");
@@ -75,7 +71,7 @@ public:
   }
   void draw(sf::RenderWindow& window)
   {
-    for (int i = 0; i < MENU_ITEMS; i++)
+    for (int i = 0; i < items; i++)
       window.draw(menuPos[i]);
   }
   void move(int direction)
@@ -89,14 +85,14 @@ public:
         }
         break;
       case down:
-        if (selectedItemIndex + 1 < MENU_ITEMS) {
+        if (selectedItemIndex + 1 < items) {
           menuPos[selectedItemIndex].setFillColor(sf::Color::White);
           selectedItemIndex++;
           menuPos[selectedItemIndex].setFillColor(sf::Color::Red);
         }
         break;
     }
-    for (int i = 0; i < MENU_ITEMS; i++) {
+    for (int i = 0; i < items; i++) {
       menuPos[i].setString(sMenu[i]);
       menuPos[i].setOrigin(menuPos[i].getGlobalBounds().width / 2,
                            menuPos[i].getGlobalBounds().height / 2);
@@ -121,5 +117,25 @@ public:
         window.close();
         break;
     }
+  }
+  void show()
+  {
+    sf::Event event;
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed)
+        window.close();
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+        resume();
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        move(up);
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        move(down);
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)) {
+        click();
+      }
+    }
+    window.clear();
+    draw(window);
+    window.display();
   }
 };

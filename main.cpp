@@ -18,7 +18,7 @@ main()
            0,
            &tPlayer);
 
-  Menu menu(desktopMode.width, desktopMode.height);
+  Menu menu;
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
   srand(time(NULL));
@@ -32,28 +32,14 @@ main()
   };
 
   while (window.isOpen()) {
-    if (isMenu) {
-      sf::Event event;
-      while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
-          window.close();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          resume();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-          menu.move(up);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-          menu.move(down);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)) {
-          menu.click();
-        }
-      }
+    if (!isPlaying) {
+      if (p.lifes > 0)
+        menu.show();
 
-      if (p.lifes <= 0)
+      else if (p.lifes <= 0)
         reset();
+      // gameOver.show();
 
-      window.clear();
-      menu.draw(window);
-      window.display();
     } else {
       p.aliveTime += deltaTime;
       deltaTime = deltaClock.restart();

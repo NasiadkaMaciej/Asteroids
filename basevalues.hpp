@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
-
 // game start values;
 int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starging, 1 is added
@@ -18,7 +17,7 @@ sf::RenderWindow window(sf::VideoMode(desktopMode.width,
 
 float degToRad = M_PI / 180;
 
-bool isMenu = true;
+bool isPlaying = false;
 sf::Font font;
 sf::Text text;
 
@@ -39,14 +38,14 @@ loadBase()
 void
 pause()
 {
-  isMenu = true;
+  isPlaying = false;
   deltaClock.restart();
   deltaPausedTime = deltaTime;
 }
 void
 resume()
 {
-  isMenu = false;
+  isPlaying = true;
   deltaClock.restart();
   deltaTime = deltaPausedTime;
 }

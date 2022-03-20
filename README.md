@@ -17,10 +17,11 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 ## To-Do
 * [ ] Code cleanup
 * [ ] Make more functional
-* [ ] Repair time problem after starting new game
+* [x] Repair time problem after starting new game
 * [x] Add asteroids and bullets
 * [x] Check if game works on other systems and resolutions
 * [ ] Menu and settings
+* [ ] Game over screen
 * [ ] Clickable menu options
 * [ ] Progress bar
 * [ ] Leaderboard

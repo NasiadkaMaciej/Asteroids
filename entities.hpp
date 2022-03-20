@@ -130,6 +130,7 @@ public:
     thrust = false, isShooting = false, rotateRight = false, rotateLeft = false;
     points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
     aliveTime = aliveTime.Zero;
+    isPlaying = false;
   }
 };
 class Asteroid : public Entity
