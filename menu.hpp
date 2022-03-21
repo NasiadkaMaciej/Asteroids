@@ -1,5 +1,6 @@
 #include "menu.h"
 #include <SFML/Graphics.hpp>
+#include <list>
 #include <string>
 
 #ifdef _WIN32
@@ -13,6 +14,7 @@ static int platform = 3;
 #else
 static int platform = 0;
 #endif
+
 
 void
 openInBrowser()
@@ -44,13 +46,15 @@ openInBrowser()
 #define up 1
 #define down 2
 
-const int menuEntriesCount = 5, gameOverEntriesCount = 3;
+const int menuEntriesCount = 5, gameOverEntriesCount = 3,
+          saveScoreEntriesCount = 11;
 sf::String menuEntries[menuEntriesCount]{ "Play",
                                           "Leaderboard",
                                           "Settings",
                                           "Info",
                                           "Exit" },
-  gameOverEntries[gameOverEntriesCount]{ "Your score", "New game", "Menu" };
+  gameOverEntries[gameOverEntriesCount]{ "Your score", "New game", "Menu" },
+  saveScoreEntries[saveScoreEntriesCount];
 
 class Menu
 {
@@ -126,14 +130,14 @@ public:
       entryText[activeEntry].getGlobalBounds().width / 2,
       entryText[activeEntry].getGlobalBounds().height / 2);
   }
-  void show()
+  virtual void show()
   {
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-        resume();
+        setState(playState);
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
         move(up);
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
@@ -149,9 +153,9 @@ public:
   virtual void click()
   {
     switch (activeEntry) {
-      case 0:
-        resume();
-        break;
+      case 0: {
+        setState(playState);
+      } break;
       case 3:
         openInBrowser();
         break;
@@ -165,22 +169,39 @@ public:
 class GameOver : public Menu
 {
 public:
-  bool active = false;
   GameOver(int EntriesCount, sf::String entries[])
     : Menu(EntriesCount, entries){};
   void click()
   {
     switch (activeEntry) {
       case 0:
-        // Save score
+        isSaveScreen = true;
         break;
       case 1: {
-        active = false;
+        setState(playState);
       } break;
       case 2: {
-        resume();
-
+        setState(menuState);
       } break;
     }
+  }
+  void setScore(int POINTS)
+  {
+    entries[0] = "Your score " + std::to_string(POINTS);
+    // is needed?
+    move(0);
+  }
+};
+
+class SaveScore : public GameOver
+{
+public:
+  SaveScore(int EntriesCount, sf::String entries[])
+    : GameOver(EntriesCount, entries){};
+  void click()
+  {
+    if (activeEntry == 0)
+      int x; // save score
+             // else click(active) to delete entry
   }
 };

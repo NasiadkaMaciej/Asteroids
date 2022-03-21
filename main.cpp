@@ -18,6 +18,7 @@ main()
            &tPlayer);
   Menu menu(menuEntriesCount, menuEntries);
   GameOver gameOver(gameOverEntriesCount, gameOverEntries);
+  SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
   srand(time(NULL));
@@ -32,22 +33,15 @@ main()
 
   while (window.isOpen()) {
     if (!isPlaying) {
-      if (p.lifes > 0)
+      if (isMenu) {
         menu.show();
-      else if (p.lifes <= 0) {
-        // I don't like that solution, check if you can find any better
-        gameOver.active = true;
-        gameOver.entries[0] = "Your score " + std::to_string(p.points);
-        gameOver.move(0);
+        if (p.lifes <= 0)
+          reset();
+      } else if (isGameOver) {
+        gameOver.setScore(p.points);
         gameOver.show();
-
-        if (gameOver.active == false) {
+        if (isPlaying)
           reset();
-          resume();
-        } else if (isPlaying) {
-          resume();
-          reset();
-        }
       }
     } else {
       p.aliveTime += deltaTime;
@@ -58,7 +52,7 @@ main()
         if (event.type == sf::Event::Closed)
           window.close();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          pause();
+          setState(menuState);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
           reset();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
