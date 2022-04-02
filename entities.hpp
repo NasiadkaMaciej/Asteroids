@@ -76,7 +76,7 @@ public:
       if (thrust) {
         x_speed += cos(angle * degToRad) * 0.2;
         y_speed += sin(angle * degToRad) * 0.2;
-		isIdle = false;
+        isIdle = false;
       } else {
         x_speed *= 0.99;
         y_speed *= 0.99;
@@ -174,6 +174,19 @@ public:
   }
 };
 
+class PowerUp : public Entity
+{
+public:
+  bool life = true;
+  PowerUp(sf::Texture* TEXTURE)
+    : Entity(rand() % desktopMode.width,
+             rand() % desktopMode.height,
+             0,
+             0,
+             90,
+             TEXTURE){};
+};
+
 // Generates asteroid at random edge of the screen
 Asteroid*
 generateBigAsteroids(sf::Texture* texture)
@@ -181,22 +194,22 @@ generateBigAsteroids(sf::Texture* texture)
   int side = rand() % 4;
   float x, y;
   switch (side) {
-    case 0: {
+    case 0:
       x = 0;
       y = rand() % desktopMode.height;
-    } break;
-    case 1: {
+      break;
+    case 1:
       x = desktopMode.width;
       y = rand() % desktopMode.height;
-    } break;
-    case 2: {
+      break;
+    case 2:
       x = rand() % desktopMode.width;
       y = 0;
-    } break;
-    case 3: {
+      break;
+    case 3:
       x = rand() % desktopMode.width;
       y = desktopMode.height;
-    } break;
+      break;
   }
   Asteroid* a =
     new Asteroid(x,

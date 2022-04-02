@@ -11,7 +11,7 @@ int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starging, 1 is added
 sf::Clock deltaClock;
 sf::Time deltaTime, deltaPausedTime;
-float deltaShoot;
+float deltaShoot, deltaPowerUp;
 
 // create fullscreen window
 sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
@@ -52,42 +52,26 @@ setState(int state)
       isMenu = false;
       isGameOver = false;
       isSaveScreen = false;
+      deltaClock.restart();
+      deltaTime = deltaPausedTime;
       break;
     case menuState:
       isPlaying = false;
       isMenu = true;
       isGameOver = false;
       isSaveScreen = false;
-	  break;
+      deltaClock.restart();
+      deltaPausedTime = deltaTime;
+      break;
     case gameoverstate:
       isPlaying = false;
       isMenu = false;
       isGameOver = true;
       isSaveScreen = false;
-	  break;
+      deltaClock.restart();
+      deltaPausedTime = deltaTime;
+      break;
     default:
       break;
   }
-}
-
-
-void
-pause()
-{
-  isPlaying = false;
-  isMenu = true;
-  isGameOver = false;
-  isSaveScreen = false;
-  deltaClock.restart();
-  deltaPausedTime = deltaTime;
-}
-void
-resume()
-{
-  isPlaying = true;
-  isMenu = false;
-  isGameOver = false;
-  isSaveScreen = false;
-  deltaClock.restart();
-  deltaTime = deltaPausedTime;
 }

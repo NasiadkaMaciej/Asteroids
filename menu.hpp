@@ -153,9 +153,9 @@ public:
   virtual void click()
   {
     switch (activeEntry) {
-      case 0: {
+      case 0:
         setState(playState);
-      } break;
+      break;
       case 3:
         openInBrowser();
         break;
@@ -177,18 +177,18 @@ public:
       case 0:
         isSaveScreen = true;
         break;
-      case 1: {
+      case 1:
         setState(playState);
-      } break;
-      case 2: {
+      break;
+      case 2:
         setState(menuState);
-      } break;
+      break;
     }
   }
   void setScore(int POINTS)
   {
     entries[0] = "Your score " + std::to_string(POINTS);
-    // is needed?
+    // is updating text on menu screen
     move(0);
   }
 };

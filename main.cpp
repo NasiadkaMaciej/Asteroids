@@ -21,6 +21,7 @@ main()
   SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
+  std::list<PowerUp*> powerUps;
   srand(time(NULL));
 
   auto reset = [&]() {
@@ -47,6 +48,7 @@ main()
       p.aliveTime += deltaTime;
       deltaTime = deltaClock.restart();
       deltaShoot += deltaTime.asMilliseconds();
+      deltaPowerUp += deltaTime.asSeconds();
       sf::Event event;
       while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed)
@@ -102,13 +104,30 @@ main()
               asteroids.push_back(generateAsteroids(*a));
         }
       }
+      if (deltaPowerUp >= 20) {
+        powerUps.push_back(new PowerUp(&tPowerUp));
+        deltaPowerUp = 0;
+      } else if (deltaPowerUp >= 10)
+        tBullet.loadFromFile(dir + "bullet.png");
+
+      // Check power ups and player collisions
+      for (auto a : powerUps) {
+        if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle) {
+          a->life = false;
+          deltaPowerUp = 0;
+          tBullet.swap(tPowerBullet);
+        }
+        else if ((deltaPowerUp >= 10) && (a->life = true)) {
+          a->life = false;
+          deltaPowerUp = 0;
+        }
+      }
 
       for (auto i = asteroids.begin(); i != asteroids.end();) {
         Asteroid* e = *i;
         e->update();
         if (e->life == false) {
           i = asteroids.erase(i);
-          delete e;
         } else
           i++;
       }
@@ -117,6 +136,15 @@ main()
         e->update();
         if (e->life == false) {
           i = bullets.erase(i);
+          delete e;
+        } else
+          i++;
+      }
+      for (auto i = powerUps.begin(); i != powerUps.end();) {
+        PowerUp* e = *i;
+        e->update();
+        if (e->life == false) {
+          i = powerUps.erase(i);
           delete e;
         } else
           i++;
@@ -147,6 +175,8 @@ main()
       for (auto& i : asteroids)
         i->draw(window);
       for (auto& i : bullets)
+        i->draw(window);
+      for (auto& i : powerUps)
         i->draw(window);
       p.draw(window);
       window.display();
