@@ -2,12 +2,12 @@
 
 ![Game screenshot](https://maciej.ml/projects/Asteroids/Asteroids.png)
 
-Alpha phaze Asteroids game clone. Written in C++ with SFML.
-The level ends after destroying all visible asteroids.
-The large asteroid breaks down into 2 medium asteroids, which in turn break down into 2 small ones.
-Asteroids spawn at the edge of the screen.
-Each level has 2 more asteroids than the previous one.
-Use arrows to move, spacebar to shoot, N for new game, ESC for entering and exiting menu and Enter for choosing menu entry
+Asteroids game clone. Written in C++ with SFML.
+Destroy as many asteroids as you can with your spaceship's missiles, but be careful, they come from all sides, at different speeds and, when destroyed, they break into more, even faster and more dangerous fragments.
+The level ends after destroying all visible asteroids. After that, you get into the next level, which has 2 more asteroids than the previous one.
+You start the game with 3 lives, after you lose one, you enter idle state, in which asteroids cannot hurt you, but you can't shoot them. To continue the game, simply move your ship.
+
+Use arrows to move, spacebar to shoot, N for new game, ESC for entering and exiting menu and Enter for choosing menu entry.
 
 ## Building
 You need SFML installed

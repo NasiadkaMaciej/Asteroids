@@ -52,7 +52,7 @@ public:
 class Player : public Entity
 {
 public:
-  bool thrust = false, isShooting = false, rotateRight = false,
+  bool thrust = false, isShooting = false, isIdle = true, rotateRight = false,
        rotateLeft = false;
   int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
   sf::Time aliveTime = sf::seconds(0);
@@ -76,6 +76,7 @@ public:
       if (thrust) {
         x_speed += cos(angle * degToRad) * 0.2;
         y_speed += sin(angle * degToRad) * 0.2;
+		isIdle = false;
       } else {
         x_speed *= 0.99;
         y_speed *= 0.99;
@@ -106,10 +107,11 @@ public:
       lifes--;
       aliveTime = sf::seconds(0);
       if (lifes <= 0) {
-		  setState(gameoverstate);
+        setState(gameoverstate);
       } else {
         life = true;
       }
+      isIdle = true;
     }
   }
   void givePoints(int x)

@@ -72,7 +72,7 @@ main()
         else
           p.isShooting = false;
       }
-      if (p.isShooting)
+      if (p.isShooting && !p.isIdle)
         if (deltaShoot >= p.bulletFreq) {
           bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
           deltaShoot = 0;
@@ -93,7 +93,8 @@ main()
               if (generateAsteroids(*a) != NULL)
                 asteroids.push_back(generateAsteroids(*a));
           }
-        if (Collision::PixelPerfectTest(a->sprite, p.sprite)) {
+        // Check asteroids and player collisions
+        if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle) {
           a->life = false;
           p.life = false;
           for (int i = 0; i < 2; i++)
