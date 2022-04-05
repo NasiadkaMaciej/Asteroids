@@ -30,6 +30,7 @@ main()
     p.reset();
     bigAsteroids = 4;
     roundNum = 0;
+    deltaPowerUp = 0;
   };
 
   while (window.isOpen()) {
@@ -104,9 +105,22 @@ main()
               asteroids.push_back(generateAsteroids(*a));
         }
       }
-      if (deltaPowerUp >= 20) {
-        powerUps.push_back(new PowerUp(&tPowerUp));
+      // Spawn new powerUps
+      if (deltaPowerUp >= 10) {
+        int rand = random() % 2;
+        switch (rand) {
+            // Generate bullet resize powerup
+          case 0:
+            powerUps.push_back(new PowerUp(&tBulletUp));
+            break;
+            // Generate life bonus powerup
+          case 1:
+            powerUps.push_back(new PowerUp(&tLifeUp));
+            break;
+        }
         deltaPowerUp = 0;
+        // After 10 seconds of last powerUp collection, restore basic gameplay
+        // (for now, only bullet)
       } else if (deltaPowerUp >= 10)
         tBullet.loadFromFile(dir + "bullet.png");
 
@@ -115,9 +129,12 @@ main()
         if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle) {
           a->life = false;
           deltaPowerUp = 0;
-          tBullet.swap(tPowerBullet);
-        }
-        else if ((deltaPowerUp >= 10) && (a->life = true)) {
+          if (a->sprite.getTexture() == &tBulletUp)
+            tBullet.loadFromFile(dir + "powerBullet.png");
+          else if (a->sprite.getTexture() == &tLifeUp)
+            p.lifes++;
+          // tPlayer.loadFromFile(dir + "playerShielded.png");
+        } else if ((deltaPowerUp >= 10) && (a->life = true)) {
           a->life = false;
           deltaPowerUp = 0;
         }

@@ -1,4 +1,6 @@
-sf::Texture tPlayer, tAsteroid[3], tBullet, tPowerUp, tPowerBullet;
+#include <SFML/Graphics.hpp>
+sf::Texture tPlayer, tAsteroid[3], tBullet;
+sf::Texture tBulletUp, tLifeUp;
 
 #define big 0
 #define medium 1
@@ -14,13 +16,16 @@ loadTextures()
   tAsteroid[medium].loadFromFile(dir + "asteroidMedium.png");
   tAsteroid[small].loadFromFile(dir + "asteroidSmall.png");
   tBullet.loadFromFile(dir + "bullet.png");
-  tPowerUp.loadFromFile(dir + "powerUp.png");
-  tPowerBullet.loadFromFile(dir + "powerBullet.png");
+
+  tBulletUp.loadFromFile(dir + "powerUp.png");
+  tLifeUp.loadFromFile(dir + "lifeUp.png");
+
   tPlayer.setSmooth(true);
   tAsteroid[big].setSmooth(true);
   tAsteroid[medium].setSmooth(true);
   tAsteroid[small].setSmooth(true);
   tBullet.setSmooth(true);
-  tPowerUp.setSmooth(true);
-  tPowerBullet.setSmooth(true);
+
+  tBulletUp.setSmooth(true);
+  tLifeUp.setSmooth(true);
 }
