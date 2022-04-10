@@ -183,7 +183,7 @@ public:
              rand() % desktopMode.height,
              0,
              0,
-             90,
+             -90,
              TEXTURE){};
 };
 

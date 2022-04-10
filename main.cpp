@@ -108,6 +108,7 @@ main()
       // Spawn new powerUps
       if (deltaPowerUp >= 10) {
         int rand = random() % 2;
+        powerUps.clear();
         switch (rand) {
             // Generate bullet resize powerup
           case 0:
@@ -121,9 +122,8 @@ main()
         deltaPowerUp = 0;
         // After 10 seconds of last powerUp collection, restore basic gameplay
         // (for now, only bullet)
-      } else if (deltaPowerUp >= 10)
         tBullet.loadFromFile(dir + "bullet.png");
-
+      }
       // Check power ups and player collisions
       for (auto a : powerUps) {
         if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle) {
