@@ -1,4 +1,3 @@
-#include "menu.h"
 #include <SFML/Graphics.hpp>
 #include <list>
 #include <string>
