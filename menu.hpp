@@ -137,7 +137,13 @@ public:
         click();
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         mouseClick();
+      if (event.type == sf::Event::MouseWheelScrolled)
+        if (event.mouseWheelScroll.delta > 0)
+          move(up);
+        else if (event.mouseWheelScroll.delta < 0)
+          move(down);
     }
+
     window.clear();
     draw(window);
     window.display();
