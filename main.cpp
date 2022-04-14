@@ -34,7 +34,9 @@ main()
   };
 
   while (window.isOpen()) {
+    deltaTime = deltaClock.restart();
     if (!isPlaying) {
+      deltaMenu += deltaTime.asMilliseconds();
       if (isMenu) {
         menu.show();
         if (p.lifes <= 0)
@@ -47,7 +49,6 @@ main()
       }
     } else {
       p.aliveTime += deltaTime;
-      deltaTime = deltaClock.restart();
       deltaShoot += deltaTime.asMilliseconds();
       deltaPowerUp += deltaTime.asSeconds();
       sf::Event event;
@@ -107,7 +108,7 @@ main()
       }
       // Spawn new powerUps
       if (deltaPowerUp >= 10) {
-        int rand = random() % 2;
+        int rand = std::rand() % 2;
         powerUps.clear();
         switch (rand) {
             // Generate bullet resize powerup
@@ -134,7 +135,7 @@ main()
           else if (a->sprite.getTexture() == &tLifeUp)
             p.lifes++;
           // tPlayer.loadFromFile(dir + "playerShielded.png");
-        } else if ((deltaPowerUp >= 10) && (a->life = true)) {
+        } else if ((deltaPowerUp >= 10) && (a->life == true)) {
           a->life = false;
           deltaPowerUp = 0;
         }

@@ -11,7 +11,7 @@ int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starging, 1 is added
 sf::Clock deltaClock;
 sf::Time deltaTime, deltaPausedTime;
-float deltaShoot, deltaPowerUp;
+float deltaShoot, deltaPowerUp, deltaMenu;
 
 // create fullscreen window
 sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
@@ -37,8 +37,6 @@ loadBase()
   text.setFillColor(sf::Color::White);
   text.setPosition(60, 60);
 
-  // Thinking about mouse support in menu
-  window.setMouseCursorVisible(false);
   window.setFramerateLimit(60);
   window.setVerticalSyncEnabled(true);
 }
@@ -48,6 +46,7 @@ setState(int state)
 {
   switch (state) {
     case playState:
+      window.setMouseCursorVisible(false);
       isPlaying = true;
       isMenu = false;
       isGameOver = false;
@@ -56,6 +55,7 @@ setState(int state)
       deltaTime = deltaPausedTime;
       break;
     case menuState:
+      window.setMouseCursorVisible(true);
       isPlaying = false;
       isMenu = true;
       isGameOver = false;
@@ -64,6 +64,7 @@ setState(int state)
       deltaPausedTime = deltaTime;
       break;
     case gameoverstate:
+      window.setMouseCursorVisible(true);
       isPlaying = false;
       isMenu = false;
       isGameOver = true;

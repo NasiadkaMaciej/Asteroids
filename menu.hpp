@@ -14,7 +14,6 @@ static int platform = 3;
 static int platform = 0;
 #endif
 
-
 void
 openInBrowser()
 {
@@ -32,11 +31,7 @@ openInBrowser()
         str = "open";
         break;
       default:
-        str =
-          "Unknown operating system, for info enter: "
-          "https://github.com/NasiadkaMaciej/Asteroids"; // Should never happen
-                                                         // on the 3 defined
-                                                         // platforms
+        str = "Unknown operating system, for info enter: " + p;
     }
   str.append(" " + p);
   std::system(str.c_str());
@@ -95,34 +90,28 @@ public:
     // actually move
     switch (direction) {
       case up:
-        if (activeEntry - 1 >= 0) {
-          entryText[activeEntry].setFillColor(sf::Color::White);
+        if (activeEntry - 1 >= 0)
           activeEntry--;
-          entryText[activeEntry].setFillColor(sf::Color::Red);
-        } else if (activeEntry - 1 < 0) {
-          entryText[activeEntry].setFillColor(sf::Color::White);
+        else if (activeEntry - 1 < 0)
           activeEntry = entriesCount - 1;
-          entryText[activeEntry].setFillColor(sf::Color::Red);
-        }
         break;
       case down:
-        if (activeEntry + 1 < entriesCount) {
-          entryText[activeEntry].setFillColor(sf::Color::White);
+        if (activeEntry + 1 < entriesCount)
           activeEntry++;
-          entryText[activeEntry].setFillColor(sf::Color::Red);
-        } else if (activeEntry + 1 >= entriesCount) {
-          entryText[activeEntry].setFillColor(sf::Color::White);
+        else if (activeEntry + 1 >= entriesCount)
           activeEntry = 0;
-          entryText[activeEntry].setFillColor(sf::Color::Red);
-        }
+        break;
+      default:
         break;
     }
-    // format and color entries
+    // format and color
     for (int i = 0; i < entriesCount; i++) {
+      entryText[i].setFillColor(sf::Color::White);
       entryText[i].setString(entries[i]);
       entryText[i].setOrigin(entryText[i].getGlobalBounds().width / 2,
                              entryText[i].getGlobalBounds().height / 2);
     }
+    entryText[activeEntry].setFillColor(sf::Color::Red);
     entryText[activeEntry].setString("> " + entryText[activeEntry].getString() +
                                      " <");
     entryText[activeEntry].setOrigin(
@@ -137,12 +126,17 @@ public:
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         setState(playState);
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        move(up);
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-        move(down);
+      if (deltaMenu >= 200) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+          move(up);
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+          move(down);
+        deltaMenu = 0;
+      }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
         click();
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+        mouseClick();
     }
     window.clear();
     draw(window);
@@ -154,13 +148,29 @@ public:
     switch (activeEntry) {
       case 0:
         setState(playState);
-      break;
+        break;
       case 3:
         openInBrowser();
         break;
       case 4:
         window.close();
         break;
+    }
+  }
+  virtual void mouseClick()
+  {
+    auto mouse_pos = sf::Mouse::getPosition(window);
+    auto translated_pos = window.mapPixelToCoords(mouse_pos);
+
+    for (int i = 0; i < entriesCount; i++) {
+      if (entryText[i].getGlobalBounds().contains(translated_pos)) {
+        if (activeEntry == i)
+          click();
+        else
+          do {
+            move(up);
+          } while (activeEntry != i);
+      }
     }
   }
 };
@@ -178,10 +188,10 @@ public:
         break;
       case 1:
         setState(playState);
-      break;
+        break;
       case 2:
         setState(menuState);
-      break;
+        break;
     }
   }
   void setScore(int POINTS)

@@ -177,7 +177,6 @@ public:
 class PowerUp : public Entity
 {
 public:
-  bool life = true;
   PowerUp(sf::Texture* TEXTURE)
     : Entity(rand() % desktopMode.width,
              rand() % desktopMode.height,

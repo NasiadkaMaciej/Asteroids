@@ -21,7 +21,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [x] Add asteroids and bullets
 * [x] Check if game works on other systems and resolutions
 * [ ] Menu and settings
-* [ ] Game over screen
-* [ ] Clickable menu options
+* [x] Game over screen
+* [x] Clickable menu options
 * [ ] Progress bar
 * [ ] Leaderboard
