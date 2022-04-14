@@ -4,7 +4,8 @@
 // states
 #define playState 0
 #define menuState 1
-#define gameoverstate 2
+#define gameoverState 2
+#define settingsState 3
 
 // game start values;
 int bigAsteroids = 4; // when generating, 2 more are created
@@ -23,7 +24,8 @@ sf::RenderWindow window(sf::VideoMode(desktopMode.width,
 
 float degToRad = M_PI / 180;
 
-bool isPlaying = false, isMenu = true, isGameOver = false, isSaveScreen = false;
+bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
+     isSaveScreen = false;
 
 sf::Font font;
 sf::Text text;
@@ -50,6 +52,7 @@ setState(int state)
       isPlaying = true;
       isMenu = false;
       isGameOver = false;
+      isSettings = false;
       isSaveScreen = false;
       deltaClock.restart();
       deltaTime = deltaPausedTime;
@@ -59,15 +62,27 @@ setState(int state)
       isPlaying = false;
       isMenu = true;
       isGameOver = false;
+      isSettings = false;
       isSaveScreen = false;
       deltaClock.restart();
       deltaPausedTime = deltaTime;
       break;
-    case gameoverstate:
+    case gameoverState:
       window.setMouseCursorVisible(true);
       isPlaying = false;
       isMenu = false;
       isGameOver = true;
+      isSettings = false;
+      isSaveScreen = false;
+      deltaClock.restart();
+      deltaPausedTime = deltaTime;
+      break;
+    case settingsState:
+      window.setMouseCursorVisible(true);
+      isPlaying = false;
+      isMenu = false;
+      isGameOver = false;
+      isSettings = true;
       isSaveScreen = false;
       deltaClock.restart();
       deltaPausedTime = deltaTime;

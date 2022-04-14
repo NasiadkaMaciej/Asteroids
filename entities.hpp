@@ -107,7 +107,7 @@ public:
       lifes--;
       aliveTime = sf::seconds(0);
       if (lifes <= 0) {
-        setState(gameoverstate);
+        setState(gameoverState);
       } else {
         life = true;
       }

@@ -18,6 +18,7 @@ main()
            &tPlayer);
   Menu menu(menuEntriesCount, menuEntries);
   GameOver gameOver(gameOverEntriesCount, gameOverEntries);
+  Settings settings(settingEntriesCount, settingEntries);
   SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
@@ -31,7 +32,7 @@ main()
     bigAsteroids = 4;
     roundNum = 0;
     deltaPowerUp = 0;
-  };
+	};
 
   while (window.isOpen()) {
     deltaTime = deltaClock.restart();
@@ -46,7 +47,8 @@ main()
         gameOver.show();
         if (isPlaying)
           reset();
-      }
+      } else if (isSettings)
+        settings.show();
     } else {
       p.aliveTime += deltaTime;
       deltaShoot += deltaTime.asMilliseconds();

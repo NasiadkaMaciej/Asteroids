@@ -2,6 +2,8 @@
 #include <list>
 #include <string>
 
+#include <iostream>
+
 #ifdef _WIN32
 static int platform = 1;
 #elif _WIN64
@@ -41,13 +43,16 @@ openInBrowser()
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-          saveScoreEntriesCount = 11;
+          settingEntriesCount = 3, saveScoreEntriesCount = 11;
 sf::String menuEntries[menuEntriesCount]{ "Play",
                                           "Leaderboard",
                                           "Settings",
                                           "Info",
                                           "Exit" },
   gameOverEntries[gameOverEntriesCount]{ "Your score", "New game", "Menu" },
+  settingEntries[settingEntriesCount]{ "Frame rate limit: 60",
+                                       "VSync: On",
+                                       "Menu" },
   saveScoreEntries[saveScoreEntriesCount];
 
 class Menu
@@ -126,15 +131,15 @@ public:
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         setState(playState);
-      if (deltaMenu >= 200) {
+      if (deltaMenu >= 100) {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
           move(up);
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
           move(down);
         deltaMenu = 0;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+          click();
       }
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
-        click();
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         mouseClick();
       if (event.type == sf::Event::MouseWheelScrolled)
@@ -154,6 +159,9 @@ public:
     switch (activeEntry) {
       case 0:
         setState(playState);
+        break;
+      case 2:
+        setState(settingsState);
         break;
       case 3:
         openInBrowser();
@@ -205,6 +213,61 @@ public:
     entries[0] = "Your score " + std::to_string(POINTS);
     // is updating text on menu screen
     move(0);
+  }
+};
+
+class Settings : public Menu
+{
+public:
+  int activeLimit = 60;
+  bool vsync = true;
+  Settings(int EntriesCount, sf::String entries[])
+    : Menu(EntriesCount, entries){};
+  void click()
+  {
+    switch (activeEntry) {
+      case 0:
+        switchRefreshRate();
+        break;
+      case 1:
+        toggleVsync();
+        break;
+      case 2:
+        setState(menuState);
+        break;
+    }
+    move(0);
+  }
+  void switchRefreshRate()
+  {
+    switch (activeLimit) {
+      case 60:
+        activeLimit = 75;
+        break;
+      case 75:
+        activeLimit = 120;
+        break;
+      case 120:
+        activeLimit = 144;
+        break;
+      case 144:
+        activeLimit = 165;
+        break;
+      case 165:
+        activeLimit = 60;
+        break;
+    }
+    window.setFramerateLimit(activeLimit);
+    entries[0] = "Frame rate limit: " + std::to_string(activeLimit);
+  }
+  void toggleVsync()
+  {
+    vsync = !vsync;
+    window.setVerticalSyncEnabled(vsync);
+    if (vsync)
+      entries[1] = "VSync: On";
+    else
+      entries[1] = "VSync: Off";
   }
 };
 
