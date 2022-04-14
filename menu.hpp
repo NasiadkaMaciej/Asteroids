@@ -236,7 +236,6 @@ public:
         setState(menuState);
         break;
     }
-    move(0);
   }
   void switchRefreshRate()
   {
@@ -259,6 +258,7 @@ public:
     }
     window.setFramerateLimit(activeLimit);
     entries[0] = "Frame rate limit: " + std::to_string(activeLimit);
+    move(0);
   }
   void toggleVsync()
   {
@@ -268,6 +268,7 @@ public:
       entries[1] = "VSync: On";
     else
       entries[1] = "VSync: Off";
+    move(0);
   }
 };
 

@@ -9,13 +9,12 @@ random(int range, int modifier)
 {
   int randomValue;
   do
-    randomValue = rand() % range - modifier;
+    randomValue = std::rand() % range - modifier;
   while (randomValue == 0);
   return randomValue;
 }
 
-// general class for all existing entities
-class Entity
+class Entity // general class for all existing entities
 {
 public:
   float x, y, x_speed, y_speed, angle;
@@ -52,10 +51,10 @@ public:
 class Player : public Entity
 {
 public:
-  bool thrust = false, isShooting = false, isIdle = true, rotateRight = false,
-       rotateLeft = false;
+  bool thrust = false, isShooting = false, isIdle = true,
+       isRotatingRight = false, isRotatingLeft = false;
   int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
-  sf::Time aliveTime = sf::seconds(0);
+  sf::Time aliveTime = sf::Time::Zero;
 
   Player(float X,
          float Y,
@@ -67,9 +66,9 @@ public:
   void update()
   {
     if (life) {
-      if (rotateRight)
+      if (isRotatingRight)
         sprite.setRotation(sprite.getRotation() + 2.5);
-      else if (rotateLeft)
+      else if (isRotatingLeft)
         sprite.setRotation(sprite.getRotation() - 2.5);
       angle = sprite.getRotation() - 90;
 
@@ -99,18 +98,18 @@ public:
         y = 0;
       else if (y <= 0)
         y = desktopMode.height;
-    } else {
+    } else { // reset player after death
       sprite.setPosition(desktopMode.width / 2, desktopMode.height / 2);
       x = sprite.getPosition().x, y = sprite.getPosition().y;
       x_speed = 0;
       y_speed = 0;
       lifes--;
-      aliveTime = sf::seconds(0);
-      if (lifes <= 0) {
+      aliveTime = sf::Time::Zero;
+
+      if (lifes <= 0)
         setState(gameoverState);
-      } else {
+      else
         life = true;
-      }
       isIdle = true;
     }
   }
@@ -125,13 +124,13 @@ public:
   void reset()
   {
     x = desktopMode.width / 2, y = desktopMode.height / 2;
-    x_speed = 0;
-    y_speed = 0;
+    x_speed = 0, y_speed = 0;
     angle = 90;
     life = true;
-    thrust = false, isShooting = false, rotateRight = false, rotateLeft = false;
+    thrust = false, isShooting = false, isIdle = true, isRotatingRight = false,
+    isRotatingLeft = false;
     points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
-    aliveTime = aliveTime.Zero;
+    aliveTime = sf::Time::Zero;
   }
 };
 class Asteroid : public Entity
@@ -188,9 +187,9 @@ public:
 
 // Generates asteroid at random edge of the screen
 Asteroid*
-generateBigAsteroids(sf::Texture* texture)
+generateBigAsteroid(sf::Texture* texture)
 {
-  int side = rand() % 4;
+  int side = std::rand() % 4;
   float x, y;
   switch (side) {
     case 0:
@@ -219,7 +218,7 @@ generateBigAsteroids(sf::Texture* texture)
   return a;
 }
 Asteroid*
-generateAsteroids(Asteroid asteroid)
+generateSmallerAsteroid(Asteroid asteroid)
 {
   int asteroidNum = 0;
   if (asteroid.sprite.getTexture() == &tAsteroid[big])

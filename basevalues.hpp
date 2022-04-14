@@ -11,7 +11,7 @@
 int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starging, 1 is added
 sf::Clock deltaClock;
-sf::Time deltaTime, deltaPausedTime;
+sf::Time deltaTime;
 float deltaShoot, deltaPowerUp, deltaMenu;
 
 // create fullscreen window
@@ -54,8 +54,6 @@ setState(int state)
       isGameOver = false;
       isSettings = false;
       isSaveScreen = false;
-      deltaClock.restart();
-      deltaTime = deltaPausedTime;
       break;
     case menuState:
       window.setMouseCursorVisible(true);
@@ -64,8 +62,6 @@ setState(int state)
       isGameOver = false;
       isSettings = false;
       isSaveScreen = false;
-      deltaClock.restart();
-      deltaPausedTime = deltaTime;
       break;
     case gameoverState:
       window.setMouseCursorVisible(true);
@@ -74,8 +70,6 @@ setState(int state)
       isGameOver = true;
       isSettings = false;
       isSaveScreen = false;
-      deltaClock.restart();
-      deltaPausedTime = deltaTime;
       break;
     case settingsState:
       window.setMouseCursorVisible(true);
@@ -84,10 +78,9 @@ setState(int state)
       isGameOver = false;
       isSettings = true;
       isSaveScreen = false;
-      deltaClock.restart();
-      deltaPausedTime = deltaTime;
       break;
     default:
       break;
   }
+  deltaClock.restart();
 }

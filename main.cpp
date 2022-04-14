@@ -25,14 +25,17 @@ main()
   std::list<PowerUp*> powerUps;
   srand(time(NULL));
 
+  // resetting game to base values
   auto reset = [&]() {
     asteroids.clear();
     bullets.clear();
+    powerUps.clear();
     p.reset();
     bigAsteroids = 4;
     roundNum = 0;
+    deltaShoot = 0;
     deltaPowerUp = 0;
-	};
+  };
 
   while (window.isOpen()) {
     deltaTime = deltaClock.restart();
@@ -45,7 +48,7 @@ main()
       } else if (isGameOver) {
         gameOver.setScore(p.points);
         gameOver.show();
-        if (isPlaying)
+        if (isPlaying) // returned to playing from some menu
           reset();
       } else if (isSettings)
         settings.show();
@@ -62,13 +65,13 @@ main()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
           reset();
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-          p.rotateRight = true;
+          p.isRotatingRight = true;
         else
-          p.rotateRight = false;
+          p.isRotatingRight = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-          p.rotateLeft = true;
+          p.isRotatingLeft = true;
         else
-          p.rotateLeft = false;
+          p.isRotatingLeft = false;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
           p.thrust = true;
         else
@@ -83,42 +86,40 @@ main()
           bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
           deltaShoot = 0;
         }
-      // Check bullets and asteroids collisons
       for (auto a : asteroids) {
         for (auto b : bullets)
+          // Check bullets and asteroids collisons
           if (Collision::PixelPerfectTest(a->sprite, b->sprite)) {
             a->life = false;
             b->life = false;
-            if (a->sprite.getTexture() == &tAsteroid[big])
-              p.givePoints(20);
-            else if (a->sprite.getTexture() == &tAsteroid[medium])
-              p.givePoints(50);
-            else if (a->sprite.getTexture() == &tAsteroid[small])
-              p.givePoints(100);
-            for (int i = 0; i < 2; i++)
-              if (generateAsteroids(*a) != NULL)
-                asteroids.push_back(generateAsteroids(*a));
           }
         // Check asteroids and player collisions
         if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle) {
           a->life = false;
           p.life = false;
+        }
+        // Generate smaller asteroids after being hit and give points
+        if (a->life == false) {
+          if (a->sprite.getTexture() == &tAsteroid[big])
+            p.givePoints(20);
+          else if (a->sprite.getTexture() == &tAsteroid[medium])
+            p.givePoints(50);
+          else if (a->sprite.getTexture() == &tAsteroid[small])
+            p.givePoints(100);
           for (int i = 0; i < 2; i++)
-            if (generateAsteroids(*a) != NULL)
-              asteroids.push_back(generateAsteroids(*a));
+            if (generateSmallerAsteroid(*a) != NULL)
+              asteroids.push_back(generateSmallerAsteroid(*a));
         }
       }
-      // Spawn new powerUps
+      // Spawn random power up evey 10 seconds and clear old
       if (deltaPowerUp >= 10) {
         int rand = std::rand() % 2;
         powerUps.clear();
         switch (rand) {
-            // Generate bullet resize powerup
-          case 0:
+          case 0: // Generate bullet resize powerup
             powerUps.push_back(new PowerUp(&tBulletUp));
             break;
-            // Generate life bonus powerup
-          case 1:
+          case 1: // Generate life bonus powerup
             powerUps.push_back(new PowerUp(&tLifeUp));
             break;
         }
@@ -142,12 +143,13 @@ main()
           deltaPowerUp = 0;
         }
       }
-
+      // Update all entities and remove dead ones
       for (auto i = asteroids.begin(); i != asteroids.end();) {
         Asteroid* e = *i;
         e->update();
         if (e->life == false) {
           i = asteroids.erase(i);
+          delete e;
         } else
           i++;
       }
@@ -169,14 +171,14 @@ main()
         } else
           i++;
       }
-
       p.update();
 
+      // Start new level after clearing all asteroids
       if (asteroids.size() == 0) {
         bigAsteroids += 2;
         roundNum++;
         for (int i = 0; i < bigAsteroids; i++)
-          asteroids.push_back(generateBigAsteroids(&tAsteroid[big]));
+          asteroids.push_back(generateBigAsteroid(&tAsteroid[big]));
       }
 
       std::string sPoints = std::to_string(p.points);
