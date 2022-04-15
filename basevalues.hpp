@@ -6,6 +6,8 @@
 #define menuState 1
 #define gameoverState 2
 #define settingsState 3
+#define saveScreenState 4
+#define leaderBoardState 5
 
 // game start values;
 int bigAsteroids = 4; // when generating, 2 more are created
@@ -24,8 +26,9 @@ sf::RenderWindow window(sf::VideoMode(desktopMode.width,
 
 float degToRad = M_PI / 180;
 
+// to array?
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
-     isSaveScreen = false;
+     isSaveScreen = false, isLeaderBoard = false;
 
 sf::Font font;
 sf::Text text;
@@ -44,40 +47,49 @@ loadBase()
 }
 
 void
+setStates(bool state)
+{
+  isPlaying = state;
+  isMenu = state;
+  isGameOver = state;
+  isSettings = state;
+  isSaveScreen = state;
+  isLeaderBoard = state;
+}
+
+void
 setState(int state)
 {
   switch (state) {
     case playState:
       window.setMouseCursorVisible(false);
+      setStates(false);
       isPlaying = true;
-      isMenu = false;
-      isGameOver = false;
-      isSettings = false;
-      isSaveScreen = false;
       break;
     case menuState:
       window.setMouseCursorVisible(true);
-      isPlaying = false;
+      setStates(false);
       isMenu = true;
-      isGameOver = false;
-      isSettings = false;
-      isSaveScreen = false;
       break;
     case gameoverState:
       window.setMouseCursorVisible(true);
-      isPlaying = false;
-      isMenu = false;
+      setStates(false);
       isGameOver = true;
-      isSettings = false;
-      isSaveScreen = false;
       break;
     case settingsState:
       window.setMouseCursorVisible(true);
-      isPlaying = false;
-      isMenu = false;
-      isGameOver = false;
+      setStates(false);
       isSettings = true;
-      isSaveScreen = false;
+      break;
+    case saveScreenState:
+      window.setMouseCursorVisible(true);
+      setStates(false);
+      isSaveScreen = true;
+      break;
+    case leaderBoardState:
+      window.setMouseCursorVisible(true);
+      setStates(false);
+      isLeaderBoard = true;
       break;
     default:
       break;

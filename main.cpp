@@ -9,7 +9,8 @@ main()
 {
   loadBase();
   loadTextures();
-
+  //loadScoreBoard();
+   writeScoreBoard();
   Player p(window.getView().getCenter().x,
            window.getView().getCenter().y,
            0,
@@ -20,6 +21,7 @@ main()
   GameOver gameOver(gameOverEntriesCount, gameOverEntries);
   Settings settings(settingEntriesCount, settingEntries);
   SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
+  LeaderBoard leaderBoard(leaderBoardEntriesCount, leaderBoardEntries);
   std::list<Asteroid*> asteroids;
   std::list<Bullet*> bullets;
   std::list<PowerUp*> powerUps;
@@ -52,6 +54,13 @@ main()
           reset();
       } else if (isSettings)
         settings.show();
+      else if (isSaveScreen) {
+		  saveScore.setScore(p.points);
+		  saveScore.show();
+      } else if (isLeaderBoard) {
+        leaderBoard.setScore();
+        leaderBoard.show();
+      }
     } else {
       p.aliveTime += deltaTime;
       deltaShoot += deltaTime.asMilliseconds();

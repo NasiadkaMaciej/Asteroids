@@ -2,7 +2,7 @@
 #include <list>
 #include <string>
 
-#include <iostream>
+#include <stdio.h>
 
 #ifdef _WIN32
 static int platform = 1;
@@ -16,6 +16,47 @@ static int platform = 3;
 static int platform = 0;
 #endif
 
+struct ScoreBoard
+{
+  unsigned int points;
+  std::string name;
+  std::string toString() { return std::to_string(points) + " - " + name; }
+};
+
+bool
+compare(ScoreBoard a, ScoreBoard b)
+{
+  if (a.points < b.points)
+    return false;
+  else
+    return true;
+}
+ScoreBoard scoreBoard[10];
+
+void
+loadScoreBoard()
+{
+  FILE* fin = fopen("scoreBoard.dat", "r");
+  for (int i = 0; i < 10; i++)
+    fread(&scoreBoard[i], sizeof(scoreBoard), 1, fin);
+  fclose(fin);
+
+  /*    for (int i = 0; i < 10; i++)
+      scoreBoard[i] = { (unsigned int)std::rand() % 50, "Macieson" };  */
+
+  std::sort(scoreBoard, scoreBoard + 10, compare);
+};
+void
+writeScoreBoard()
+{
+  /*   for (int i = 0; i < 10; i++) {
+      scoreBoard[i] = { 0, "" };
+    } */
+  FILE* fout = fopen("scoreBoard.dat", "w");
+  for (int i = 0; i < 10; i++)
+    fwrite(&scoreBoard[i], sizeof(ScoreBoard), 1, fout);
+  fclose(fout);
+};
 void
 openInBrowser()
 {
@@ -43,17 +84,19 @@ openInBrowser()
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-          settingEntriesCount = 3, saveScoreEntriesCount = 11;
-sf::String menuEntries[menuEntriesCount]{ "Play",
-                                          "Leaderboard",
-                                          "Settings",
-                                          "Info",
-                                          "Exit" },
+          settingEntriesCount = 3, saveScoreEntriesCount = 12,
+          leaderBoardEntriesCount = 11;
+std::string menuEntries[menuEntriesCount]{ "Play",
+                                           "Leaderboard",
+                                           "Settings",
+                                           "Info",
+                                           "Exit" },
   gameOverEntries[gameOverEntriesCount]{ "Your score", "New game", "Menu" },
   settingEntries[settingEntriesCount]{ "Frame rate limit: 60",
                                        "VSync: On",
                                        "Menu" },
-  saveScoreEntries[saveScoreEntriesCount];
+  saveScoreEntries[saveScoreEntriesCount],
+  leaderBoardEntries[leaderBoardEntriesCount];
 
 class Menu
 {
@@ -62,8 +105,8 @@ public:
   // eventually
   int entriesCount;
   sf::Text* entryText;
-  sf::String* entries;
-  Menu(int ENTRIESCOUNT, sf::String ENTRIES[])
+  std::string* entries;
+  Menu(int ENTRIESCOUNT, std::string ENTRIES[])
   {
     entries = ENTRIES;
     entriesCount = ENTRIESCOUNT;
@@ -160,6 +203,9 @@ public:
       case 0:
         setState(playState);
         break;
+      case 1:
+        setState(leaderBoardState);
+        break;
       case 2:
         setState(settingsState);
         break;
@@ -192,13 +238,13 @@ public:
 class GameOver : public Menu
 {
 public:
-  GameOver(int EntriesCount, sf::String entries[])
+  GameOver(int EntriesCount, std::string entries[])
     : Menu(EntriesCount, entries){};
   void click()
   {
     switch (activeEntry) {
       case 0:
-        isSaveScreen = true;
+        setState(saveScreenState);
         break;
       case 1:
         setState(playState);
@@ -221,7 +267,7 @@ class Settings : public Menu
 public:
   int activeLimit = 60;
   bool vsync = true;
-  Settings(int EntriesCount, sf::String entries[])
+  Settings(int EntriesCount, std::string entries[])
     : Menu(EntriesCount, entries){};
   void click()
   {
@@ -275,12 +321,109 @@ public:
 class SaveScore : public GameOver
 {
 public:
-  SaveScore(int EntriesCount, sf::String entries[])
+  std::string name;
+  unsigned int points;
+  bool isSaving, wasSaved = false;
+  //  int iNameChar, activeChar = 0;
+  SaveScore(int EntriesCount, std::string entries[])
     : GameOver(EntriesCount, entries){};
   void click()
   {
-    if (activeEntry == 0)
-      int x; // save score
-             // else click(active) to delete entry
+    switch (activeEntry) {
+      case 0:
+        isSaving = true;
+        saveScore();
+        break;
+      case 11:
+        setState(menuState);
+        break;
+      default:
+        // delete active entry
+        break;
+    }
+  }
+  void setScore(int POINTS)
+  {
+    for (int i = 1; i < 11; i++)
+      entries[i] = scoreBoard[i - 1].toString();
+
+    points = POINTS;
+    entries[0] = "Your score " + std::to_string(points);
+    entries[11] = "Menu";
+
+    move(0);
+    wasSaved = false;
+    name = "";
+  }
+  void saveScore()
+  {
+    entries[0] = "Your name: ";
+    move(0);
+    sf::Event event;
+    // Have to improve some things here:
+    // Repair mouse clicks
+    // check unicode ifs - move to switch
+    while (isSaving) {
+      while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed)
+          window.close();
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+          isSaving = false;
+        if (event.type == sf::Event::TextEntered && !wasSaved) {
+          if (event.text.unicode < 128 && event.text.unicode != 8 &&
+              event.text.unicode != 13) {
+            //&& std::isprint(event.text.unicode)) {
+            name += event.text.unicode;
+            entries[0] += event.text.unicode;
+          } else if (event.text.unicode == 8) {
+            if (name.length() > 0)
+              name.pop_back();
+            if (entries[0] != "Your name: " + name)
+              entries[0].pop_back();
+          }
+          move(0);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" &&
+            !wasSaved) {
+          if (scoreBoard[9].points < points) {
+            scoreBoard[9] = { points, name };
+            std::sort(scoreBoard, scoreBoard + 10, compare);
+            isSaving = false;
+            wasSaved = true;
+          }
+          move(0);
+          for (int i = 1; i < 11; i++)
+            entries[i] = scoreBoard[i - 1].toString();
+          entries[0] = "Your score " + std::to_string(points);
+          move(0);
+        }
+      }
+      window.clear();
+      draw(window);
+      window.display();
+    }
+    writeScoreBoard();
+  }
+};
+
+class LeaderBoard : public GameOver
+{
+public:
+  LeaderBoard(int EntriesCount, std::string entries[])
+    : GameOver(EntriesCount, entries){};
+  void click()
+  {
+    switch (activeEntry) {
+      case 10:
+        setState(menuState);
+        break;
+    }
+  }
+  void setScore()
+  {
+    for (int i = 0; i < 10; i++)
+      entries[i] = scoreBoard[i].toString();
+    entries[10] = "Menu";
+    move(0);
   }
 };
