@@ -36,6 +36,7 @@ main()
     bigAsteroids = 4;
     roundNum = 0;
     deltaShoot = 0;
+    tBullet.loadFromFile(dir + "bullet.png");
     deltaPowerUp = 0;
     saveScore.wasSaved = false;
 	saveScore.isSaving = true;
