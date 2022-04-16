@@ -9,8 +9,8 @@ main()
 {
   loadBase();
   loadTextures();
-  //loadScoreBoard();
-   writeScoreBoard();
+  loadScoreBoard();
+  // writeScoreBoard();
   Player p(window.getView().getCenter().x,
            window.getView().getCenter().y,
            0,
@@ -37,6 +37,8 @@ main()
     roundNum = 0;
     deltaShoot = 0;
     deltaPowerUp = 0;
+    saveScore.wasSaved = false;
+	saveScore.isSaving = true;
   };
 
   while (window.isOpen()) {
@@ -55,8 +57,8 @@ main()
       } else if (isSettings)
         settings.show();
       else if (isSaveScreen) {
-		  saveScore.setScore(p.points);
-		  saveScore.show();
+        saveScore.setScore(p.points);
+        saveScore.show();
       } else if (isLeaderBoard) {
         leaderBoard.setScore();
         leaderBoard.show();

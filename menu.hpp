@@ -323,7 +323,7 @@ class SaveScore : public GameOver
 public:
   std::string name;
   unsigned int points;
-  bool isSaving, wasSaved = false;
+  bool isSaving = true, wasSaved = false;
   //  int iNameChar, activeChar = 0;
   SaveScore(int EntriesCount, std::string entries[])
     : GameOver(EntriesCount, entries){};
@@ -331,7 +331,6 @@ public:
   {
     switch (activeEntry) {
       case 0:
-        isSaving = true;
         saveScore();
         break;
       case 11:
@@ -352,55 +351,55 @@ public:
     entries[11] = "Menu";
 
     move(0);
-    wasSaved = false;
     name = "";
   }
   void saveScore()
   {
-    entries[0] = "Your name: ";
-    move(0);
-    sf::Event event;
-    // Have to improve some things here:
-    // Repair mouse clicks
-    // check unicode ifs - move to switch
-    while (isSaving) {
-      while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
-          window.close();
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-          isSaving = false;
-        if (event.type == sf::Event::TextEntered && !wasSaved) {
-          if (event.text.unicode < 128 && event.text.unicode != 8 &&
-              event.text.unicode != 13) {
-            //&& std::isprint(event.text.unicode)) {
-            name += event.text.unicode;
-            entries[0] += event.text.unicode;
-          } else if (event.text.unicode == 8) {
-            if (name.length() > 0)
-              name.pop_back();
-            if (entries[0] != "Your name: " + name)
-              entries[0].pop_back();
-          }
-          move(0);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" &&
-            !wasSaved) {
-          if (scoreBoard[9].points < points) {
-            scoreBoard[9] = { points, name };
-            std::sort(scoreBoard, scoreBoard + 10, compare);
+    if (!wasSaved) {
+      entries[0] = "Your name: ";
+      name = "";
+      move(0);
+      sf::Event event;
+
+      while (isSaving) {
+        while (window.pollEvent(event)) {
+          if (event.type == sf::Event::Closed)
+            window.close();
+          if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
             isSaving = false;
-            wasSaved = true;
+          if (event.type == sf::Event::TextEntered) {
+            if (event.text.unicode < 128 && event.text.unicode != 8 &&
+                event.text.unicode != 13) {
+              //&& std::isprint(event.text.unicode)) {
+              name += event.text.unicode;
+              entries[0] += event.text.unicode;
+            } else if (event.text.unicode == 8) {
+              if (name.length() > 0)
+                name.pop_back();
+              if (entries[0] != "Your name: " + name)
+                entries[0].pop_back();
+            }
+            move(0);
           }
-          move(0);
-          for (int i = 1; i < 11; i++)
-            entries[i] = scoreBoard[i - 1].toString();
-          entries[0] = "Your score " + std::to_string(points);
-          move(0);
+          if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "") {
+            if (scoreBoard[9].points < points) {
+              scoreBoard[9] = { points, name };
+              std::sort(scoreBoard, scoreBoard + 10, compare);
+              isSaving = false;
+              wasSaved = true;
+            }
+            move(0);
+            for (int i = 1; i < 11; i++)
+              entries[i] = scoreBoard[i - 1].toString();
+            entries[0] = "Your score " + std::to_string(points);
+            move(0);
+            isSaving = false;
+          }
         }
+        window.clear();
+        draw(window);
+        window.display();
       }
-      window.clear();
-      draw(window);
-      window.display();
     }
     writeScoreBoard();
   }
