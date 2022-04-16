@@ -381,7 +381,8 @@ public:
             }
             move(0);
           }
-          if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "") {
+          if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" &&
+              deltaMenu >= 0) {
             if (scoreBoard[9].points < points) {
               scoreBoard[9] = { points, name };
               std::sort(scoreBoard, scoreBoard + 10, compare);
@@ -394,6 +395,7 @@ public:
             entries[0] = "Your score " + std::to_string(points);
             move(0);
             isSaving = false;
+            deltaMenu = 0;
           }
         }
         window.clear();
