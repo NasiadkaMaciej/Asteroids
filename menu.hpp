@@ -1,28 +1,18 @@
 #include <SFML/Graphics.hpp>
 #include <list>
+#include <stdio.h>
 #include <string>
 
-#include <stdio.h>
-
-#ifdef _WIN32
-static int platform = 1;
-#elif _WIN64
-static int platform = 1;
-#elif __linux__
-static int platform = 2;
-#elif __APPLE__
-static int platform = 3;
-#else
-static int platform = 0;
-#endif
-
+// Score board entries
 struct ScoreBoard
 {
   unsigned int points;
   std::string name;
   std::string toString() { return std::to_string(points) + " - " + name; }
 };
+ScoreBoard scoreBoard[10];
 
+// Compare elements in ScoreBoard to sort them
 bool
 compare(ScoreBoard a, ScoreBoard b)
 {
@@ -31,35 +21,50 @@ compare(ScoreBoard a, ScoreBoard b)
   else
     return true;
 }
-ScoreBoard scoreBoard[10];
 
+// Load score board from file if exists, else create file with blank entries
 void
 loadScoreBoard()
 {
   FILE* fin = fopen("scoreBoard.dat", "r");
+  if (fin == NULL)
+    for (int i = 0; i < 10; i++) {
+      scoreBoard[i] = { 0, "" };
+    }
+
   for (int i = 0; i < 10; i++)
     fread(&scoreBoard[i], sizeof(scoreBoard), 1, fin);
   fclose(fin);
 
-  /*    for (int i = 0; i < 10; i++)
-      scoreBoard[i] = { (unsigned int)std::rand() % 50, "Macieson" };  */
-
   std::sort(scoreBoard, scoreBoard + 10, compare);
 };
+
+// Write actual score board to file
 void
 writeScoreBoard()
 {
-  /*   for (int i = 0; i < 10; i++) {
-      scoreBoard[i] = { 0, "" };
-    } */
   FILE* fout = fopen("scoreBoard.dat", "w");
   for (int i = 0; i < 10; i++)
     fwrite(&scoreBoard[i], sizeof(ScoreBoard), 1, fout);
   fclose(fout);
 };
+
+// Open link in browser for every operating system
 void
 openInBrowser()
 {
+#ifdef _WIN32
+  static int platform = 1;
+#elif _WIN64
+  static int platform = 1;
+#elif __linux__
+  static int platform = 2;
+#elif __APPLE__
+  static int platform = 3;
+#else
+  static int platform = 0;
+#endif
+
   std::string str;
   std::string p = "https://github.com/NasiadkaMaciej/Asteroids";
   if (platform)
@@ -98,6 +103,7 @@ std::string menuEntries[menuEntriesCount]{ "Play",
   saveScoreEntries[saveScoreEntriesCount],
   leaderBoardEntries[leaderBoardEntriesCount];
 
+// General class for all menus
 class Menu
 {
 public:
@@ -123,10 +129,12 @@ public:
                      desktopMode.height / (entriesCount + 1) * (i + 1)));
     }
     // Make active entry look like active one
-    entryText[0].setFillColor(sf::Color::Red);
-    entryText[0].setString("> " + entryText[0].getString() + " <");
-    entryText[0].setOrigin(entryText[0].getGlobalBounds().width / 2,
-                           entryText[0].getGlobalBounds().height / 2);
+    entryText[activeEntry].setFillColor(sf::Color::Red);
+    entryText[activeEntry].setString("> " + entryText[activeEntry].getString() +
+                                     " <");
+    entryText[activeEntry].setOrigin(
+      entryText[activeEntry].getGlobalBounds().width / 2,
+      entryText[activeEntry].getGlobalBounds().height / 2);
   }
   void draw(sf::RenderWindow& window)
   {
@@ -180,14 +188,15 @@ public:
         window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         setState(playState);
-      if (deltaMenu >= 100) {
+      if (deltaMenu >=
+          100) { // dissalow too quick movement and prevent double clicks
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
           move(up);
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
           move(down);
-        deltaMenu = 0;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
           click();
+        deltaMenu = 0;
       }
       if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         mouseClick();
