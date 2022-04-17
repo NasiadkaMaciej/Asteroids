@@ -39,7 +39,11 @@ main()
     tBullet.loadFromFile(dir + "bullet.png");
     deltaPowerUp = 0;
     saveScore.wasSaved = false;
-	saveScore.isSaving = true;
+    saveScore.isSaving = true;
+	menu.reset();
+	gameOver.reset();
+	settings.reset();
+	leaderBoard.reset();
   };
 
   while (window.isOpen()) {

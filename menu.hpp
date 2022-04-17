@@ -133,6 +133,12 @@ public:
     for (int i = 0; i < entriesCount; i++)
       window.draw(entryText[i]);
   }
+  void reset()
+  {
+    do
+      move(up);
+    while (activeEntry != 0);
+  }
   void move(int direction)
   {
     // actually move
@@ -355,6 +361,7 @@ public:
   }
   void saveScore()
   {
+    move(0);
     if (!wasSaved) {
       entries[0] = "Your name: ";
       name = "";
@@ -381,7 +388,8 @@ public:
             }
             move(0);
           }
-          if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" && !wasSaved) {
+          if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" &&
+              !wasSaved) {
             if (scoreBoard[9].points < points) {
               scoreBoard[9] = { points, name };
               isSaving = false;
@@ -394,7 +402,7 @@ public:
             entries[0] = "Your score " + std::to_string(points);
             move(0);
             isSaving = false;
-			wasSaved = true;
+            wasSaved = true;
           }
         }
         window.clear();
