@@ -40,10 +40,10 @@ main()
     deltaPowerUp = 0;
     saveScore.wasSaved = false;
     saveScore.isSaving = true;
-	menu.reset();
-	gameOver.reset();
-	settings.reset();
-	leaderBoard.reset();
+    menu.reset();
+    gameOver.reset();
+    settings.reset();
+    leaderBoard.reset();
   };
 
   while (window.isOpen()) {
