@@ -11,7 +11,7 @@
 
 // game start values;
 int bigAsteroids = 4; // when generating, 2 more are created
-int roundNum = 0;     // when starging, 1 is added
+int roundNum = 0;	  // when starting, 1 is added
 sf::Clock deltaClock;
 sf::Time deltaTime;
 float deltaShoot, deltaPowerUp, deltaMenu;
@@ -33,8 +33,7 @@ bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
 sf::Font font;
 sf::Text text;
 
-void
-loadBase()
+void loadBase()
 {
   font.loadFromFile("Hyperspace.otf");
   text.setFont(font);
@@ -44,10 +43,11 @@ loadBase()
 
   window.setFramerateLimit(60);
   window.setVerticalSyncEnabled(true);
+
+	srand(time(NULL));
 }
 
-void
-setStates(bool state)
+void setStates(bool state)
 {
   isPlaying = state;
   isMenu = state;
@@ -57,10 +57,10 @@ setStates(bool state)
   isLeaderBoard = state;
 }
 
-void
-setState(int state)
+void setState(int state)
 {
-  switch (state) {
+	switch (state)
+	{
     case playState:
       window.setMouseCursorVisible(false);
       setStates(false);
