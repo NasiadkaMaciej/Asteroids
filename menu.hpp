@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
+#include <iostream>
+#include <curl/curl.h>
+#include <string>
 
-// Score board entries
 struct ScoreBoard
 {
 	unsigned int points;
@@ -109,7 +111,7 @@ void openInBrowser()
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 3, saveScoreEntriesCount = 12,
+		  settingEntriesCount = 4, saveScoreEntriesCount = 12,
 		  leaderBoardEntriesCount = 11;
 std::string menuEntries[menuEntriesCount]{"Play",
 										  "Leaderboard",
@@ -119,6 +121,7 @@ std::string menuEntries[menuEntriesCount]{"Play",
 	gameOverEntries[gameOverEntriesCount]{"Your score", "New game", "Menu"},
 	settingEntries[settingEntriesCount]{"Frame rate limit: 60",
 										"VSync: On",
+										"Fullscreen: On",
 										"Menu"},
 	saveScoreEntries[saveScoreEntriesCount],
 	leaderBoardEntries[leaderBoardEntriesCount];
@@ -325,6 +328,9 @@ public:
 			toggleVsync();
 			break;
 		case 2:
+			toggleFS();
+			break;
+		case 3:
 			setState(menuState);
 			break;
 		}
@@ -363,9 +369,35 @@ public:
 			entries[1] = "VSync: Off";
 		move(0);
 	}
+	void toggleFS()
+	{
+		if (isFS)
+		{
+			window.create(sf::VideoMode(desktopMode.width,
+										desktopMode.height,
+										desktopMode.bitsPerPixel),
+						  "Asteroids - Macieson"); //,
+												   // sf::Style::Fullscreen);
+			entries[2] = "Fullscreen: Off";
+			isFS = false;
+		}
+		else
+		{
+			window.create(sf::VideoMode(desktopMode.width,
+										desktopMode.height,
+										desktopMode.bitsPerPixel),
+						  "Asteroids - Macieson",
+						  sf::Style::Fullscreen);
+			entries[2] = "Fullscreen: On";
+
+			isFS = true;
+			;
+		}
+		move(0);
+	}
 };
 
-class SaveScore : public GameOver
+class SaveScore : public Menu
 {
 public:
 	std::string name;
@@ -373,7 +405,7 @@ public:
 	bool isSaving = true, wasSaved = false;
 	//  int iNameChar, activeChar = 0;
 	SaveScore(int EntriesCount, std::string entries[])
-		: GameOver(EntriesCount, entries){};
+		: Menu(EntriesCount, entries){};
 	void click()
 	{
 		switch (activeEntry)
@@ -453,6 +485,43 @@ public:
 							entries[i] = scoreBoard[i - 1].toString();
 						entries[0] = "Your score " + std::to_string(points);
 						move(0);
+
+						// Save score to online leaderboard, secret is only in built releases.
+						std::string secret = "";
+						if (secret != "")
+						{
+							std::string request = "name=" + name + "&points=" + std::to_string(points) + "&secret=" + secret;
+							const char *cRequest = request.c_str();
+							std::cout << request;
+							CURL *curl;
+							CURLcode res;
+
+#ifdef _WIN32
+							curl_global_init(CURL_GLOBAL_ALL);
+#endif
+							/* get a curl handle */
+							curl = curl_easy_init();
+							if (curl)
+							{
+								/* First set the URL that is about to receive our POST. This URL can
+								   just as well be a https:// URL if that is what should receive the
+								   data. */
+								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/");
+								/* Now specify the POST data */
+								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
+
+								/* Perform the request, res will get the return code */
+								res = curl_easy_perform(curl);
+								/* Check for errors */
+								if (res != CURLE_OK)
+									fprintf(stderr, "curl_easy_perform() failed: %s\n",
+											curl_easy_strerror(res));
+
+								/* always cleanup */
+								curl_easy_cleanup(curl);
+							}
+							curl_global_cleanup();
+						}
 						isSaving = false;
 						wasSaved = true;
 					}
