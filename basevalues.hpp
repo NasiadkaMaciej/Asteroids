@@ -45,6 +45,13 @@ void loadBase()
   window.setFramerateLimit(60);
   window.setVerticalSyncEnabled(true);
 
+  sf::Image image;
+  if (!image.loadFromFile("textures/icon.png"))
+  {
+    // Error handling...
+  }
+  window.setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
+
 	srand(time(NULL));
 }
 

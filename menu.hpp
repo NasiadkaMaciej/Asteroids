@@ -455,7 +455,7 @@ public:
 					if (event.type == sf::Event::TextEntered)
 					{
 						if (event.text.unicode < 128 && event.text.unicode != 8 &&
-							event.text.unicode != 13)
+							event.text.unicode != 13 && name.length() <= 18)
 						{
 							//&& std::isprint(event.text.unicode)) {
 							name += event.text.unicode;
@@ -492,7 +492,6 @@ public:
 						{
 							std::string request = "name=" + name + "&points=" + std::to_string(points) + "&secret=" + secret;
 							const char *cRequest = request.c_str();
-							std::cout << request;
 							CURL *curl;
 							CURLcode res;
 
@@ -506,6 +505,7 @@ public:
 								/* First set the URL that is about to receive our POST. This URL can
 								   just as well be a https:// URL if that is what should receive the
 								   data. */
+								//curl_easy_setopt(curl, CURLOPT_NOBODY, true);
 								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/");
 								/* Now specify the POST data */
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);

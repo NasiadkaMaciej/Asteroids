@@ -29,4 +29,8 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Saving settings
 * [ ] Android Support
 * [ ] Make executables for Windows and Linux
+* [ ] Toggle plain black background and stars background
+* [ ] Repair setting cursor to first position
+* [ ] Add delta
+
 
