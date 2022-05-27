@@ -20,7 +20,7 @@ ELSE()
 ENDIF()
 
 IF(WIN32)
-    find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
+    find_package(SFML COMPONENTS system window graphics audio CONFIG REQUIRED)
 
     include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/SFML/include
@@ -45,4 +45,6 @@ add_executable(${PROJECT_NAME} ${SRC})
 target_link_libraries(${PROJECT_NAME}
     sfml-graphics
     sfml-window
-    sfml-system)
+    sfml-system
+    sfml-audio
+    curl)

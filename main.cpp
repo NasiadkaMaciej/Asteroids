@@ -28,7 +28,9 @@ int main()
 	std::list<Asteroid *> asteroids;
 	std::list<Bullet *> bullets;
 	std::list<PowerUp *> powerUps;
-	ProgressBar progressBar;
+	ProgressBar progressBar, placeholder;
+	placeholder.pg.setFillColor(sf::Color::White);
+	placeholder.update();
 
 	// resetting game to base values
 	auto reset = [&]()
@@ -127,6 +129,7 @@ int main()
 					// Check bullets and asteroids collisons
 					if (Collision::PixelPerfectTest(a->sprite, b->sprite))
 					{
+						destroySound.play();
 						a->life = false;
 						b->life = false;
 						progressBar.retractPoint();
@@ -254,8 +257,6 @@ int main()
 						   "Round: " + sLevel + "\n" + sLifes + " lifes");
 
 			window.clear();
-			window.draw(text);
-			window.draw(progressBar.pg);
 			for (auto &i : asteroids)
 				i->draw(window);
 			for (auto &i : bullets)
@@ -263,6 +264,9 @@ int main()
 			for (auto &i : powerUps)
 				i->draw(window);
 			p.draw(window);
+			window.draw(text);
+			window.draw(placeholder.pg);
+			window.draw(progressBar.pg);
 			window.display();
 		}
 	}

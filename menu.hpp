@@ -425,13 +425,12 @@ public:
 	void setScore(int POINTS)
 	{
 		for (int i = 1; i < 11; i++)
-
 			entries[i] = scoreBoard[i - 1].toString();
 
 		points = POINTS;
 		entries[0] = "Your score " + std::to_string(points);
-		entries[12] = "Menu";
 		entries[11] = "Global leaderboard";
+		entries[12] = "Menu";
 		move(0);
 		name = "";
 	}
@@ -575,7 +574,7 @@ public:
 	{
 		fullSize = desktopMode.width / 2;
 		pg.setFillColor(sf::Color::Black);
-		pg.setOutlineThickness(2);
+		pg.setOutlineThickness(1);
 		pg.setOutlineColor(sf::Color::White);
 	}
 
@@ -586,7 +585,7 @@ public:
 	}
 	void update()
 	{
-		pg.setSize(sf::Vector2f(fullSize - removedObjects, 20));
+		pg.setSize(sf::Vector2f(fullSize - removedObjects, 15));
 		pg.setOrigin(pg.getGlobalBounds().width / 2, pg.getGlobalBounds().height / 2);
 		pg.setPosition(window.getView().getCenter().x, window.getView().getCenter().y * 1.95);
 	}

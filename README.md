@@ -39,5 +39,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Add info about update
 * [x] Add sound
 * [x] Repair fullscreen and screen frequency settings
-* [x] Add sound
-
+* [ ] Add sound mute toggle
+* [ ] Add timestamp to scores
+* [ ] Fair play adjustment for different resolutions
+* [ ] Add multiplayer
