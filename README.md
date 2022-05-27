@@ -32,5 +32,10 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Toggle plain black background and stars background
 * [ ] Repair setting cursor to first position
 * [ ] Add delta
-
+* [ ] Change method of inputting name
+* [ ] Add link to online scoreboard
+* [ ] Integrate local and online scoreboard
+* [ ] Add user agreement to send data
+* [ ] Add info about update
+* [ ] Add sound
 
