@@ -2,6 +2,7 @@
 #include "basevalues.hpp"
 #include "entities.hpp"
 #include "menu.hpp"
+#include "sounds.hpp"
 #include <list>
 
 int main()
@@ -10,6 +11,7 @@ int main()
 	loadTextures();
 	loadScoreBoard();
 	// writeScoreBoard();
+	loadSounds();
 
 	// create objects and lists
 	Player p(window.getView().getCenter().x,
@@ -26,6 +28,7 @@ int main()
 	std::list<Asteroid *> asteroids;
 	std::list<Bullet *> bullets;
 	std::list<PowerUp *> powerUps;
+	ProgressBar progressBar;
 
 	// resetting game to base values
 	auto reset = [&]()
@@ -37,7 +40,7 @@ int main()
 		bigAsteroids = 4;
 		roundNum = 0;
 		deltaShoot = 0;
-		tBullet.loadFromFile(dir + "bullet.png");
+		setBullet(BULLET);
 		deltaPowerUp = 0;
 		saveScore.wasSaved = false;
 		saveScore.isSaving = true;
@@ -114,6 +117,7 @@ int main()
 			if (p.isShooting && !p.isIdle)
 				if (deltaShoot >= p.bulletFreq)
 				{
+					laserSound.play();
 					bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
 					deltaShoot = 0;
 				}
@@ -125,21 +129,24 @@ int main()
 					{
 						a->life = false;
 						b->life = false;
+						progressBar.retractPoint();
 					}
 				// Check asteroids and player collisions
 				if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle)
 				{
+					deathSound.play();
 					a->life = false;
 					p.life = false;
+					progressBar.retractPoint();
 				}
 				// Generate smaller asteroids after being hit and give points
 				if (a->life == false)
 				{
-					if (a->sprite.getTexture() == &tAsteroid[big])
+					if (a->sprite.getTexture() == &tAsteroid[BIG])
 						p.givePoints(20);
-					else if (a->sprite.getTexture() == &tAsteroid[medium])
+					else if (a->sprite.getTexture() == &tAsteroid[MEDIUM])
 						p.givePoints(50);
-					else if (a->sprite.getTexture() == &tAsteroid[small])
+					else if (a->sprite.getTexture() == &tAsteroid[SMALL])
 						p.givePoints(100);
 					for (int i = 0; i < 2; i++)
 						if (generateSmallerAsteroid(*a) != NULL)
@@ -163,7 +170,7 @@ int main()
 				deltaPowerUp = 0;
 				// After 10 seconds of last powerUp collection, restore basic gameplay
 				// (for now, only bullet)
-				tBullet.loadFromFile(dir + "bullet.png");
+				setBullet(BULLET);
 			}
 			// Check power ups and player collisions
 			for (auto a : powerUps)
@@ -173,7 +180,7 @@ int main()
 					a->life = false;
 					deltaPowerUp = 0;
 					if (a->sprite.getTexture() == &tBulletUp)
-						tBullet.loadFromFile(dir + "powerBullet.png");
+						setBullet(POWER_BULLET);
 					else if (a->sprite.getTexture() == &tLifeUp)
 						p.lifes++;
 					// tPlayer.loadFromFile(dir + "playerShielded.png");
@@ -229,8 +236,11 @@ int main()
 				bigAsteroids += 2;
 				roundNum++;
 				for (int i = 0; i < bigAsteroids; i++)
-					asteroids.push_back(generateBigAsteroid(&tAsteroid[big]));
+					asteroids.push_back(generateBigAsteroid(&tAsteroid[BIG]));
+				progressBar.reset();
 			}
+
+			progressBar.update();
 
 			std::string sPoints = std::to_string(p.points);
 			std::string sTime = std::to_string(p.aliveTime.asMilliseconds() / 10);
@@ -245,6 +255,7 @@ int main()
 
 			window.clear();
 			window.draw(text);
+			window.draw(progressBar.pg);
 			for (auto &i : asteroids)
 				i->draw(window);
 			for (auto &i : bullets)

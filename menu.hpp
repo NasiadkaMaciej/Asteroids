@@ -72,7 +72,7 @@ void writeScoreBoard()
 };
 
 // Open link in browser for every operating system
-void openInBrowser()
+void openInBrowser(std::string p)
 {
 #ifdef _WIN32
 	static int platform = 1;
@@ -87,7 +87,6 @@ void openInBrowser()
 #endif
 
 	std::string str;
-	std::string p = "https://github.com/NasiadkaMaciej/Asteroids";
 	if (platform)
 		switch (platform)
 		{
@@ -111,8 +110,8 @@ void openInBrowser()
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 4, saveScoreEntriesCount = 12,
-		  leaderBoardEntriesCount = 11;
+		  settingEntriesCount = 4, saveScoreEntriesCount = 13,
+		  leaderBoardEntriesCount = 12;
 std::string menuEntries[menuEntriesCount]{"Play",
 										  "Leaderboard",
 										  "Settings",
@@ -215,8 +214,7 @@ public:
 				window.close();
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				setState(playState);
-			if (deltaMenu >=
-				100)
+			if (deltaMenu >= 100)
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 					move(up);
@@ -254,7 +252,7 @@ public:
 			setState(settingsState);
 			break;
 		case 3:
-			openInBrowser();
+			openInBrowser("https://github.com/NasiadkaMaciej/Asteroids");
 			break;
 		case 4:
 			window.close();
@@ -262,7 +260,7 @@ public:
 		}
 	}
 	virtual void mouseClick()
-	{
+	{ // Select entry or click selected
 		auto mouse_pos = sf::Mouse::getPosition(window);
 		auto translated_pos = window.mapPixelToCoords(mouse_pos);
 
@@ -414,6 +412,9 @@ public:
 			saveScore();
 			break;
 		case 11:
+			openInBrowser("https://maciej.ml/Asteroids");
+			break;
+		case 12:
 			setState(menuState);
 			break;
 		default:
@@ -429,8 +430,8 @@ public:
 
 		points = POINTS;
 		entries[0] = "Your score " + std::to_string(points);
-		entries[11] = "Menu";
-
+		entries[12] = "Menu";
+		entries[11] = "Global leaderboard";
 		move(0);
 		name = "";
 	}
@@ -505,7 +506,7 @@ public:
 								/* First set the URL that is about to receive our POST. This URL can
 								   just as well be a https:// URL if that is what should receive the
 								   data. */
-								//curl_easy_setopt(curl, CURLOPT_NOBODY, true);
+								// curl_easy_setopt(curl, CURLOPT_NOBODY, true);
 								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/");
 								/* Now specify the POST data */
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
@@ -545,6 +546,9 @@ public:
 		switch (activeEntry)
 		{
 		case 10:
+			openInBrowser("https://maciej.ml/Asteroids");
+			break;
+		case 11:
 			setState(menuState);
 			break;
 		}
@@ -553,7 +557,43 @@ public:
 	{
 		for (int i = 0; i < 10; i++)
 			entries[i] = scoreBoard[i].toString();
-		entries[10] = "Menu";
+		entries[10] = "Global leaderboard";
+		entries[11] = "Menu";
 		move(0);
+	}
+};
+
+struct ProgressBar
+{
+public:
+	float fullSize;
+	sf::RectangleShape pg;
+	float objectSize;
+	float numOfObjects;
+	float removedObjects = 0;
+	ProgressBar()
+	{
+		fullSize = desktopMode.width / 2;
+		pg.setFillColor(sf::Color::Black);
+		pg.setOutlineThickness(2);
+		pg.setOutlineColor(sf::Color::White);
+	}
+
+	void retractPoint()
+	{
+		numOfObjects--;
+		removedObjects += objectSize;
+	}
+	void update()
+	{
+		pg.setSize(sf::Vector2f(fullSize - removedObjects, 20));
+		pg.setOrigin(pg.getGlobalBounds().width / 2, pg.getGlobalBounds().height / 2);
+		pg.setPosition(window.getView().getCenter().x, window.getView().getCenter().y * 1.95);
+	}
+	void reset()
+	{
+		removedObjects = 0;
+		numOfObjects = bigAsteroids + bigAsteroids * 2 + bigAsteroids * 4;
+		objectSize = fullSize / numOfObjects;
 	}
 };

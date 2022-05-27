@@ -11,7 +11,7 @@ Use arrows to move, spacebar to shoot, N for new game, ESC for entering and exit
 ## Building
 You need SFML installed
 ````shell
-g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-system -lcurl
+g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lcurl
 ````
 ## To-Do
 * [ ] Code cleanup
@@ -22,7 +22,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [x] Menu and settings
 * [x] Game over screen
 * [x] Clickable menu options
-* [ ] Progress bar
+* [x] Progress bar
 * [x] Leaderboard
 * [x] Online leaderboard
 * [x] Toggling fullscreen
@@ -37,5 +37,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Integrate local and online scoreboard
 * [ ] Add user agreement to send data
 * [ ] Add info about update
-* [ ] Add sound
+* [x] Add sound
+* [x] Repair fullscreen and screen frequency settings
+* [x] Add sound
 

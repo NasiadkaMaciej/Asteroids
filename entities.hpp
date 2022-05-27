@@ -220,8 +220,8 @@ generateBigAsteroid(sf::Texture *texture)
 	Asteroid *a =
 		new Asteroid(x,
 					 y,
-					 random(asteroidMaxSpeed[big], asteroidDiffSpeed[big]),
-					 random(asteroidMaxSpeed[big], asteroidDiffSpeed[big]),
+					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
+					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
 					 texture);
 	return a;
 }
@@ -229,10 +229,10 @@ Asteroid *
 generateSmallerAsteroid(Asteroid asteroid)
 {
 	int asteroidNum = 0;
-	if (asteroid.sprite.getTexture() == &tAsteroid[big])
-		asteroidNum = medium;
-	else if (asteroid.sprite.getTexture() == &tAsteroid[medium])
-		asteroidNum = small;
+	if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
+		asteroidNum = MEDIUM;
+	else if (asteroid.sprite.getTexture() == &tAsteroid[MEDIUM])
+		asteroidNum = SMALL;
 	else
 		return NULL;
 	Asteroid *a = new Asteroid(
