@@ -110,7 +110,7 @@ void openInBrowser(std::string p)
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 4, saveScoreEntriesCount = 13,
+		  settingEntriesCount = 5, saveScoreEntriesCount = 13,
 		  leaderBoardEntriesCount = 12;
 std::string menuEntries[menuEntriesCount]{"Play",
 										  "Leaderboard",
@@ -121,6 +121,7 @@ std::string menuEntries[menuEntriesCount]{"Play",
 	settingEntries[settingEntriesCount]{"Frame rate limit: 60",
 										"VSync: On",
 										"Fullscreen: On",
+										"Sound: On",
 										"Menu"},
 	saveScoreEntries[saveScoreEntriesCount],
 	leaderBoardEntries[leaderBoardEntriesCount];
@@ -329,6 +330,9 @@ public:
 			toggleFS();
 			break;
 		case 3:
+			toggleMute();
+			break;
+		case 4:
 			setState(menuState);
 			break;
 		}
@@ -391,6 +395,16 @@ public:
 			isFS = true;
 			;
 		}
+		move(0);
+	}
+	void toggleMute()
+	{
+		isMute = !isMute;
+		window.setVerticalSyncEnabled(vsync);
+		if (isMute)
+			entries[3] = "Sound: Off";
+		else
+			entries[3] = "Sound: On";
 		move(0);
 	}
 };

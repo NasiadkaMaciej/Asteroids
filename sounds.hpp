@@ -23,3 +23,7 @@ void loadSounds()
         deathSound.setBuffer(deathBuffer);
     }
 }
+void playSound(sf::Sound *sound){
+    if(!isMute)
+        sound->play();
+}

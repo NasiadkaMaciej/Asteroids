@@ -23,7 +23,9 @@ sf::RenderWindow window(sf::VideoMode(desktopMode.width,
                                       desktopMode.bitsPerPixel),
                         "Asteroids - Macieson",
                         sf::Style::Fullscreen);
+
 bool isFS = true;
+bool isMute = false;
 
 float degToRad = M_PI / 180;
 

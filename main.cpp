@@ -119,7 +119,7 @@ int main()
 			if (p.isShooting && !p.isIdle)
 				if (deltaShoot >= p.bulletFreq)
 				{
-					laserSound.play();
+					playSound(&laserSound);
 					bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
 					deltaShoot = 0;
 				}
@@ -129,7 +129,7 @@ int main()
 					// Check bullets and asteroids collisons
 					if (Collision::PixelPerfectTest(a->sprite, b->sprite))
 					{
-						destroySound.play();
+						playSound(&destroySound);
 						a->life = false;
 						b->life = false;
 						progressBar.retractPoint();
@@ -137,23 +137,10 @@ int main()
 				// Check asteroids and player collisions
 				if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle)
 				{
-					deathSound.play();
+					playSound(&deathSound);
 					a->life = false;
 					p.life = false;
 					progressBar.retractPoint();
-				}
-				// Generate smaller asteroids after being hit and give points
-				if (a->life == false)
-				{
-					if (a->sprite.getTexture() == &tAsteroid[BIG])
-						p.givePoints(20);
-					else if (a->sprite.getTexture() == &tAsteroid[MEDIUM])
-						p.givePoints(50);
-					else if (a->sprite.getTexture() == &tAsteroid[SMALL])
-						p.givePoints(100);
-					for (int i = 0; i < 2; i++)
-						if (generateSmallerAsteroid(*a) != NULL)
-							asteroids.push_back(generateSmallerAsteroid(*a));
 				}
 			}
 			// Spawn random power up evey 10 seconds and clear old
@@ -194,6 +181,7 @@ int main()
 					deltaPowerUp = 0;
 				}
 			}
+
 			// Update all entities and remove dead ones
 			for (auto i = asteroids.begin(); i != asteroids.end();)
 			{
@@ -201,6 +189,17 @@ int main()
 				e->update();
 				if (e->life == false)
 				{
+					// Generate smaller asteroids after being hit and give points
+					if (e->sprite.getTexture() == &tAsteroid[BIG])
+						p.givePoints(20);
+					else if (e->sprite.getTexture() == &tAsteroid[MEDIUM])
+						p.givePoints(50);
+					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
+						p.givePoints(100);
+					for (int i = 0; i < 2; i++)
+						if (generateSmallerAsteroid(*e) != NULL)
+							asteroids.push_back(generateSmallerAsteroid(*e));
+
 					i = asteroids.erase(i);
 					delete e;
 				}
@@ -232,7 +231,6 @@ int main()
 					i++;
 			}
 			p.update();
-
 			// Start new level after clearing all asteroids
 			if (asteroids.size() == 0)
 			{
