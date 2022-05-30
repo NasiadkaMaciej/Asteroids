@@ -1,4 +1,3 @@
-#include "textures.hpp"
 #include <math.h>
 
 float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};

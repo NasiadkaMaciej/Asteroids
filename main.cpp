@@ -1,4 +1,5 @@
 #include "Collision.h"
+#include "textures.hpp"
 #include "basevalues.hpp"
 #include "entities.hpp"
 #include "menu.hpp"
@@ -7,19 +8,14 @@
 
 int main()
 {
-	loadBase();
-	loadTextures();
+	// load all assets TODO: Check if textues are correct
+	if (!loadBase() || !loadTextures() || !loadSounds())
+		return 0;
 	loadScoreBoard();
 	// writeScoreBoard();
-	loadSounds();
 
 	// create objects and lists
-	Player p(window.getView().getCenter().x,
-			 window.getView().getCenter().y,
-			 0,
-			 0,
-			 0,
-			 &tPlayer);
+	Player p(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer);
 	Menu menu(menuEntriesCount, menuEntries);
 	GameOver gameOver(gameOverEntriesCount, gameOverEntries);
 	Settings settings(settingEntriesCount, settingEntries);
@@ -120,7 +116,13 @@ int main()
 				if (deltaShoot >= p.bulletFreq)
 				{
 					playSound(&laserSound);
-					bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
+					if (isDoubleShooting) // shoot 2 bullets simultaneously
+					{
+						bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet));
+						bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet));
+					}
+					else
+						bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
 					deltaShoot = 0;
 				}
 			for (auto a : asteroids)
@@ -146,7 +148,7 @@ int main()
 			// Spawn random power up evey 10 seconds and clear old
 			if (deltaPowerUp >= 10000)
 			{
-				int rand = std::rand() % 2;
+				int rand = std::rand() % 3;
 				powerUps.clear();
 				switch (rand)
 				{
@@ -156,11 +158,15 @@ int main()
 				case 1: // Generate life bonus powerup
 					powerUps.push_back(new PowerUp(&tLifeUp));
 					break;
+				case 2: // Generate double shoot powerup
+					powerUps.push_back(new PowerUp(&tDoubleShoot));
+					break;
 				}
 				deltaPowerUp = 0;
 				// After 10 seconds of last powerUp collection, restore basic gameplay
 				// (for now, only bullet)
 				setBullet(BULLET);
+				isDoubleShooting = false;
 			}
 			// Check power ups and player collisions
 			for (auto a : powerUps)
@@ -173,6 +179,8 @@ int main()
 						setBullet(POWER_BULLET);
 					else if (a->sprite.getTexture() == &tLifeUp)
 						p.lifes++;
+					else if (a->sprite.getTexture() == &tDoubleShoot)
+						isDoubleShooting = true;
 					// tPlayer.loadFromFile(dir + "playerShielded.png");
 				}
 				else if ((deltaPowerUp >= 10000) && (a->life == true))
