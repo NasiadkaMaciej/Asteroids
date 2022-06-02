@@ -213,10 +213,15 @@ public:
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-				setState(playState);
 			if (deltaMenu >= 100)
 			{ // dissalow too quick movement and prevent double clicks
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+					if (isMenu)
+						setState(playState);
+					else if (isSaveScreen)
+						setState(gameoverState);
+					else
+						setState(menuState);
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 					move(up);
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
@@ -465,7 +470,7 @@ public:
 					if (event.type == sf::Event::Closed)
 						window.close();
 					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-						isSaving = false;
+						setState(gameoverState);
 					if (event.type == sf::Event::TextEntered)
 					{
 						if (event.text.unicode < 128 && event.text.unicode != 8 &&
@@ -487,14 +492,15 @@ public:
 					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" &&
 						!wasSaved)
 					{
+						// If last entry in leaderboard is lower, replace it with current score
 						if (scoreBoard[9].points < points)
 						{
 							scoreBoard[9] = {points, name};
 							isSaving = false;
 							wasSaved = true;
-						}
 						std::sort(scoreBoard, scoreBoard + 10, compare);
-
+						}
+						// Show 10 scores and "Your score" at the top
 						for (int i = 1; i < 11; i++)
 							entries[i] = scoreBoard[i - 1].toString();
 						entries[0] = "Your score " + std::to_string(points);
@@ -508,31 +514,22 @@ public:
 							const char *cRequest = request.c_str();
 							CURL *curl;
 							CURLcode res;
-
 #ifdef _WIN32
 							curl_global_init(CURL_GLOBAL_ALL);
 #endif
-							/* get a curl handle */
 							curl = curl_easy_init();
 							if (curl)
 							{
-								/* First set the URL that is about to receive our POST. This URL can
-								   just as well be a https:// URL if that is what should receive the
-								   data. */
-								// curl_easy_setopt(curl, CURLOPT_NOBODY, true);
 								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/");
-								/* Now specify the POST data */
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
-
-								/* Perform the request, res will get the return code */
 								res = curl_easy_perform(curl);
-								/* Check for errors */
 								if (res != CURLE_OK)
-									fprintf(stderr, "curl_easy_perform() failed: %s\n",
-											curl_easy_strerror(res));
-
-								/* always cleanup */
+									fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 								curl_easy_cleanup(curl);
+							}
+							else
+							{
+								// Handle error
 							}
 							curl_global_cleanup();
 						}

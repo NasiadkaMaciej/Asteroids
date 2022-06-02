@@ -164,8 +164,8 @@ public:
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE)
 		: Entity(X,
 				 Y,
-				 cos(angle * degToRad) * 20,
-				 cos(angle * degToRad) * 20,
+				 cos(ANGLE * degToRad) * 20,
+				 cos(ANGLE * degToRad) * 20,
 				 ANGLE,
 				 TEXTURE){};
 	void update()
