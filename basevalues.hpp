@@ -16,7 +16,7 @@ int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starting, 1 is added
 sf::Clock deltaClock;
 sf::Time deltaTime;
-float deltaShoot, deltaPowerUp, deltaMenu;
+float deltaShoot, deltaPowerUp, deltaMenu, deltaMove;
 
 // create fullscreen window
 sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();

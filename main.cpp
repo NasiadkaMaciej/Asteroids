@@ -85,6 +85,7 @@ int main()
 			p.aliveTime += deltaTime;
 			deltaShoot += deltaTime.asMilliseconds();
 			deltaPowerUp += deltaTime.asMilliseconds();
+			deltaMove += deltaTime.asMilliseconds();
 
 			sf::Event event;
 			while (window.pollEvent(event))
@@ -274,6 +275,7 @@ int main()
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);
 			window.display();
+			deltaMove = 0;
 		}
 	}
 	return 0;

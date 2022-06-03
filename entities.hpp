@@ -1,6 +1,8 @@
 #include <math.h>
 
 float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};
+// objects size is proportional to the screen height
+float scale = (float)1440 / 2000;
 
 // returns random value excluding 0
 int random(int range, int modifier)
@@ -34,7 +36,7 @@ public:
 		sprite.setTexture(*TEXTURE, true);
 		sprite.setOrigin(sprite.getGlobalBounds().width / 2,
 						 sprite.getGlobalBounds().height / 2);
-		sprite.scale(0.5, 0.5);
+		sprite.scale(scale, scale);
 	}
 
 	virtual void update(){};
@@ -65,22 +67,24 @@ public:
 	{
 		if (life)
 		{
+
+			float rotateSpeed = 2.5 * deltaMove / 15;
 			if (isRotatingRight)
-				sprite.setRotation(sprite.getRotation() + 2.5);
+				sprite.setRotation(sprite.getRotation() + rotateSpeed);
 			else if (isRotatingLeft)
-				sprite.setRotation(sprite.getRotation() - 2.5);
+				sprite.setRotation(sprite.getRotation() - rotateSpeed);
 			angle = sprite.getRotation() - 90;
 
 			if (thrust)
 			{
-				x_speed += cos(angle * degToRad) * 0.2;
-				y_speed += sin(angle * degToRad) * 0.2;
+				x_speed += cos(angle * degToRad) * 0.2 * deltaMove / 15;
+				y_speed += sin(angle * degToRad) * 0.2 * deltaMove / 15;
 				isIdle = false;
 			}
 			else
 			{
-				x_speed *= 0.99;
-				y_speed *= 0.99;
+				x_speed *= (float)(1-deltaMove/1200);
+				y_speed *= (float)(1-deltaMove/1200);
 			}
 
 			float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
@@ -90,8 +94,8 @@ public:
 				y_speed *= maxSpeed / speed;
 			}
 
-			x += x_speed;
-			y += y_speed;
+			x += x_speed * deltaMove / 15;
+			y += y_speed * deltaMove / 15;
 
 			if (x >= desktopMode.width)
 				x = 0;
@@ -146,8 +150,8 @@ public:
 		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
 	void update()
 	{
-		x += x_speed;
-		y += y_speed;
+		x += x_speed * deltaMove / 15;
+		y += y_speed * deltaMove / 15;
 		if (x >= desktopMode.width)
 			x = 0;
 		else if (x <= 0)
@@ -170,8 +174,8 @@ public:
 				 TEXTURE){};
 	void update()
 	{
-		x_speed = cos(angle * degToRad) * 20;
-		y_speed = sin(angle * degToRad) * 20;
+		x_speed = cos(angle * degToRad) * 20 * deltaMove / 15;;
+		y_speed = sin(angle * degToRad) * 20 * deltaMove / 15;;
 		x += x_speed;
 		y += y_speed;
 		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
