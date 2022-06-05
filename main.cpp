@@ -8,10 +8,11 @@
 
 int main()
 {
-	// load all assets TODO: Check if textues are correct
+	// load all assets TODO: Check if textues and ScoreBoards is ok
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
 	loadScoreBoard();
+	playMusic();
 	// writeScoreBoard();
 
 	// create objects and lists
@@ -205,10 +206,11 @@ int main()
 						p.givePoints(50);
 					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
 						p.givePoints(100);
-					for (int i = 0; i < 2; i++)
-						if (generateSmallerAsteroid(*e) != NULL)
-							asteroids.push_back(generateSmallerAsteroid(*e));
-
+					if (generateAsteroid(*e) != NULL)
+					{
+						asteroids.push_back(generateAsteroid(*e));
+						asteroids.push_back(generateAsteroid(*e));
+					}
 					i = asteroids.erase(i);
 					delete e;
 				}
@@ -255,13 +257,18 @@ int main()
 			std::string sPoints = std::to_string(p.points);
 			std::string sTime = std::to_string(p.aliveTime.asMilliseconds() / 10);
 			std::string sLevel = std::to_string(roundNum);
-			std::string sLifes = std::to_string(p.lifes);
+			std::string sLifes;
+			if (p.lifes == 1)
+				sLifes = std::to_string(p.lifes) + " life";
+			else
+				sLifes = std::to_string(p.lifes) + " lifes";
+
 			if (sTime.length() > 2)
 				sTime.insert(sTime.length() - 2, ".");
 			else
 				sTime = "0." + sTime;
 			text.setString(sTime + " sec" + "\n" + sPoints + " points" + "\n" +
-						   "Round: " + sLevel + "\n" + sLifes + " lifes");
+						   "Round: " + sLevel + "\n" + sLifes);
 
 			window.clear();
 			for (auto &i : asteroids)

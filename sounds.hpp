@@ -3,6 +3,7 @@
 
 sf::SoundBuffer laserBuffer, destroyBuffer, deathBuffer;
 sf::Sound laserSound, destroySound, deathSound;
+sf::Music music;
 
 bool loadSounds()
 {
@@ -12,8 +13,9 @@ bool loadSounds()
     std::string dir = "audio/";
 
     if (!laserBuffer.loadFromFile(dir + "laser.wav") ||
-        !destroyBuffer.loadFromFile("audio/destroy.wav") ||
-        !deathBuffer.loadFromFile("audio/death.wav"))
+        !destroyBuffer.loadFromFile(dir + "destroy.wav") ||
+        !deathBuffer.loadFromFile(dir + "death.wav") ||
+        !music.openFromFile(dir + "music.wav"))
     {
         std::cout << "Error loading sounds\n";
         return false;
@@ -21,10 +23,16 @@ bool loadSounds()
     laserSound.setBuffer(laserBuffer);
     destroySound.setBuffer(destroyBuffer);
     deathSound.setBuffer(deathBuffer);
+    music.setLoop(true);
     return true;
 }
 void playSound(sf::Sound *sound)
 {
-    if (!isMute)
+    if (gameSettings.sfx)
         sound->play();
+}
+void playMusic()
+{
+    if (gameSettings.music)
+        music.play();
 }

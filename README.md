@@ -26,9 +26,9 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [x] Leaderboard
 * [x] Online leaderboard
 * [x] Toggling fullscreen
-* [ ] Saving settings
+* [x] Saving settings
 * [ ] Android Support
-* [ ] Make executables for Windows and Linux
+* [x] Make executables for Windows and Linux
 * [ ] Toggle plain black background and stars background
 * [ ] Repair setting cursor to first position
 * [x] Add delta time
@@ -38,7 +38,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Add info about update
 * [x] Add sound
 * [x] Repair fullscreen and screen frequency settings
-* [ ] Add sound mute toggle
+* [x] Add sound mute toggle
 * [ ] Add timestamp to scores
 * [x] Fair play adjustment for different resolutions
 * [ ] Add multiplayer

@@ -1,6 +1,5 @@
-#include <math.h>
-
 float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};
+
 // objects size is proportional to the screen height
 float scale = (float)1440 / 2000;
 
@@ -21,12 +20,7 @@ public:
 	bool life = true;
 	sf::Sprite sprite;
 
-	Entity(float X,
-		   float Y,
-		   float X_SPEED,
-		   float Y_SPEED,
-		   float ANGLE,
-		   sf::Texture *TEXTURE)
+	Entity(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
 	{
 		x = X;
 		y = Y;
@@ -34,12 +28,11 @@ public:
 		y_speed = Y_SPEED;
 		angle = ANGLE;
 		sprite.setTexture(*TEXTURE, true);
-		sprite.setOrigin(sprite.getGlobalBounds().width / 2,
-						 sprite.getGlobalBounds().height / 2);
+		sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
 		sprite.scale(scale, scale);
 	}
 
-	virtual void update(){};
+	void update(){};
 
 	void draw(sf::RenderWindow &window)
 	{
@@ -56,12 +49,7 @@ public:
 	int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
 	sf::Time aliveTime = sf::Time::Zero;
 
-	Player(float X,
-		   float Y,
-		   float X_SPEED,
-		   float Y_SPEED,
-		   float ANGLE,
-		   sf::Texture *TEXTURE)
+	Player(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
 		: Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE){};
 	void update()
 	{
@@ -83,8 +71,8 @@ public:
 			}
 			else
 			{
-				x_speed *= (float)(1-deltaMove/1200);
-				y_speed *= (float)(1-deltaMove/1200);
+				x_speed *= (float)(1 - deltaMove / 1200);
+				y_speed *= (float)(1 - deltaMove / 1200);
 			}
 
 			float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
@@ -166,16 +154,13 @@ class Bullet : public Entity
 {
 public:
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE)
-		: Entity(X,
-				 Y,
-				 cos(ANGLE * degToRad) * 20,
-				 cos(ANGLE * degToRad) * 20,
-				 ANGLE,
-				 TEXTURE){};
+		: Entity(X, Y, cos(ANGLE * degToRad) * 20, cos(ANGLE * degToRad) * 20, ANGLE, TEXTURE){};
 	void update()
 	{
-		x_speed = cos(angle * degToRad) * 20 * deltaMove / 15;;
-		y_speed = sin(angle * degToRad) * 20 * deltaMove / 15;;
+		x_speed = cos(angle * degToRad) * 20 * deltaMove / 15;
+		;
+		y_speed = sin(angle * degToRad) * 20 * deltaMove / 15;
+		;
 		x += x_speed;
 		y += y_speed;
 		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
@@ -187,12 +172,8 @@ class PowerUp : public Entity
 {
 public:
 	PowerUp(sf::Texture *TEXTURE)
-		: Entity(rand() % desktopMode.width,
-				 rand() % desktopMode.height,
-				 0,
-				 0,
-				 -90,
-				 TEXTURE){};
+		: Entity(rand() % desktopMode.width, rand() % desktopMode.height,
+				 0, 0, -90, TEXTURE){};
 };
 
 // Generates asteroid at random edge of the screen
@@ -221,15 +202,14 @@ generateBigAsteroid(sf::Texture *texture)
 		break;
 	}
 	Asteroid *a =
-		new Asteroid(x,
-					 y,
+		new Asteroid(x, y,
 					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
 					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
 					 texture);
 	return a;
 }
 Asteroid *
-generateSmallerAsteroid(Asteroid asteroid)
+generateAsteroid(Asteroid asteroid)
 {
 	int asteroidNum = 0;
 	if (asteroid.sprite.getTexture() == &tAsteroid[BIG])

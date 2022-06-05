@@ -25,8 +25,24 @@ bool compare(ScoreBoard a, ScoreBoard b)
 		return true;
 }
 
+// Write actual score board to file
+void writeScoreBoard()
+{
+	std::ofstream file("scoreBoard.dat");
+	if (file.is_open())
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			file << scoreBoard[i].points << ":";
+			file << scoreBoard[i].name;
+			if (i < 9)
+				file << "\n";
+		}
+	}
+	file.close();
+};
+
 // Load score board from file if exists,
-// todo: else create file with blank entries
 void loadScoreBoard()
 {
 	std::ifstream file("scoreBoard.dat");
@@ -51,24 +67,9 @@ void loadScoreBoard()
 			scoreBoard[i].points = 0;
 			scoreBoard[i].name = "";
 		}
+		writeScoreBoard();
 	}
 	std::sort(scoreBoard, scoreBoard + 10, compare);
-};
-
-// Write actual score board to file
-void writeScoreBoard()
-{
-	std::ofstream file("scoreBoard.dat");
-	if (file.is_open())
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			file << scoreBoard[i].points << ":";
-			file << scoreBoard[i].name;
-			if (i < 9)
-				file << "\n";
-		}
-	}
 };
 
 // Open link in browser for every operating system
@@ -110,18 +111,27 @@ void openInBrowser(std::string p)
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 5, saveScoreEntriesCount = 13,
+		  settingEntriesCount = 6, saveScoreEntriesCount = 13,
 		  leaderBoardEntriesCount = 12;
+std::string returnBool(int value)
+{
+	if (value == 0)
+		return "Off";
+	else if (value == 1)
+		return "On";
+	return "Error";
+}
 std::string menuEntries[menuEntriesCount]{"Play",
 										  "Leaderboard",
 										  "Settings",
 										  "Info",
 										  "Exit"},
 	gameOverEntries[gameOverEntriesCount]{"Your score", "New game", "Menu"},
-	settingEntries[settingEntriesCount]{"Frame rate limit: 60",
-										"VSync: On",
-										"Fullscreen: On",
-										"Sound: On",
+	settingEntries[settingEntriesCount]{"Frame rate limit: " + std::to_string(gameSettings.frames),
+										"VSync: " + returnBool(gameSettings.vsync),
+										"Fullscreen: " + returnBool(gameSettings.fs),
+										"Sound: " + returnBool(gameSettings.sfx),
+										"Music: " + returnBool(gameSettings.music),
 										"Menu"},
 	saveScoreEntries[saveScoreEntriesCount],
 	leaderBoardEntries[leaderBoardEntriesCount];
@@ -216,12 +226,14 @@ public:
 			if (deltaMenu >= 100)
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+				{
 					if (isMenu)
 						setState(playState);
 					else if (isSaveScreen)
 						setState(gameoverState);
 					else
 						setState(menuState);
+				}
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 					move(up);
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
@@ -233,10 +245,12 @@ public:
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 				mouseClick();
 			if (event.type == sf::Event::MouseWheelScrolled)
+			{
 				if (event.mouseWheelScroll.delta > 0)
 					move(up);
 				else if (event.mouseWheelScroll.delta < 0)
 					move(down);
+			}
 		}
 
 		window.clear();
@@ -317,8 +331,6 @@ public:
 class Settings : public Menu
 {
 public:
-	int activeLimit = 60;
-	bool vsync = true;
 	Settings(int EntriesCount, std::string entries[])
 		: Menu(EntriesCount, entries){};
 	void click()
@@ -335,42 +347,46 @@ public:
 			toggleFS();
 			break;
 		case 3:
-			toggleMute();
+			toggleSFX();
 			break;
 		case 4:
+			toggleMusic();
+			break;
+		case 5:
 			setState(menuState);
 			break;
 		}
+		gameSettings.saveSettings();
 	}
 	void switchRefreshRate()
 	{
-		switch (activeLimit)
+		switch (gameSettings.frames)
 		{
 		case 60:
-			activeLimit = 75;
+			gameSettings.frames = 75;
 			break;
 		case 75:
-			activeLimit = 120;
+			gameSettings.frames = 120;
 			break;
 		case 120:
-			activeLimit = 144;
+			gameSettings.frames = 144;
 			break;
 		case 144:
-			activeLimit = 165;
+			gameSettings.frames = 165;
 			break;
 		case 165:
-			activeLimit = 60;
+			gameSettings.frames = 60;
 			break;
 		}
-		window.setFramerateLimit(activeLimit);
-		entries[0] = "Frame rate limit: " + std::to_string(activeLimit);
+		window.setFramerateLimit(gameSettings.frames);
+		entries[0] = "Frame rate limit: " + std::to_string(gameSettings.frames);
 		move(0);
 	}
 	void toggleVsync()
 	{
-		vsync = !vsync;
-		window.setVerticalSyncEnabled(vsync);
-		if (vsync)
+		gameSettings.vsync = !gameSettings.vsync;
+		window.setVerticalSyncEnabled(gameSettings.vsync);
+		if (gameSettings.vsync)
 			entries[1] = "VSync: On";
 		else
 			entries[1] = "VSync: Off";
@@ -378,7 +394,7 @@ public:
 	}
 	void toggleFS()
 	{
-		if (isFS)
+		if (gameSettings.fs)
 		{
 			window.create(sf::VideoMode(desktopMode.width,
 										desktopMode.height,
@@ -386,7 +402,7 @@ public:
 						  "Asteroids - Macieson"); //,
 												   // sf::Style::Fullscreen);
 			entries[2] = "Fullscreen: Off";
-			isFS = false;
+			gameSettings.fs = false;
 		}
 		else
 		{
@@ -397,19 +413,26 @@ public:
 						  sf::Style::Fullscreen);
 			entries[2] = "Fullscreen: On";
 
-			isFS = true;
-			;
+			gameSettings.fs = true;
 		}
 		move(0);
 	}
-	void toggleMute()
+	void toggleSFX()
 	{
-		isMute = !isMute;
-		window.setVerticalSyncEnabled(vsync);
-		if (isMute)
+		gameSettings.sfx = !gameSettings.sfx;
+		if (gameSettings.sfx)
 			entries[3] = "Sound: Off";
 		else
 			entries[3] = "Sound: On";
+		move(0);
+	}
+	void toggleMusic()
+	{
+		gameSettings.music = !gameSettings.music;
+		if (gameSettings.sfx)
+			entries[4] = "Music: Off";
+		else
+			entries[4] = "Music: On";
 		move(0);
 	}
 };
@@ -498,7 +521,7 @@ public:
 							scoreBoard[9] = {points, name};
 							isSaving = false;
 							wasSaved = true;
-						std::sort(scoreBoard, scoreBoard + 10, compare);
+							std::sort(scoreBoard, scoreBoard + 10, compare);
 						}
 						// Show 10 scores and "Your score" at the top
 						for (int i = 1; i < 11; i++)
