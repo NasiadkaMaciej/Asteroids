@@ -41,12 +41,12 @@ public:
     loadSetting();
   }
   int frames;
-  bool vsync, fs, sfx, music;
+  bool vsync, fs, sfx, music, background;
   void loadSetting()
   {
     std::ifstream file("asteroids.cfg");
     if (file.is_open())
-    {
+    { // Make loop here
       std::string tmpString;
       std::getline(file, tmpString, ':');
       std::getline(file, tmpString);
@@ -63,6 +63,9 @@ public:
       std::getline(file, tmpString, ':');
       std::getline(file, tmpString);
       music = stoi(tmpString);
+      std::getline(file, tmpString, ':');
+      std::getline(file, tmpString);
+      background = stoi(tmpString);
       file.close();
     }
     else
@@ -75,6 +78,7 @@ public:
         file << "FullScreen:1\n";
         file << "SFX:1\n";
         file << "Music:1\n";
+        file << "Background:0\n";
       }
       file.close();
       loadSetting();
@@ -90,6 +94,7 @@ public:
       file << "FullScreen:" << fs << "\n";
       file << "SFX:" << sfx << "\n";
       file << "Music:" << music << "\n";
+      file << "Background:" << background << "\n";
     }
     file.close();
   }
@@ -147,6 +152,7 @@ void setStates(bool state)
 
 void setState(int state)
 {
+
   switch (state)
   {
   case playState:

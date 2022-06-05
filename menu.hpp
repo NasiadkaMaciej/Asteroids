@@ -111,7 +111,7 @@ void openInBrowser(std::string p)
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 6, saveScoreEntriesCount = 13,
+		  settingEntriesCount = 7, saveScoreEntriesCount = 13,
 		  leaderBoardEntriesCount = 12;
 std::string returnBool(int value)
 {
@@ -132,6 +132,7 @@ std::string menuEntries[menuEntriesCount]{"Play",
 										"Fullscreen: " + returnBool(gameSettings.fs),
 										"Sound: " + returnBool(gameSettings.sfx),
 										"Music: " + returnBool(gameSettings.music),
+										"Background: " + returnBool(gameSettings.background),
 										"Menu"},
 	saveScoreEntries[saveScoreEntriesCount],
 	leaderBoardEntries[leaderBoardEntriesCount];
@@ -223,7 +224,7 @@ public:
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (deltaMenu >= 100)
+			if (deltaMenu >= 100 && sf::Event::KeyPressed)
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				{
@@ -240,10 +241,16 @@ public:
 					move(down);
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
 					click();
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+					playSound(&menuSound);
 				deltaMenu = 0;
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
 				mouseClick();
+				playSound(&menuSound);
+			}
+
 			if (event.type == sf::Event::MouseWheelScrolled)
 			{
 				if (event.mouseWheelScroll.delta > 0)
@@ -320,12 +327,6 @@ public:
 			break;
 		}
 	}
-	void setScore(int POINTS)
-	{
-		entries[0] = "Your score " + std::to_string(POINTS);
-		// is updating text on menu screen
-		move(0);
-	}
 };
 
 class Settings : public Menu
@@ -353,6 +354,9 @@ public:
 			toggleMusic();
 			break;
 		case 5:
+			toggleBackground();
+			break;
+		case 6:
 			setState(menuState);
 			break;
 		}
@@ -394,17 +398,9 @@ public:
 	}
 	void toggleFS()
 	{
+		gameSettings.fs = !gameSettings.fs;
+
 		if (gameSettings.fs)
-		{
-			window.create(sf::VideoMode(desktopMode.width,
-										desktopMode.height,
-										desktopMode.bitsPerPixel),
-						  "Asteroids - Macieson"); //,
-												   // sf::Style::Fullscreen);
-			entries[2] = "Fullscreen: Off";
-			gameSettings.fs = false;
-		}
-		else
 		{
 			window.create(sf::VideoMode(desktopMode.width,
 										desktopMode.height,
@@ -412,27 +408,50 @@ public:
 						  "Asteroids - Macieson",
 						  sf::Style::Fullscreen);
 			entries[2] = "Fullscreen: On";
-
-			gameSettings.fs = true;
 		}
+		else
+		{
+			window.create(sf::VideoMode(desktopMode.width,
+										desktopMode.height,
+										desktopMode.bitsPerPixel),
+						  "Asteroids - Macieson");
+			entries[2] = "Fullscreen: Off";
+		}
+		window.setFramerateLimit(gameSettings.frames);
+		window.setVerticalSyncEnabled(gameSettings.vsync);
 		move(0);
 	}
 	void toggleSFX()
 	{
 		gameSettings.sfx = !gameSettings.sfx;
 		if (gameSettings.sfx)
-			entries[3] = "Sound: Off";
-		else
 			entries[3] = "Sound: On";
+		else
+			entries[3] = "Sound: Off";
 		move(0);
 	}
 	void toggleMusic()
 	{
 		gameSettings.music = !gameSettings.music;
-		if (gameSettings.sfx)
-			entries[4] = "Music: Off";
-		else
+		if (gameSettings.music)
+		{
+			music.play();
 			entries[4] = "Music: On";
+		}
+		else
+		{
+			entries[4] = "Music: Off";
+			music.stop();
+		}
+		move(0);
+	}
+	void toggleBackground()
+	{
+		gameSettings.background = !gameSettings.background;
+		if (gameSettings.background)
+			entries[5] = "Background: On";
+		else
+			entries[5] = "Background: Off";
 		move(0);
 	}
 };

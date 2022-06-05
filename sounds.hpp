@@ -1,8 +1,8 @@
 #include <SFML/Audio.hpp>
 #include <iostream>
 
-sf::SoundBuffer laserBuffer, destroyBuffer, deathBuffer;
-sf::Sound laserSound, destroySound, deathSound;
+sf::SoundBuffer laserBuffer, destroyBuffer, deathBuffer, menuBuffer;
+sf::Sound laserSound, destroySound, deathSound, menuSound;
 sf::Music music;
 
 bool loadSounds()
@@ -15,6 +15,7 @@ bool loadSounds()
     if (!laserBuffer.loadFromFile(dir + "laser.wav") ||
         !destroyBuffer.loadFromFile(dir + "destroy.wav") ||
         !deathBuffer.loadFromFile(dir + "death.wav") ||
+        !menuBuffer.loadFromFile(dir + "menu.wav") ||
         !music.openFromFile(dir + "music.wav"))
     {
         std::cout << "Error loading sounds\n";
@@ -23,6 +24,8 @@ bool loadSounds()
     laserSound.setBuffer(laserBuffer);
     destroySound.setBuffer(destroyBuffer);
     deathSound.setBuffer(deathBuffer);
+    menuSound.setBuffer(menuBuffer);
+    menuSound.setLoop(false);
     music.setLoop(true);
     return true;
 }

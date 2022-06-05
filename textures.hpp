@@ -3,7 +3,7 @@
 
 sf::Texture tPlayer, tAsteroid[3], tBullet;
 sf::Texture tBulletUp, tLifeUp, tDoubleShoot;
-
+sf::Texture tBackground;
 #define BIG 0
 #define MEDIUM 1
 #define SMALL 2
@@ -18,7 +18,8 @@ bool loadTextures()
 		!tBullet.loadFromFile(dir + "bullet.png") ||
 		!tBulletUp.loadFromFile(dir + "powerUp.png") ||
 		!tLifeUp.loadFromFile(dir + "lifeUp.png") ||
-		!tDoubleShoot.loadFromFile(dir + "doubleShoot.png"))
+		!tDoubleShoot.loadFromFile(dir + "doubleShoot.png") ||
+		!tBackground.loadFromFile(dir + "background.png"))
 	{
 		std::cout << "Error loading textures\n";
 		return false;
@@ -32,6 +33,7 @@ bool loadTextures()
 	tBulletUp.setSmooth(true);
 	tLifeUp.setSmooth(true);
 	tDoubleShoot.setSmooth(true);
+	tBackground.setRepeated(true);
 	return true;
 }
 

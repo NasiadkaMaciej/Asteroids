@@ -29,7 +29,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [x] Saving settings
 * [ ] Android Support
 * [x] Make executables for Windows and Linux
-* [ ] Toggle plain black background and stars background
+* [x] Toggle plain black background and stars background
 * [ ] Repair setting cursor to first position
 * [x] Add delta time
 * [x] Add link to online scoreboard
@@ -43,3 +43,4 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [x] Fair play adjustment for different resolutions
 * [ ] Add multiplayer
 * [ ] Scrolling menus
+* [ ] Set game FPS limit to monitor HZ

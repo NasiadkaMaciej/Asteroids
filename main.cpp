@@ -2,8 +2,8 @@
 #include "textures.hpp"
 #include "basevalues.hpp"
 #include "entities.hpp"
-#include "menu.hpp"
 #include "sounds.hpp"
+#include "menu.hpp"
 #include <list>
 
 int main()
@@ -22,6 +22,9 @@ int main()
 	Settings settings(settingEntriesCount, settingEntries);
 	SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
 	LeaderBoard leaderBoard(leaderBoardEntriesCount, leaderBoardEntries);
+	sf::Sprite background(tBackground);
+	background.setTextureRect(sf::IntRect(0, 0, desktopMode.width, desktopMode.height));
+
 	std::list<Asteroid *> asteroids;
 	std::list<Bullet *> bullets;
 	std::list<PowerUp *> powerUps;
@@ -63,7 +66,7 @@ int main()
 			}
 			else if (isGameOver)
 			{
-				gameOver.setScore(p.points);
+				gameOver.entries[0] = "Your score " + std::to_string(p.points);
 				gameOver.show();
 				if (isPlaying) // returned to playing from some menu
 					reset();
@@ -97,6 +100,8 @@ int main()
 					setState(menuState);
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
 					reset();
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11))
+					settings.toggleFS();
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 					p.isRotatingRight = true;
 				else
@@ -271,6 +276,8 @@ int main()
 						   "Round: " + sLevel + "\n" + sLifes);
 
 			window.clear();
+			if (gameSettings.background)
+				window.draw(background);
 			for (auto &i : asteroids)
 				i->draw(window);
 			for (auto &i : bullets)
