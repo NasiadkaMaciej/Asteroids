@@ -16,6 +16,7 @@ bool loadTextures()
 		!tAsteroid[MEDIUM].loadFromFile(dir + "asteroidMedium.png") ||
 		!tAsteroid[SMALL].loadFromFile(dir + "asteroidSmall.png") ||
 		!tBullet.loadFromFile(dir + "bullet.png") ||
+
 		!tBulletUp.loadFromFile(dir + "powerUp.png") ||
 		!tLifeUp.loadFromFile(dir + "lifeUp.png") ||
 		!tDoubleShoot.loadFromFile(dir + "doubleShoot.png") ||
@@ -30,28 +31,10 @@ bool loadTextures()
 	tAsteroid[MEDIUM].setSmooth(true);
 	tAsteroid[SMALL].setSmooth(true);
 	tBullet.setSmooth(true);
+
 	tBulletUp.setSmooth(true);
 	tLifeUp.setSmooth(true);
 	tDoubleShoot.setSmooth(true);
 	tBackground.setRepeated(true);
 	return true;
-}
-
-#define BULLET 0
-#define POWER_BULLET 1
-
-void setBullet(int type)
-{
-	std::string dir = "textures/", bullet;
-
-	switch (type)
-	{
-	case 0:
-		bullet = "bullet.png";
-		break;
-	case 1:
-		bullet = "powerBullet.png";
-		break;
-	}
-	tBullet.loadFromFile(dir + bullet);
 }

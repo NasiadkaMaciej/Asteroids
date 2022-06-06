@@ -38,16 +38,13 @@ int main()
 		asteroids.clear();
 		bullets.clear();
 		powerUps.clear();
-		p.reset();
 		bigAsteroids = 4;
 		roundNum = 0;
-		deltaShoot = 0;
-		setBullet(BULLET);
 		deltaPowerUp = 0;
-		saveScore.wasSaved = false;
-		saveScore.isSaving = true;
+		p.reset();
 		menu.reset();
 		gameOver.reset();
+		saveScore.reset();
 		settings.reset();
 		leaderBoard.reset();
 	};
@@ -55,6 +52,7 @@ int main()
 	while (window.isOpen())
 	{
 		deltaTime = deltaClock.restart();
+
 		if (!isPlaying)
 		{
 			deltaMenu += deltaTime.asMilliseconds();
@@ -66,7 +64,7 @@ int main()
 			}
 			else if (isGameOver)
 			{
-				gameOver.entries[0] = "Your score " + std::to_string(p.points);
+				gameOver.setScore(p.points);
 				gameOver.show();
 				if (isPlaying) // returned to playing from some menu
 					reset();
@@ -86,8 +84,6 @@ int main()
 		}
 		else
 		{
-			p.aliveTime += deltaTime;
-			deltaShoot += deltaTime.asMilliseconds();
 			deltaPowerUp += deltaTime.asMilliseconds();
 			deltaMove += deltaTime.asMilliseconds();
 
@@ -120,17 +116,17 @@ int main()
 					p.isShooting = false;
 			}
 			if (p.isShooting && !p.isIdle)
-				if (deltaShoot >= p.bulletFreq)
+				if (p.deltaShoot >= p.bulletFreq)
 				{
 					playSound(&laserSound);
-					if (isDoubleShooting) // shoot 2 bullets simultaneously
+					if (p.isDoubleShooting) // shoot 2 bullets simultaneously
 					{
-						bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet));
-						bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet));
+						bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet, p.bulletScale()));
+						bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet, p.bulletScale()));
 					}
 					else
-						bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet));
-					deltaShoot = 0;
+						bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale()));
+					p.deltaShoot = 0;
 				}
 			for (auto a : asteroids)
 			{
@@ -172,8 +168,8 @@ int main()
 				deltaPowerUp = 0;
 				// After 10 seconds of last powerUp collection, restore basic gameplay
 				// (for now, only bullet)
-				setBullet(BULLET);
-				isDoubleShooting = false;
+				p.isPowerBullet = false;
+				p.isDoubleShooting = false;
 			}
 			// Check power ups and player collisions
 			for (auto a : powerUps)
@@ -183,12 +179,11 @@ int main()
 					a->life = false;
 					deltaPowerUp = 0;
 					if (a->sprite.getTexture() == &tBulletUp)
-						setBullet(POWER_BULLET);
+						p.isPowerBullet = true;
 					else if (a->sprite.getTexture() == &tLifeUp)
 						p.lifes++;
 					else if (a->sprite.getTexture() == &tDoubleShoot)
-						isDoubleShooting = true;
-					// tPlayer.loadFromFile(dir + "playerShielded.png");
+						p.isDoubleShooting = true;
 				}
 				else if ((deltaPowerUp >= 10000) && (a->life == true))
 				{

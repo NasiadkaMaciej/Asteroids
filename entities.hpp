@@ -1,7 +1,7 @@
 float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};
 
 // objects size is proportional to the screen height
-float scale = (float)1440 / 2000;
+float scale = (float)sf::VideoMode::getDesktopMode().height / 2000;
 
 // returns random value excluding 0
 int random(int range, int modifier)
@@ -45,17 +45,21 @@ class Player : public Entity
 {
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
-		 isRotatingRight = false, isRotatingLeft = false;
+		 isRotatingRight = false, isRotatingLeft = false,
+		 isDoubleShooting = false, isPowerBullet = false;
 	int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
+	float deltaShoot;
+
 	sf::Time aliveTime = sf::Time::Zero;
 
 	Player(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
 		: Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE){};
 	void update()
 	{
+		aliveTime += deltaTime;
+		deltaShoot += deltaTime.asMilliseconds();
 		if (life)
 		{
-
 			float rotateSpeed = 2.5 * deltaMove / 15;
 			if (isRotatingRight)
 				sprite.setRotation(sprite.getRotation() + rotateSpeed);
@@ -125,10 +129,18 @@ public:
 		x_speed = 0, y_speed = 0;
 		angle = 90;
 		life = true;
-		thrust = false, isShooting = false, isIdle = true, isRotatingRight = false,
-		isRotatingLeft = false;
+		thrust = false, isShooting = false, isIdle = true, isRotatingRight = false, isRotatingLeft = false;
+		isDoubleShooting = false;
+		deltaShoot = 0;
 		points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
 		aliveTime = sf::Time::Zero;
+	}
+	int bulletScale()
+	{
+		if (isPowerBullet)
+			return 2;
+		else
+			return 1;
 	}
 };
 class Asteroid : public Entity
@@ -153,8 +165,11 @@ public:
 class Bullet : public Entity
 {
 public:
-	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE)
-		: Entity(X, Y, cos(ANGLE * degToRad) * 20, cos(ANGLE * degToRad) * 20, ANGLE, TEXTURE){};
+	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, int SCALE)
+		: Entity(X, Y, cos(ANGLE * degToRad) * 20, cos(ANGLE * degToRad) * 20, ANGLE, TEXTURE)
+	{
+		sprite.scale(SCALE, SCALE);
+	};
 	void update()
 	{
 		x_speed = cos(angle * degToRad) * 20 * deltaMove / 15;

@@ -17,12 +17,10 @@ int bigAsteroids = 4; // when generating, 2 more are created
 int roundNum = 0;     // when starting, 1 is added
 sf::Clock deltaClock;
 sf::Time deltaTime;
-float deltaShoot, deltaPowerUp, deltaMenu, deltaMove;
+float deltaPowerUp, deltaMenu, deltaMove;
 
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
-
-bool isDoubleShooting = false;
 
 float degToRad = M_PI / 180;
 
@@ -46,42 +44,34 @@ public:
   {
     std::ifstream file("asteroids.cfg");
     if (file.is_open())
-    { // Make loop here
+    {
+      const int values = 6;
+      int value[values];
       std::string tmpString;
-      std::getline(file, tmpString, ':');
-      std::getline(file, tmpString);
-      frames = stoi(tmpString);
-      std::getline(file, tmpString, ':');
-      std::getline(file, tmpString);
-      vsync = stoi(tmpString);
-      std::getline(file, tmpString, ':');
-      std::getline(file, tmpString);
-      fs = stoi(tmpString);
-      std::getline(file, tmpString, ':');
-      std::getline(file, tmpString);
-      sfx = stoi(tmpString);
-      std::getline(file, tmpString, ':');
-      std::getline(file, tmpString);
-      music = stoi(tmpString);
-      std::getline(file, tmpString, ':');
-      std::getline(file, tmpString);
-      background = stoi(tmpString);
+      for (int i = 0; i < values; i++)
+      {
+        std::getline(file, tmpString, ':');
+        std::getline(file, tmpString);
+        value[i] = stoi(tmpString);
+      }
+      frames = value[0];
+      vsync = value[1];
+      fs = value[2];
+      sfx = value[3];
+      music = value[4];
+      background = value[5];
+
       file.close();
     }
     else
     {
-      std::ofstream file("asteroids.cfg");
-      if (file.is_open())
-      {
-        file << "Frames:60\n";
-        file << "VSync:1\n";
-        file << "FullScreen:1\n";
-        file << "SFX:1\n";
-        file << "Music:1\n";
-        file << "Background:0\n";
-      }
-      file.close();
-      loadSetting();
+      frames = 60;
+      vsync = true;
+      fs = true;
+      sfx = true;
+      music = true;
+      background = true;
+      saveSettings();
     }
   }
   void saveSettings()
@@ -152,7 +142,6 @@ void setStates(bool state)
 
 void setState(int state)
 {
-
   switch (state)
   {
   case playState:

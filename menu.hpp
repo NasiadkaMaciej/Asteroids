@@ -327,6 +327,11 @@ public:
 			break;
 		}
 	}
+	void setScore(int POINTS)
+	{
+		entries[0] = "Your score " + std::to_string(POINTS);
+		move(0);
+	}
 };
 
 class Settings : public Menu
@@ -585,6 +590,11 @@ public:
 			}
 		}
 		writeScoreBoard();
+	}
+	void reset()
+	{
+		wasSaved = false;
+		isSaving = true;
 	}
 };
 

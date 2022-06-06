@@ -9,7 +9,7 @@ You start the game with 3 lives, after you lose one, you enter idle state, in wh
 Use arrows to move, spacebar to shoot, N for new game, ESC for entering and exiting menu and Enter for choosing menu entry.
 
 ## Building
-You need SFML installed
+You need SFML and libcurl installed
 ````shell
 g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lcurl
 ````
@@ -44,3 +44,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Add multiplayer
 * [ ] Scrolling menus
 * [ ] Set game FPS limit to monitor HZ
+* [ ] Check if leaderboard and settings file are ok
+* [ ] Auto maximize and focus game if not in fullscreen
+* [ ] Audio volume settings
+* [ ] Progressbar improvement
