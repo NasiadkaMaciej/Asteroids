@@ -1,6 +1,6 @@
 #include "Collision.h"
+#include "GameSettings.hpp"
 #include "textures.hpp"
-#include "basevalues.hpp"
 #include "entities.hpp"
 #include "sounds.hpp"
 #include "menu.hpp"
@@ -8,7 +8,7 @@
 
 int main()
 {
-	// load all assets TODO: Check if textues and ScoreBoards is ok
+	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
 	loadScoreBoard();
@@ -28,7 +28,7 @@ int main()
 	std::list<Asteroid *> asteroids;
 	std::list<Bullet *> bullets;
 	std::list<PowerUp *> powerUps;
-	ProgressBar progressBar, placeholder;
+	ProgressBar progressBar(15), placeholder(0);
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
 
@@ -38,9 +38,8 @@ int main()
 		asteroids.clear();
 		bullets.clear();
 		powerUps.clear();
-		bigAsteroids = 4;
-		roundNum = 0;
-		deltaPowerUp = 0;
+		gameVal.reset();
+		delta.reset();
 		p.reset();
 		menu.reset();
 		gameOver.reset();
@@ -51,11 +50,11 @@ int main()
 
 	while (window.isOpen())
 	{
-		deltaTime = deltaClock.restart();
+		delta.Time = delta.Clock.restart();
 
 		if (!isPlaying)
 		{
-			deltaMenu += deltaTime.asMilliseconds();
+			delta.Menu += delta.Time.asMilliseconds();
 			if (isMenu)
 			{
 				menu.show();
@@ -84,8 +83,8 @@ int main()
 		}
 		else
 		{
-			deltaPowerUp += deltaTime.asMilliseconds();
-			deltaMove += deltaTime.asMilliseconds();
+			delta.PowerUp += delta.Time.asMilliseconds();
+			delta.Move += delta.Time.asMilliseconds();
 
 			sf::Event event;
 			while (window.pollEvent(event))
@@ -124,6 +123,12 @@ int main()
 						bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet, p.bulletScale()));
 						bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet, p.bulletScale()));
 					}
+					else if (p.isDoublePenetrating)
+					{
+						Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale());
+						b->lifes = 2;
+						bullets.push_back(b);
+					}
 					else
 						bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale()));
 					p.deltaShoot = 0;
@@ -149,9 +154,10 @@ int main()
 				}
 			}
 			// Spawn random power up evey 10 seconds and clear old
-			if (deltaPowerUp >= 10000)
+			if (delta.PowerUp >= 10000)
 			{
-				int rand = std::rand() % 3;
+				// int rand = std::rand() % 4;
+				int rand = 3;
 				powerUps.clear();
 				switch (rand)
 				{
@@ -162,14 +168,18 @@ int main()
 					powerUps.push_back(new PowerUp(&tLifeUp));
 					break;
 				case 2: // Generate double shoot powerup
-					powerUps.push_back(new PowerUp(&tDoubleShoot));
+					powerUps.push_back(new PowerUp(&tDoubleBullet));
+					break;
+				case 3: // Generate double penetrate powerup
+					powerUps.push_back(new PowerUp(&tPenetratingBullet));
 					break;
 				}
-				deltaPowerUp = 0;
+				delta.PowerUp = 0;
 				// After 10 seconds of last powerUp collection, restore basic gameplay
 				// (for now, only bullet)
 				p.isPowerBullet = false;
 				p.isDoubleShooting = false;
+				p.isDoublePenetrating = false;
 			}
 			// Check power ups and player collisions
 			for (auto a : powerUps)
@@ -177,18 +187,20 @@ int main()
 				if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle)
 				{
 					a->life = false;
-					deltaPowerUp = 0;
+					delta.PowerUp = 0;
 					if (a->sprite.getTexture() == &tBulletUp)
 						p.isPowerBullet = true;
 					else if (a->sprite.getTexture() == &tLifeUp)
 						p.lifes++;
-					else if (a->sprite.getTexture() == &tDoubleShoot)
+					else if (a->sprite.getTexture() == &tDoubleBullet)
 						p.isDoubleShooting = true;
+					else if (a->sprite.getTexture() == &tPenetratingBullet)
+						p.isDoublePenetrating = true;
 				}
-				else if ((deltaPowerUp >= 10000) && (a->life == true))
+				else if ((delta.PowerUp >= 10000) && (a->life == true))
 				{
 					a->life = false;
-					deltaPowerUp = 0;
+					delta.PowerUp = 0;
 				}
 			}
 
@@ -221,7 +233,12 @@ int main()
 			{
 				Bullet *e = *i;
 				e->update();
-				if (e->life == false)
+				if (e->life == false && e->lifes > 0)
+				{
+					e->lifes--;
+					e->life = true;
+				}
+				else if (e->life == false && e->lifes == 0)
 				{
 					i = bullets.erase(i);
 					delete e;
@@ -245,9 +262,9 @@ int main()
 			// Start new level after clearing all asteroids
 			if (asteroids.size() == 0)
 			{
-				bigAsteroids += 2;
-				roundNum++;
-				for (int i = 0; i < bigAsteroids; i++)
+				gameVal.bigAsteroids += 2;
+				gameVal.roundNum++;
+				for (int i = 0; i < gameVal.bigAsteroids; i++)
 					asteroids.push_back(generateBigAsteroid(&tAsteroid[BIG]));
 				progressBar.reset();
 			}
@@ -256,7 +273,7 @@ int main()
 
 			std::string sPoints = std::to_string(p.points);
 			std::string sTime = std::to_string(p.aliveTime.asMilliseconds() / 10);
-			std::string sLevel = std::to_string(roundNum);
+			std::string sLevel = std::to_string(gameVal.roundNum);
 			std::string sLifes;
 			if (p.lifes == 1)
 				sLifes = std::to_string(p.lifes) + " life";
@@ -284,7 +301,7 @@ int main()
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);
 			window.display();
-			deltaMove = 0;
+			delta.Move = 0;
 		}
 	}
 	return 0;

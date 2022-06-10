@@ -2,7 +2,7 @@
 #include <iostream>
 
 sf::Texture tPlayer, tAsteroid[3], tBullet;
-sf::Texture tBulletUp, tLifeUp, tDoubleShoot;
+sf::Texture tBulletUp, tLifeUp, tDoubleBullet, tPenetratingBullet;
 sf::Texture tBackground;
 #define BIG 0
 #define MEDIUM 1
@@ -17,9 +17,10 @@ bool loadTextures()
 		!tAsteroid[SMALL].loadFromFile(dir + "asteroidSmall.png") ||
 		!tBullet.loadFromFile(dir + "bullet.png") ||
 
-		!tBulletUp.loadFromFile(dir + "powerUp.png") ||
+		!tBulletUp.loadFromFile(dir + "biggerBullet.png") ||
 		!tLifeUp.loadFromFile(dir + "lifeUp.png") ||
-		!tDoubleShoot.loadFromFile(dir + "doubleShoot.png") ||
+		!tDoubleBullet.loadFromFile(dir + "doubleBullet.png") ||
+		!tPenetratingBullet.loadFromFile(dir + "penetratingBullet.png") ||
 		!tBackground.loadFromFile(dir + "background.png"))
 	{
 		std::cout << "Error loading textures\n";
@@ -34,7 +35,8 @@ bool loadTextures()
 
 	tBulletUp.setSmooth(true);
 	tLifeUp.setSmooth(true);
-	tDoubleShoot.setSmooth(true);
+	tDoubleBullet.setSmooth(true);
+	tPenetratingBullet.setSmooth(true);
 	tBackground.setRepeated(true);
 	return true;
 }

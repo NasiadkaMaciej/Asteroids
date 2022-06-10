@@ -224,7 +224,7 @@ public:
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (deltaMenu >= 100 && sf::Event::KeyPressed)
+			if (delta.Menu >= 100 && sf::Event::KeyPressed)
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				{
@@ -243,7 +243,7 @@ public:
 					click();
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
 					playSound(&menuSound);
-				deltaMenu = 0;
+				delta.Menu = 0;
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
@@ -633,8 +633,10 @@ public:
 	float objectSize;
 	float numOfObjects;
 	float removedObjects = 0;
-	ProgressBar()
+	float height;
+	ProgressBar(float HEIGHT)
 	{
+		height = HEIGHT;
 		fullSize = desktopMode.width / 2;
 		pg.setFillColor(sf::Color::Black);
 		pg.setOutlineThickness(1);
@@ -648,14 +650,14 @@ public:
 	}
 	void update()
 	{
-		pg.setSize(sf::Vector2f(fullSize - removedObjects, 15));
+		pg.setSize(sf::Vector2f(fullSize - removedObjects, height));
 		pg.setOrigin(pg.getGlobalBounds().width / 2, pg.getGlobalBounds().height / 2);
 		pg.setPosition(window.getView().getCenter().x, window.getView().getCenter().y * 1.95);
 	}
 	void reset()
 	{
 		removedObjects = 0;
-		numOfObjects = bigAsteroids + bigAsteroids * 2 + bigAsteroids * 4;
+		numOfObjects = gameVal.bigAsteroids + gameVal.bigAsteroids * 2 + gameVal.bigAsteroids * 4;
 		objectSize = fullSize / numOfObjects;
 	}
 };

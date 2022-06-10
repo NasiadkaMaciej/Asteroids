@@ -1,80 +1,52 @@
-#include <SFML/Graphics.hpp>
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include "GameSettings.hpp"
 #include <iostream>
 #include <fstream>
 
-// states
-#define playState 0
-#define menuState 1
-#define gameoverState 2
-#define settingsState 3
-#define saveScreenState 4
-#define leaderBoardState 5
-
-// game start values;
-int bigAsteroids = 4; // when generating, 2 more are created
-int roundNum = 0;     // when starting, 1 is added
-sf::Clock deltaClock;
-sf::Time deltaTime;
-float deltaPowerUp, deltaMenu, deltaMove;
+void GameValues::reset() // Change to creating new object
+{
+  GameValues::bigAsteroids = 4;
+  GameValues::roundNum = 0;
+}
+// extern GameValues gameVal;
 
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
+sf::Font font;
+sf::Text text;
 
-float degToRad = M_PI / 180;
+//float scale = desktopMode.height / 2000;
+float scale = (float)sf::VideoMode::getDesktopMode().height / 2000;
 
 // to array?
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
      isSaveScreen = false, isLeaderBoard = false;
 
-sf::Font font;
-sf::Text text;
-
-struct GameSettings
+void GameSettings::loadSettings()
 {
-public:
-  GameSettings()
+  std::ifstream file("asteroids.cfg");
+  if (file.is_open())
   {
-    loadSetting();
-  }
-  int frames;
-  bool vsync, fs, sfx, music, background;
-  void loadSetting()
-  {
-    std::ifstream file("asteroids.cfg");
-    if (file.is_open())
+    const int values = 6;
+    int value[values];
+    std::string tmpString;
+    for (int i = 0; i < values; i++)
     {
-      const int values = 6;
-      int value[values];
-      std::string tmpString;
-      for (int i = 0; i < values; i++)
-      {
-        std::getline(file, tmpString, ':');
-        std::getline(file, tmpString);
-        value[i] = stoi(tmpString);
-      }
-      frames = value[0];
-      vsync = value[1];
-      fs = value[2];
-      sfx = value[3];
-      music = value[4];
-      background = value[5];
+      std::getline(file, tmpString, ':');
+      std::getline(file, tmpString);
+      value[i] = stoi(tmpString);
+    }
+    frames = value[0];
+    vsync = value[1];
+    fs = value[2];
+    sfx = value[3];
+    music = value[4];
+    background = value[5];
 
-      file.close();
-    }
-    else
-    {
-      frames = 60;
-      vsync = true;
-      fs = true;
-      sfx = true;
-      music = true;
-      background = true;
-      saveSettings();
-    }
+    file.close();
   }
-  void saveSettings()
+}
+void GameSettings::saveSettings()
+{
   {
     std::ofstream file("asteroids.cfg");
     if (file.is_open())
@@ -88,7 +60,7 @@ public:
     }
     file.close();
   }
-};
+}
 int translateFS(int fs)
 {
   if (fs == 0)
@@ -97,7 +69,11 @@ int translateFS(int fs)
     return sf::Style::Fullscreen;
   return 0;
 }
+
+GameValues gameVal;
 GameSettings gameSettings;
+GameTime delta;
+float degToRad = M_PI / 180;
 
 bool loadBase()
 {
@@ -113,7 +89,7 @@ bool loadBase()
 
   sf::Image image;
 
-  if (!font.loadFromFile("Hyperspace.otf") || !image.loadFromFile("textures/icon.png"))
+  if (!font.loadFromFile("textures/Hyperspace.otf") || !image.loadFromFile("textures/icon.png"))
   {
     std::cout << "Error loading font or icon\n";
     return false;
@@ -129,7 +105,6 @@ bool loadBase()
   srand(time(NULL));
   return true;
 }
-
 void setStates(bool state)
 {
   isPlaying = state;
@@ -175,5 +150,5 @@ void setState(int state)
     isLeaderBoard = true;
     break;
   }
-  deltaClock.restart();
+  delta.Clock.restart();
 }

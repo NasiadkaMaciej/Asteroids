@@ -1,8 +1,5 @@
 float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};
 
-// objects size is proportional to the screen height
-float scale = (float)sf::VideoMode::getDesktopMode().height / 2000;
-
 // returns random value excluding 0
 int random(int range, int modifier)
 {
@@ -46,7 +43,7 @@ class Player : public Entity
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
-		 isDoubleShooting = false, isPowerBullet = false;
+		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
 	int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
 	float deltaShoot;
 
@@ -56,11 +53,11 @@ public:
 		: Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE){};
 	void update()
 	{
-		aliveTime += deltaTime;
-		deltaShoot += deltaTime.asMilliseconds();
+		aliveTime += delta.Time;
+		deltaShoot += delta.Time.asMilliseconds();
 		if (life)
 		{
-			float rotateSpeed = 2.5 * deltaMove / 15;
+			float rotateSpeed = 2.5 * delta.Move / 15;
 			if (isRotatingRight)
 				sprite.setRotation(sprite.getRotation() + rotateSpeed);
 			else if (isRotatingLeft)
@@ -69,14 +66,14 @@ public:
 
 			if (thrust)
 			{
-				x_speed += cos(angle * degToRad) * 0.2 * deltaMove / 15;
-				y_speed += sin(angle * degToRad) * 0.2 * deltaMove / 15;
+				x_speed += cos(angle * degToRad) * 0.2 * delta.Move / 15;
+				y_speed += sin(angle * degToRad) * 0.2 * delta.Move / 15;
 				isIdle = false;
 			}
 			else
 			{
-				x_speed *= (float)(1 - deltaMove / 1200);
-				y_speed *= (float)(1 - deltaMove / 1200);
+				x_speed *= (float)(1 - delta.Move / 1200);
+				y_speed *= (float)(1 - delta.Move / 1200);
 			}
 
 			float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
@@ -86,8 +83,8 @@ public:
 				y_speed *= maxSpeed / speed;
 			}
 
-			x += x_speed * deltaMove / 15;
-			y += y_speed * deltaMove / 15;
+			x += x_speed * delta.Move / 15;
+			y += y_speed * delta.Move / 15;
 
 			if (x >= desktopMode.width)
 				x = 0;
@@ -150,8 +147,8 @@ public:
 		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
 	void update()
 	{
-		x += x_speed * deltaMove / 15;
-		y += y_speed * deltaMove / 15;
+		x += x_speed * delta.Move / 15;
+		y += y_speed * delta.Move / 15;
 		if (x >= desktopMode.width)
 			x = 0;
 		else if (x <= 0)
@@ -165,6 +162,7 @@ public:
 class Bullet : public Entity
 {
 public:
+	int lifes = 1;
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, int SCALE)
 		: Entity(X, Y, cos(ANGLE * degToRad) * 20, cos(ANGLE * degToRad) * 20, ANGLE, TEXTURE)
 	{
@@ -172,10 +170,8 @@ public:
 	};
 	void update()
 	{
-		x_speed = cos(angle * degToRad) * 20 * deltaMove / 15;
-		;
-		y_speed = sin(angle * degToRad) * 20 * deltaMove / 15;
-		;
+		x_speed = cos(angle * degToRad) * 20 * delta.Move / 15;
+		y_speed = sin(angle * degToRad) * 20 * delta.Move / 15;
 		x += x_speed;
 		y += y_speed;
 		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
