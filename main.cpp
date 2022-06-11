@@ -125,7 +125,7 @@ int main()
 					}
 					else if (p.isDoublePenetrating)
 					{
-						Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale());
+						Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, 5);
 						b->lifes = 2;
 						bullets.push_back(b);
 					}
@@ -142,6 +142,7 @@ int main()
 						playSound(&destroySound);
 						a->life = false;
 						b->life = false;
+						b->lifes--;
 						progressBar.retractPoint();
 					}
 				// Check asteroids and player collisions
@@ -156,8 +157,7 @@ int main()
 			// Spawn random power up evey 10 seconds and clear old
 			if (delta.PowerUp >= 10000)
 			{
-				// int rand = std::rand() % 4;
-				int rand = 3;
+				int rand = std::rand() % 4;
 				powerUps.clear();
 				switch (rand)
 				{
@@ -233,12 +233,7 @@ int main()
 			{
 				Bullet *e = *i;
 				e->update();
-				if (e->life == false && e->lifes > 0)
-				{
-					e->lifes--;
-					e->life = true;
-				}
-				else if (e->life == false && e->lifes == 0)
+				if (e->lifes == 0 && !e->life)
 				{
 					i = bullets.erase(i);
 					delete e;

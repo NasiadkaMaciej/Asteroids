@@ -175,7 +175,10 @@ public:
 		x += x_speed;
 		y += y_speed;
 		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
+		{
 			life = false;
+			lifes--;
+		}
 	}
 };
 
