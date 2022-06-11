@@ -14,7 +14,6 @@ sf::RenderWindow window;
 sf::Font font;
 sf::Text text;
 
-//float scale = desktopMode.height / 2000;
 float scale = (float)sf::VideoMode::getDesktopMode().height / 2000;
 
 // to array?

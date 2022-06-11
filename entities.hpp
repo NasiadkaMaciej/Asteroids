@@ -1,5 +1,16 @@
 float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};
 
+struct Scale
+{
+	float x;
+	float y;
+	Scale(float X, float Y)
+	{
+		x = X;
+		y = Y;
+	}
+};
+
 // returns random value excluding 0
 int random(int range, int modifier)
 {
@@ -132,12 +143,14 @@ public:
 		points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
 		aliveTime = sf::Time::Zero;
 	}
-	int bulletScale()
+	Scale bulletScale()
 	{
 		if (isPowerBullet)
-			return 2;
+			return Scale(2, 2);
+		else if(isDoublePenetrating)
+			return Scale(1, 5);
 		else
-			return 1;
+			return Scale(1, 1);
 	}
 };
 class Asteroid : public Entity
@@ -163,10 +176,10 @@ class Bullet : public Entity
 {
 public:
 	int lifes = 1;
-	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, int SCALE)
+	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
 		: Entity(X, Y, cos(ANGLE * degToRad) * 20, cos(ANGLE * degToRad) * 20, ANGLE, TEXTURE)
 	{
-		sprite.scale(SCALE, SCALE);
+		sprite.scale(s.x, s.y);
 	};
 	void update()
 	{

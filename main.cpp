@@ -125,7 +125,7 @@ int main()
 					}
 					else if (p.isDoublePenetrating)
 					{
-						Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, 5);
+						Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale());
 						b->lifes = 2;
 						bullets.push_back(b);
 					}
