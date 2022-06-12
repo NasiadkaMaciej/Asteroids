@@ -104,48 +104,36 @@ bool loadBase()
   srand(time(NULL));
   return true;
 }
+
 void setStates(bool state)
 {
-  isPlaying = state;
-  isMenu = state;
-  isGameOver = state;
-  isSettings = state;
-  isSaveScreen = state;
-  isLeaderBoard = state;
+  isPlaying = isMenu = isGameOver = isSettings = isSaveScreen = isLeaderBoard = state;
 }
 
 void setState(int state)
 {
+  // All cases are hiding cursor except for playState
+  window.setMouseCursorVisible(true);
+  setStates(false);
+
   switch (state)
   {
   case playState:
-    window.setMouseCursorVisible(false);
-    setStates(false);
     isPlaying = true;
     break;
   case menuState:
-    window.setMouseCursorVisible(true);
-    setStates(false);
     isMenu = true;
     break;
   case gameoverState:
-    window.setMouseCursorVisible(true);
-    setStates(false);
     isGameOver = true;
     break;
   case settingsState:
-    window.setMouseCursorVisible(true);
-    setStates(false);
     isSettings = true;
     break;
   case saveScreenState:
-    window.setMouseCursorVisible(true);
-    setStates(false);
     isSaveScreen = true;
     break;
   case leaderBoardState:
-    window.setMouseCursorVisible(true);
-    setStates(false);
     isLeaderBoard = true;
     break;
   }
