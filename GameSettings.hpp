@@ -46,7 +46,9 @@ public:
   float PowerUp, Menu, Move;
   void reset()
   {
-    PowerUp, Menu, Move = 0;
+    PowerUp = 0;
+    Menu = 0;
+    Move = 0;
   }
 };
 
@@ -55,7 +57,6 @@ extern sf::RenderWindow window;
 
 // to array?
 extern bool isPlaying, isMenu, isGameOver, isSettings, isSaveScreen, isLeaderBoard;
-
 
 struct GameSettings
 {

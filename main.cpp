@@ -114,25 +114,24 @@ int main()
 				else
 					p.isShooting = false;
 			}
-			if (p.isShooting && !p.isIdle)
-				if (p.deltaShoot >= p.bulletFreq)
+			if (p.isShooting && !p.isIdle && p.deltaShoot >= p.bulletFreq)
+			{
+				playSound(&laserSound);
+				if (p.isDoubleShooting) // shoot 2 bullets simultaneously
 				{
-					playSound(&laserSound);
-					if (p.isDoubleShooting) // shoot 2 bullets simultaneously
-					{
-						bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet, p.bulletScale()));
-						bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet, p.bulletScale()));
-					}
-					else if (p.isDoublePenetrating)
-					{
-						Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale());
-						b->lifes = 2;
-						bullets.push_back(b);
-					}
-					else
-						bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale()));
-					p.deltaShoot = 0;
+					bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet, p.bulletScale()));
+					bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet, p.bulletScale()));
 				}
+				else if (p.isDoublePenetrating)
+				{
+					Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale());
+					b->lifes = 2;
+					bullets.push_back(b);
+				}
+				else
+					bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale()));
+				p.deltaShoot = 0;
+			}
 			for (auto a : asteroids)
 			{
 				for (auto b : bullets)

@@ -520,10 +520,10 @@ public:
 						setState(gameoverState);
 					if (event.type == sf::Event::TextEntered)
 					{
-						if (event.text.unicode < 128 && event.text.unicode != 8 &&
-							event.text.unicode != 13 && name.length() <= 18)
+						//
+						if ((event.text.unicode != 8 && name.length() <= 18 && std::isalnum(event.text.unicode)) ||
+							(event.text.unicode == 32 && name.length() <= 18))
 						{
-							//&& std::isprint(event.text.unicode)) {
 							name += event.text.unicode;
 							entries[0] += event.text.unicode;
 						}
@@ -557,6 +557,7 @@ public:
 						std::string secret = "";
 						if (secret != "")
 						{
+							transform(name.begin(), name.end(), name.begin(), ::tolower);
 							std::string request = "name=" + name + "&points=" + std::to_string(points) + "&secret=" + secret;
 							const char *cRequest = request.c_str();
 							CURL *curl;
