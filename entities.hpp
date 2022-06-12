@@ -60,15 +60,15 @@ public:
 
 	sf::Time aliveTime = sf::Time::Zero;
 
-	Player(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
-		: Entity(X, Y, X_SPEED, Y_SPEED, ANGLE, TEXTURE){};
+	Player()
+		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer){};
 	void update()
 	{
-		aliveTime += delta.Time;
-		deltaShoot += delta.Time.asMilliseconds();
+		aliveTime += delta->Time;
+		deltaShoot += delta->Time.asMilliseconds();
 		if (life)
 		{
-			float rotateSpeed = 2.5 * delta.Move / 15;
+			float rotateSpeed = 2.5 * delta->Move / 15;
 			if (isRotatingRight)
 				sprite.setRotation(sprite.getRotation() + rotateSpeed);
 			else if (isRotatingLeft)
@@ -77,14 +77,14 @@ public:
 
 			if (thrust)
 			{
-				x_speed += cos(angle * degToRad) * 0.2 * delta.Move / 15;
-				y_speed += sin(angle * degToRad) * 0.2 * delta.Move / 15;
+				x_speed += cos(angle * degToRad) * 0.2 * delta->Move / 15;
+				y_speed += sin(angle * degToRad) * 0.2 * delta->Move / 15;
 				isIdle = false;
 			}
 			else
 			{
-				x_speed *= (float)(1 - delta.Move / 1200);
-				y_speed *= (float)(1 - delta.Move / 1200);
+				x_speed *= (float)(1 - delta->Move / 1200);
+				y_speed *= (float)(1 - delta->Move / 1200);
 			}
 
 			float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
@@ -94,8 +94,8 @@ public:
 				y_speed *= maxSpeed / speed;
 			}
 
-			x += x_speed * delta.Move / 15;
-			y += y_speed * delta.Move / 15;
+			x += x_speed * delta->Move / 15;
+			y += y_speed * delta->Move / 15;
 
 			if (x >= desktopMode.width)
 				x = 0;
@@ -131,18 +131,6 @@ public:
 			lifes++;
 		}
 	}
-	void reset()
-	{
-		x = desktopMode.width / 2, y = desktopMode.height / 2;
-		x_speed = 0, y_speed = 0;
-		angle = 90;
-		life = true;
-		thrust = false, isShooting = false, isIdle = true, isRotatingRight = false, isRotatingLeft = false;
-		isDoubleShooting = false;
-		deltaShoot = 0;
-		points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
-		aliveTime = sf::Time::Zero;
-	}
 	Scale bulletScale()
 	{
 		if (isPowerBullet)
@@ -160,8 +148,8 @@ public:
 		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
 	void update()
 	{
-		x += x_speed * delta.Move / 15;
-		y += y_speed * delta.Move / 15;
+		x += x_speed * delta->Move / 15;
+		y += y_speed * delta->Move / 15;
 		if (x >= desktopMode.width)
 			x = 0;
 		else if (x <= 0)
@@ -183,8 +171,8 @@ public:
 	};
 	void update()
 	{
-		x_speed = cos(angle * degToRad) * 20 * delta.Move / 15;
-		y_speed = sin(angle * degToRad) * 20 * delta.Move / 15;
+		x_speed = cos(angle * degToRad) * 20 * delta->Move / 15;
+		y_speed = sin(angle * degToRad) * 20 * delta->Move / 15;
 		x += x_speed;
 		y += y_speed;
 		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)

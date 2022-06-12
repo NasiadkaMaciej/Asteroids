@@ -2,12 +2,7 @@
 #include <iostream>
 #include <fstream>
 
-void GameValues::reset() // Change to creating new object
-{
-  GameValues::bigAsteroids = 4;
-  GameValues::roundNum = 0;
-}
-// extern GameValues gameVal;
+float degToRad = M_PI / 180;
 
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
@@ -69,10 +64,9 @@ int translateFS(int fs)
   return 0;
 }
 
-GameValues gameVal;
+GameValues *gameVal;
 GameSettings gameSettings;
-GameTime delta;
-float degToRad = M_PI / 180;
+GameTime *delta;
 
 bool loadBase()
 {
@@ -93,7 +87,7 @@ bool loadBase()
     std::cout << "Error loading font or icon\n";
     return false;
   }
-
+  
   text.setFont(font);
   text.setCharacterSize(50);
   text.setFillColor(sf::Color::White);
@@ -137,5 +131,5 @@ void setState(int state)
     isLeaderBoard = true;
     break;
   }
-  delta.Clock.restart();
+  delta->Clock.restart();
 }

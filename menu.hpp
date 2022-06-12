@@ -224,7 +224,7 @@ public:
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (delta.Menu >= 100 && sf::Event::KeyPressed)
+			if (delta->Menu >= 100 && sf::Event::KeyPressed)
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				{
@@ -243,7 +243,7 @@ public:
 					click();
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
 					playSound(&menuSound);
-				delta.Menu = 0;
+				delta->Menu = 0;
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
@@ -658,7 +658,7 @@ public:
 	void reset()
 	{
 		removedObjects = 0;
-		numOfObjects = gameVal.bigAsteroids + gameVal.bigAsteroids * 2 + gameVal.bigAsteroids * 4;
+		numOfObjects = gameVal->bigAsteroids + gameVal->bigAsteroids * 2 + gameVal->bigAsteroids * 4;
 		objectSize = fullSize / numOfObjects;
 	}
 };

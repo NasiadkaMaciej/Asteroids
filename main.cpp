@@ -16,7 +16,8 @@ int main()
 	// writeScoreBoard();
 
 	// create objects and lists
-	Player p(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer);
+	Player *p;
+	// add all of menus to the list and then reset() all of them in changeState() function
 	Menu menu(menuEntriesCount, menuEntries);
 	GameOver gameOver(gameOverEntriesCount, gameOverEntries);
 	Settings settings(settingEntriesCount, settingEntries);
@@ -38,32 +39,33 @@ int main()
 		asteroids.clear();
 		bullets.clear();
 		powerUps.clear();
-		gameVal.reset();
-		delta.reset();
-		p.reset();
+		gameVal = new GameValues;
+		delta = new GameTime;
+		p = new Player;
 		menu.reset();
 		gameOver.reset();
 		saveScore.reset();
 		settings.reset();
 		leaderBoard.reset();
 	};
+	reset();
 
 	while (window.isOpen())
 	{
-		delta.Time = delta.Clock.restart();
+		delta->Time = delta->Clock.restart();
 
 		if (!isPlaying)
 		{
-			delta.Menu += delta.Time.asMilliseconds();
+			delta->Menu += delta->Time.asMilliseconds();
 			if (isMenu)
 			{
 				menu.show();
-				if (p.lifes <= 0)
+				if (p->lifes <= 0)
 					reset();
 			}
 			else if (isGameOver)
 			{
-				gameOver.setScore(p.points);
+				gameOver.setScore(p->points);
 				gameOver.show();
 				if (isPlaying) // returned to playing from some menu
 					reset();
@@ -72,7 +74,7 @@ int main()
 				settings.show();
 			else if (isSaveScreen)
 			{
-				saveScore.setScore(p.points);
+				saveScore.setScore(p->points);
 				saveScore.show();
 			}
 			else if (isLeaderBoard)
@@ -83,8 +85,8 @@ int main()
 		}
 		else
 		{
-			delta.PowerUp += delta.Time.asMilliseconds();
-			delta.Move += delta.Time.asMilliseconds();
+			delta->PowerUp += delta->Time.asMilliseconds();
+			delta->Move += delta->Time.asMilliseconds();
 
 			sf::Event event;
 			while (window.pollEvent(event))
@@ -98,39 +100,39 @@ int main()
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11))
 					settings.toggleFS();
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-					p.isRotatingRight = true;
+					p->isRotatingRight = true;
 				else
-					p.isRotatingRight = false;
+					p->isRotatingRight = false;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-					p.isRotatingLeft = true;
+					p->isRotatingLeft = true;
 				else
-					p.isRotatingLeft = false;
+					p->isRotatingLeft = false;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-					p.thrust = true;
+					p->thrust = true;
 				else
-					p.thrust = false;
+					p->thrust = false;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-					p.isShooting = true;
+					p->isShooting = true;
 				else
-					p.isShooting = false;
+					p->isShooting = false;
 			}
-			if (p.isShooting && !p.isIdle && p.deltaShoot >= p.bulletFreq)
+			if (p->isShooting && !p->isIdle && p->deltaShoot >= p->bulletFreq)
 			{
 				playSound(&laserSound);
-				if (p.isDoubleShooting) // shoot 2 bullets simultaneously
+				if (p->isDoubleShooting) // shoot 2 bullets simultaneously
 				{
-					bullets.push_back(new Bullet(p.x, p.y, p.angle + 2.5, &tBullet, p.bulletScale()));
-					bullets.push_back(new Bullet(p.x, p.y, p.angle - 2.5, &tBullet, p.bulletScale()));
+					bullets.push_back(new Bullet(p->x, p->y, p->angle + 2.5, &tBullet, p->bulletScale()));
+					bullets.push_back(new Bullet(p->x, p->y, p->angle - 2.5, &tBullet, p->bulletScale()));
 				}
-				else if (p.isDoublePenetrating)
+				else if (p->isDoublePenetrating)
 				{
-					Bullet *b = new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale());
+					Bullet *b = new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale());
 					b->lifes = 2;
 					bullets.push_back(b);
 				}
 				else
-					bullets.push_back(new Bullet(p.x, p.y, p.angle, &tBullet, p.bulletScale()));
-				p.deltaShoot = 0;
+					bullets.push_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
+				p->deltaShoot = 0;
 			}
 			for (auto a : asteroids)
 			{
@@ -145,16 +147,38 @@ int main()
 						progressBar.retractPoint();
 					}
 				// Check asteroids and player collisions
-				if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle)
+				if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
 				{
 					playSound(&deathSound);
 					a->life = false;
-					p.life = false;
+					p->life = false;
 					progressBar.retractPoint();
 				}
 			}
+			// Check power ups and player collisions
+			for (auto a : powerUps)
+			{
+				if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
+				{
+					a->life = false;
+					delta->PowerUp = 0;
+					if (a->sprite.getTexture() == &tBulletUp)
+						p->isPowerBullet = true;
+					else if (a->sprite.getTexture() == &tLifeUp)
+						p->lifes++;
+					else if (a->sprite.getTexture() == &tDoubleBullet)
+						p->isDoubleShooting = true;
+					else if (a->sprite.getTexture() == &tPenetratingBullet)
+						p->isDoublePenetrating = true;
+				}
+				else if ((delta->PowerUp >= gameVal->powerUpRestore) && (a->life == true))
+				{
+					a->life = false;
+					delta->PowerUp = 0;
+				}
+			}
 			// Spawn random power up evey 10 seconds and clear old
-			if (delta.PowerUp >= 10000)
+			if (delta->PowerUp >= gameVal->powerUpRestore)
 			{
 				int rand = std::rand() % 4;
 				powerUps.clear();
@@ -173,34 +197,12 @@ int main()
 					powerUps.push_back(new PowerUp(&tPenetratingBullet));
 					break;
 				}
-				delta.PowerUp = 0;
+				delta->PowerUp = 0;
 				// After 10 seconds of last powerUp collection, restore basic gameplay
 				// (for now, only bullet)
-				p.isPowerBullet = false;
-				p.isDoubleShooting = false;
-				p.isDoublePenetrating = false;
-			}
-			// Check power ups and player collisions
-			for (auto a : powerUps)
-			{
-				if (Collision::PixelPerfectTest(a->sprite, p.sprite) && !p.isIdle)
-				{
-					a->life = false;
-					delta.PowerUp = 0;
-					if (a->sprite.getTexture() == &tBulletUp)
-						p.isPowerBullet = true;
-					else if (a->sprite.getTexture() == &tLifeUp)
-						p.lifes++;
-					else if (a->sprite.getTexture() == &tDoubleBullet)
-						p.isDoubleShooting = true;
-					else if (a->sprite.getTexture() == &tPenetratingBullet)
-						p.isDoublePenetrating = true;
-				}
-				else if ((delta.PowerUp >= 10000) && (a->life == true))
-				{
-					a->life = false;
-					delta.PowerUp = 0;
-				}
+				p->isPowerBullet = false;
+				p->isDoubleShooting = false;
+				p->isDoublePenetrating = false;
 			}
 
 			// Update all entities and remove dead ones
@@ -212,11 +214,11 @@ int main()
 				{
 					// Generate smaller asteroids after being hit and give points
 					if (e->sprite.getTexture() == &tAsteroid[BIG])
-						p.givePoints(20);
+						p->givePoints(20);
 					else if (e->sprite.getTexture() == &tAsteroid[MEDIUM])
-						p.givePoints(50);
+						p->givePoints(50);
 					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
-						p.givePoints(100);
+						p->givePoints(100);
 					if (generateAsteroid(*e) != NULL)
 					{
 						asteroids.push_back(generateAsteroid(*e));
@@ -252,27 +254,27 @@ int main()
 				else
 					i++;
 			}
-			p.update();
+			p->update();
 			// Start new level after clearing all asteroids
 			if (asteroids.size() == 0)
 			{
-				gameVal.bigAsteroids += 2;
-				gameVal.roundNum++;
-				for (int i = 0; i < gameVal.bigAsteroids; i++)
+				gameVal->bigAsteroids += 2;
+				gameVal->roundNum++;
+				for (int i = 0; i < gameVal->bigAsteroids; i++)
 					asteroids.push_back(generateBigAsteroid(&tAsteroid[BIG]));
 				progressBar.reset();
 			}
 
 			progressBar.update();
 
-			std::string sPoints = std::to_string(p.points);
-			std::string sTime = std::to_string(p.aliveTime.asMilliseconds() / 10);
-			std::string sLevel = std::to_string(gameVal.roundNum);
+			std::string sPoints = std::to_string(p->points);
+			std::string sTime = std::to_string(p->aliveTime.asMilliseconds() / 10);
+			std::string sLevel = std::to_string(gameVal->roundNum);
 			std::string sLifes;
-			if (p.lifes == 1)
-				sLifes = std::to_string(p.lifes) + " life";
+			if (p->lifes == 1)
+				sLifes = std::to_string(p->lifes) + " life";
 			else
-				sLifes = std::to_string(p.lifes) + " lifes";
+				sLifes = std::to_string(p->lifes) + " lifes";
 
 			if (sTime.length() > 2)
 				sTime.insert(sTime.length() - 2, ".");
@@ -290,12 +292,12 @@ int main()
 				i->draw(window);
 			for (auto &i : powerUps)
 				i->draw(window);
-			p.draw(window);
+			p->draw(window);
 			window.draw(text);
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);
 			window.display();
-			delta.Move = 0;
+			delta->Move = 0;
 		}
 	}
 	return 0;

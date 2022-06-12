@@ -17,46 +17,31 @@
 
 extern float degToRad;
 
+extern sf::VideoMode desktopMode;
+extern sf::RenderWindow window;
 extern sf::Font font;
 extern sf::Text text;
 
 extern float scale;
 
+// to array or struct
+extern bool isPlaying, isMenu, isGameOver, isSettings, isSaveScreen, isLeaderBoard;
+// for storing game values, in future some timers and upgrades
 struct GameValues
 {
 public:
-  int bigAsteroids = 4;
-  int roundNum = 0;
-  GameValues()
-  {
-    // game start values;
-    bigAsteroids = 4; // when generating, 2 more are created
-    roundNum = 0;     // when starting, 1 is added
-  }
-  void reset(); // Change to making new object
+  int bigAsteroids = 4; // starting game with 6 asteroids (when starting 2 more are added)
+  int roundNum = 0; // round number (when starting game 1 is added)
+  int powerUpRestore = 10000; // time to restore power ups
 };
-
-extern GameValues gameVal;
 
 struct GameTime
 {
 public:
   sf::Clock Clock;
   sf::Time Time;
-  float PowerUp, Menu, Move;
-  void reset()
-  {
-    PowerUp = 0;
-    Menu = 0;
-    Move = 0;
-  }
+  float PowerUp = 0, Menu = 0, Move = 0;
 };
-
-extern sf::VideoMode desktopMode;
-extern sf::RenderWindow window;
-
-// to array?
-extern bool isPlaying, isMenu, isGameOver, isSettings, isSaveScreen, isLeaderBoard;
 
 struct GameSettings
 {
@@ -72,8 +57,9 @@ public:
 };
 int translateFS(int fs);
 
+extern GameValues *gameVal;
 extern GameSettings gameSettings;
-extern GameTime delta;
+extern GameTime *delta;
 
 extern bool loadBase();
 extern void setStates(bool state);
