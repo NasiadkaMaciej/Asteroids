@@ -51,11 +51,13 @@ public:
 };
 class Player : public Entity
 {
+	int bulletFreq = 250, maxSpeed = 15;
+
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
-	int points = 0, maxSpeed = 15, bulletFreq = 250, lifes = 3, earnedLifes = 1;
+	int points = 0, lifes = 3, earnedLifes = 1;
 	float deltaShoot;
 
 	sf::Time aliveTime = sf::Time::Zero;
@@ -135,10 +137,17 @@ public:
 	{
 		if (isPowerBullet)
 			return Scale(2, 2);
-		else if(isDoublePenetrating)
+		else if (isDoublePenetrating)
 			return Scale(1, 5);
 		else
 			return Scale(1, 1);
+	}
+	bool canShoot()
+	{
+		if (isShooting && !isIdle && deltaShoot >= bulletFreq)
+			return true;
+		else
+			return false;
 	}
 };
 class Asteroid : public Entity

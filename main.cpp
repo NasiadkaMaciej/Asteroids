@@ -5,6 +5,55 @@
 #include "sounds.hpp"
 #include "menu.hpp"
 #include <list>
+#include <thread>
+
+//move it somewhere else
+void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar)
+{
+	for (auto a : asteroids)
+	{
+		for (auto b : bullets)
+			// Check bullets and asteroids collisons
+			if (Collision::PixelPerfectTest(a->sprite, b->sprite))
+			{
+				playSound(&destroySound);
+				a->life = false;
+				b->life = false;
+				b->lifes--;
+				progressBar.retractPoint();
+			}
+		// Check asteroids and player collisions
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
+		{
+			playSound(&deathSound);
+			a->life = false;
+			p->life = false;
+			progressBar.retractPoint();
+		}
+	}
+	// Check power ups and player collisions
+	for (auto a : powerUps)
+	{
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
+		{
+			a->life = false;
+			delta->PowerUp = 0;
+			if (a->sprite.getTexture() == &tBulletUp)
+				p->isPowerBullet = true;
+			else if (a->sprite.getTexture() == &tLifeUp)
+				p->lifes++;
+			else if (a->sprite.getTexture() == &tDoubleBullet)
+				p->isDoubleShooting = true;
+			else if (a->sprite.getTexture() == &tPenetratingBullet)
+				p->isDoublePenetrating = true;
+		}
+		else if ((delta->PowerUp >= gameVal->powerUpRestore) && (a->life == true))
+		{
+			a->life = false;
+			delta->PowerUp = 0;
+		}
+	}
+}
 
 int main()
 {
@@ -39,8 +88,11 @@ int main()
 		asteroids.clear();
 		bullets.clear();
 		powerUps.clear();
+		// delete gameVal;
 		gameVal = new GameValues;
+		// delete delta;
 		delta = new GameTime;
+		// delete p;
 		p = new Player;
 		menu.reset();
 		gameOver.reset();
@@ -116,7 +168,9 @@ int main()
 				else
 					p->isShooting = false;
 			}
-			if (p->isShooting && !p->isIdle && p->deltaShoot >= p->bulletFreq)
+			std::thread worker(checkCollision, p, asteroids, bullets, powerUps, progressBar);
+
+			if (p->canShoot())
 			{
 				playSound(&laserSound);
 				if (p->isDoubleShooting) // shoot 2 bullets simultaneously
@@ -134,49 +188,10 @@ int main()
 					bullets.push_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
 				p->deltaShoot = 0;
 			}
-			for (auto a : asteroids)
-			{
-				for (auto b : bullets)
-					// Check bullets and asteroids collisons
-					if (Collision::PixelPerfectTest(a->sprite, b->sprite))
-					{
-						playSound(&destroySound);
-						a->life = false;
-						b->life = false;
-						b->lifes--;
-						progressBar.retractPoint();
-					}
-				// Check asteroids and player collisions
-				if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
-				{
-					playSound(&deathSound);
-					a->life = false;
-					p->life = false;
-					progressBar.retractPoint();
-				}
-			}
-			// Check power ups and player collisions
-			for (auto a : powerUps)
-			{
-				if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
-				{
-					a->life = false;
-					delta->PowerUp = 0;
-					if (a->sprite.getTexture() == &tBulletUp)
-						p->isPowerBullet = true;
-					else if (a->sprite.getTexture() == &tLifeUp)
-						p->lifes++;
-					else if (a->sprite.getTexture() == &tDoubleBullet)
-						p->isDoubleShooting = true;
-					else if (a->sprite.getTexture() == &tPenetratingBullet)
-						p->isDoublePenetrating = true;
-				}
-				else if ((delta->PowerUp >= gameVal->powerUpRestore) && (a->life == true))
-				{
-					a->life = false;
-					delta->PowerUp = 0;
-				}
-			}
+
+			// checkCollision(p, asteroids, bullets, powerUps, progressBar);
+			//  worker.join();
+
 			// Spawn random power up evey 10 seconds and clear old
 			if (delta->PowerUp >= gameVal->powerUpRestore)
 			{
@@ -204,7 +219,7 @@ int main()
 				p->isDoubleShooting = false;
 				p->isDoublePenetrating = false;
 			}
-
+			worker.join();
 			// Update all entities and remove dead ones
 			for (auto i = asteroids.begin(); i != asteroids.end();)
 			{
@@ -282,7 +297,6 @@ int main()
 				sTime = "0." + sTime;
 			text.setString(sTime + " sec" + "\n" + sPoints + " points" + "\n" +
 						   "Round: " + sLevel + "\n" + sLifes);
-
 			window.clear();
 			if (gameSettings.background)
 				window.draw(background);

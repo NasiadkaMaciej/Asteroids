@@ -48,3 +48,8 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Auto maximize and focus game if not in fullscreen
 * [ ] Audio volume settings
 * [ ] Progressbar improvement
+* [ ] Achievments
+* [ ] Upgrades
+* [ ] Cosmetic changes
+* [ ] Reformat readme
+* [ ] More threads
