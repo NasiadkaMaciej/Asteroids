@@ -299,9 +299,8 @@ public:
 					click();
 				else
 					do
-					{
 						move(up);
-					} while (activeEntry != i);
+					while (activeEntry != i);
 			}
 		}
 	}
