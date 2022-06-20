@@ -17,7 +17,7 @@ project(Asteroids
 find_package(SFML COMPONENTS system window graphics audio CONFIG REQUIRED)
 
 file(GLOB SRC
-    *.cpp)
+    src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC})
 
