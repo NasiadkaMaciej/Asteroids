@@ -6,7 +6,12 @@ Asteroids game clone. Written in C++ with SFML.
 Destroy as many asteroids as you can with your spaceship's missiles, but be careful, they come from all sides, at different speeds and, when destroyed, they break into more, even faster and more dangerous fragments.
 Each level ends after destroying all visible asteroids. After that, you get into the next level, which has 2 more asteroids than the previous one.
 You start the game with 3 lives, after you lose one, you enter idle state, in which asteroids cannot hurt you, but you can't shoot them. To continue the game, simply move your ship. When you loose all your lives you can save your score and send it to [Asteroids online leaderboard](https://maciej.ml/Asteroids/)  
-Use arrows to move, spacebar to shoot, N for new game, ESC for entering and exiting menu and Enter for choosing menu entry.
+Arrows or WASD to move  
+Spacebar to shoot  
+N for new game  
+ESC for entering and exiting menu  
+Enter for choosing menu entry  
+F11 for toggling fullscreen (game restart recommended)  
 
 ## Building
 You need SFML and libcurl installed
@@ -15,7 +20,7 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 ````
 ## To-Do
 * [ ] Code cleanup
-* [ ] Make more functional
+* [x] Make more functional
 * [x] Repair time problem after starting new game
 * [x] Add asteroids and bullets
 * [x] Check if game works on other systems and resolutions
@@ -53,3 +58,4 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Cosmetic changes
 * [ ] Reformat readme
 * [ ] More threads
+* [ ] Animated menu background

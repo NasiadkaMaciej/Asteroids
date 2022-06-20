@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 IF(WIN32)
-    set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "" FORCE) # Vcpkg path
+    set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "" FORCE) # vcpkg path
     set(VCPKG_TARGET_TRIPLET "x86-windows-static" CACHE STRING "" FORCE)
 ENDIF()
 
@@ -18,10 +18,6 @@ find_package(SFML COMPONENTS system window graphics audio CONFIG REQUIRED)
 
 file(GLOB SRC
     *.cpp)
-
-IF(UNIX)
-    link_directories(/usr/local/lib) # Dir of SFML
-ENDIF(UNIX)
 
 add_executable(${PROJECT_NAME} ${SRC})
 

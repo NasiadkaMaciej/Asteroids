@@ -57,10 +57,10 @@ void GameSettings::saveSettings()
 }
 int translateFS(int fs)
 {
-  if (fs == 0)
-    return sf::Style::Default;
-  else if (fs == 1)
+  if (fs)
     return sf::Style::Fullscreen;
+  else
+    return sf::Style::Default;
   return 0;
 }
 
@@ -70,7 +70,6 @@ GameTime *delta;
 
 bool loadBase()
 {
-  // create fullscreen window
   desktopMode = sf::VideoMode::getDesktopMode();
   window.create(sf::VideoMode(desktopMode.width,
                               desktopMode.height,
@@ -87,7 +86,7 @@ bool loadBase()
     std::cout << "Error loading font or icon\n";
     return false;
   }
-  
+
   text.setFont(font);
   text.setCharacterSize(50);
   text.setFillColor(sf::Color::White);

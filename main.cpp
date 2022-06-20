@@ -7,53 +7,8 @@
 #include <list>
 #include <thread>
 
-//move it somewhere else
-void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar)
-{
-	for (auto a : asteroids)
-	{
-		for (auto b : bullets)
-			// Check bullets and asteroids collisons
-			if (Collision::PixelPerfectTest(a->sprite, b->sprite))
-			{
-				playSound(&destroySound);
-				a->life = false;
-				b->life = false;
-				b->lifes--;
-				progressBar.retractPoint();
-			}
-		// Check asteroids and player collisions
-		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
-		{
-			playSound(&deathSound);
-			a->life = false;
-			p->life = false;
-			progressBar.retractPoint();
-		}
-	}
-	// Check power ups and player collisions
-	for (auto a : powerUps)
-	{
-		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
-		{
-			a->life = false;
-			delta->PowerUp = 0;
-			if (a->sprite.getTexture() == &tBulletUp)
-				p->isPowerBullet = true;
-			else if (a->sprite.getTexture() == &tLifeUp)
-				p->lifes++;
-			else if (a->sprite.getTexture() == &tDoubleBullet)
-				p->isDoubleShooting = true;
-			else if (a->sprite.getTexture() == &tPenetratingBullet)
-				p->isDoublePenetrating = true;
-		}
-		else if ((delta->PowerUp >= gameVal->powerUpRestore) && (a->life == true))
-		{
-			a->life = false;
-			delta->PowerUp = 0;
-		}
-	}
-}
+// move it somewhere else
+void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar);
 
 int main()
 {
@@ -276,7 +231,7 @@ int main()
 				gameVal->bigAsteroids += 2;
 				gameVal->roundNum++;
 				for (int i = 0; i < gameVal->bigAsteroids; i++)
-					asteroids.push_back(generateBigAsteroid(&tAsteroid[BIG]));
+					asteroids.push_back(generateBigAsteroid());
 				progressBar.reset();
 			}
 
@@ -315,4 +270,51 @@ int main()
 		}
 	}
 	return 0;
+}
+
+void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar)
+{
+	for (auto a : asteroids)
+	{
+		for (auto b : bullets)
+			// Check bullets and asteroids collisons
+			if (Collision::PixelPerfectTest(a->sprite, b->sprite))
+			{
+				playSound(&destroySound);
+				a->life = false;
+				b->life = false;
+				b->lifes--;
+				progressBar.retractPoint();
+			}
+		// Check asteroids and player collisions
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
+		{
+			playSound(&deathSound);
+			a->life = false;
+			p->life = false;
+			progressBar.retractPoint();
+		}
+	}
+	// Check power ups and player collisions
+	for (auto a : powerUps)
+	{
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
+		{
+			a->life = false;
+			delta->PowerUp = 0;
+			if (a->sprite.getTexture() == &tBulletUp)
+				p->isPowerBullet = true;
+			else if (a->sprite.getTexture() == &tLifeUp)
+				p->lifes++;
+			else if (a->sprite.getTexture() == &tDoubleBullet)
+				p->isDoubleShooting = true;
+			else if (a->sprite.getTexture() == &tPenetratingBullet)
+				p->isDoublePenetrating = true;
+		}
+		else if ((delta->PowerUp >= gameVal->powerUpRestore) && (a->life == true))
+		{
+			a->life = false;
+			delta->PowerUp = 0;
+		}
+	}
 }

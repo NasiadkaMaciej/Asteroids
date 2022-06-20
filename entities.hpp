@@ -1,4 +1,6 @@
-float asteroidMaxSpeed[3] = {8, 12, 16}, asteroidDiffSpeed[3] = {4, 6, 8};
+float speedScale = sf::VideoMode::getDesktopMode().height / 200;
+float asteroidMaxSpeed[3] = {speedScale, (float)speedScale *(float)1.5, (float)speedScale * 2};
+float asteroidDiffSpeed[3] = {speedScale / 2, (float)speedScale / 2 * (float)1.5, (float)speedScale / 2 * 2};
 
 struct Scale
 {
@@ -51,7 +53,7 @@ public:
 };
 class Player : public Entity
 {
-	int bulletFreq = 250, maxSpeed = 15;
+	int bulletFreq = 250, maxSpeed = speedScale*2;
 
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
@@ -202,7 +204,7 @@ public:
 
 // Generates asteroid at random edge of the screen
 Asteroid *
-generateBigAsteroid(sf::Texture *texture)
+generateBigAsteroid()
 {
 	int side = std::rand() % 4;
 	float x, y;
@@ -229,7 +231,7 @@ generateBigAsteroid(sf::Texture *texture)
 		new Asteroid(x, y,
 					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
 					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
-					 texture);
+					 &tAsteroid[BIG]);
 	return a;
 }
 Asteroid *
