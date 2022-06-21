@@ -106,15 +106,15 @@ int main()
 					reset();
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11))
 					settings.toggleFS();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 					p->isRotatingRight = true;
 				else
 					p->isRotatingRight = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 					p->isRotatingLeft = true;
 				else
 					p->isRotatingLeft = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 					p->thrust = true;
 				else
 					p->thrust = false;

@@ -4,8 +4,7 @@ float asteroidDiffSpeed[3] = {speedScale / 2, (float)speedScale / 2 * (float)1.5
 
 struct Scale
 {
-	float x;
-	float y;
+	float x, y;
 	Scale(float X, float Y)
 	{
 		x = X;

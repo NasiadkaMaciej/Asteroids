@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 IF(WIN32)
     set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "" FORCE) # vcpkg path
     set(VCPKG_TARGET_TRIPLET "x86-windows-static" CACHE STRING "" FORCE)
+    set(SFML_STATIC_LIBRARIES True)
 ENDIF()
 
 set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
@@ -21,7 +22,8 @@ file(GLOB SRC
 
 add_executable(${PROJECT_NAME} ${SRC})
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(
+    ${PROJECT_NAME}
     sfml-graphics
     sfml-window
     sfml-system
