@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-sf::Texture tPlayer, tAsteroid[3], tBullet;
+sf::Texture tPlayer, tAsteroid[3], tBullet, tUFO, tUFOBullet;
 sf::Texture tBulletUp, tLifeUp, tDoubleBullet, tPenetratingBullet;
 sf::Texture tBackground;
 #define BIG 0
@@ -16,6 +16,8 @@ bool loadTextures()
 		!tAsteroid[MEDIUM].loadFromFile(dir + "asteroidMedium.png") ||
 		!tAsteroid[SMALL].loadFromFile(dir + "asteroidSmall.png") ||
 		!tBullet.loadFromFile(dir + "bullet.png") ||
+		!tUFO.loadFromFile(dir + "ufo.png") ||
+		!tUFOBullet.loadFromFile(dir + "ufoBullet.png") ||
 
 		!tBulletUp.loadFromFile(dir + "biggerBullet.png") ||
 		!tLifeUp.loadFromFile(dir + "lifeUp.png") ||
@@ -32,6 +34,8 @@ bool loadTextures()
 	tAsteroid[MEDIUM].setSmooth(true);
 	tAsteroid[SMALL].setSmooth(true);
 	tBullet.setSmooth(true);
+	tUFO.setSmooth(true);
+	tUFOBullet.setSmooth(true);
 
 	tBulletUp.setSmooth(true);
 	tLifeUp.setSmooth(true);

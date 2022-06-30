@@ -1,3 +1,4 @@
+#include <list>
 float speedScale = sf::VideoMode::getDesktopMode().height / 200;
 float asteroidMaxSpeed[3] = {speedScale, (float)speedScale *(float)1.5, (float)speedScale * 2};
 float asteroidDiffSpeed[3] = {speedScale / 2, (float)speedScale / 2 * (float)1.5, (float)speedScale / 2 * 2};
@@ -190,6 +191,65 @@ public:
 			life = false;
 			lifes--;
 		}
+	}
+};
+
+class UFO : public Entity
+{
+	int bulletFreq = 3000;
+
+public:
+	float deltaShoot;
+	bool isActive = false;
+	std::list<Bullet *> ufoBullets;
+
+	int lifes = 5;
+	UFO()
+		: Entity(rand() % desktopMode.width, rand() % desktopMode.height, 0, 0, -90, &tUFO){};
+
+	bool canShoot()
+	{
+		if (deltaShoot >= bulletFreq)
+			return true;
+		else
+			return false;
+	}
+	void update(float pX, float pY, Scale bulletScale)
+	{
+		if (isActive)
+		{
+			deltaShoot += delta->Time.asMilliseconds();
+
+			x_speed = (pX - x);
+			y_speed = (pY - y);
+
+			x += x_speed / 400 * delta->Move / 10;
+			y += y_speed / 400 * delta->Move / 15;
+			if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
+			{
+				life = false;
+				lifes--;
+			}
+
+			if (canShoot())
+			{
+				float angle = atan2(pY - y, pX - x) * (180/M_PI);
+				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, bulletScale));
+				deltaShoot = 0;
+			}
+
+		}
+		else
+		{
+			x = 10000;
+			y = 10000;
+		}
+	}
+	void activate()
+	{
+		x = rand() % desktopMode.width;
+		y = rand() % desktopMode.height;
+		isActive = true;
 	}
 };
 

@@ -8,7 +8,7 @@
 #include <thread>
 
 // move it somewhere else
-void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar);
+void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar, UFO *u);
 
 int main()
 {
@@ -21,6 +21,7 @@ int main()
 
 	// create objects and lists
 	Player *p;
+	UFO *u;
 	// add all of menus to the list and then reset() all of them in changeState() function
 	Menu menu(menuEntriesCount, menuEntries);
 	GameOver gameOver(gameOverEntriesCount, gameOverEntries);
@@ -49,6 +50,7 @@ int main()
 		delta = new GameTime;
 		// delete p;
 		p = new Player;
+		u = new UFO();
 		menu.reset();
 		gameOver.reset();
 		saveScore.reset();
@@ -94,6 +96,7 @@ int main()
 		{
 			delta->PowerUp += delta->Time.asMilliseconds();
 			delta->Move += delta->Time.asMilliseconds();
+			delta->UFO += delta->Time.asMilliseconds();
 
 			sf::Event event;
 			while (window.pollEvent(event))
@@ -123,7 +126,7 @@ int main()
 				else
 					p->isShooting = false;
 			}
-			std::thread worker(checkCollision, p, asteroids, bullets, powerUps, progressBar);
+			std::thread worker(checkCollision, p, asteroids, bullets, powerUps, progressBar, u);
 
 			if (p->canShoot())
 			{
@@ -174,6 +177,16 @@ int main()
 				p->isDoubleShooting = false;
 				p->isDoublePenetrating = false;
 			}
+			if (delta->UFO >= gameVal->UFORestore)
+			{
+				if (!u->isActive)
+					u->activate();
+				else
+					u->isActive = false;
+
+				delta->UFO = 0;
+			}
+
 			worker.join();
 			// Update all entities and remove dead ones
 			for (auto i = asteroids.begin(); i != asteroids.end();)
@@ -224,7 +237,30 @@ int main()
 				else
 					i++;
 			}
+			for (auto i = u->ufoBullets.begin(); i != u->ufoBullets.end();)
+			{
+				Bullet *e = *i;
+				e->update();
+				if (e->lifes == 0 && !e->life)
+				{
+					i = u->ufoBullets.erase(i);
+					delete e;
+				}
+				else
+					i++;
+			}
+
 			p->update();
+			u->update(p->x, p->y, p->bulletScale());
+
+			if (u->lifes == 0 && !u->life)
+			{
+				delta->UFO = 0;
+				u->lifes = 10;
+				u->life = true;
+				u->isActive = false;
+			}
+
 			// Start new level after clearing all asteroids
 			if (asteroids.size() == 0)
 			{
@@ -261,7 +297,10 @@ int main()
 				i->draw(window);
 			for (auto &i : powerUps)
 				i->draw(window);
+			for (auto &i : u->ufoBullets)
+				i->draw(window);
 			p->draw(window);
+			u->draw(window);
 			window.draw(text);
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);
@@ -272,13 +311,13 @@ int main()
 	return 0;
 }
 
-void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar)
+void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar, UFO *u)
 {
 	for (auto a : asteroids)
 	{
 		for (auto b : bullets)
 			// Check bullets and asteroids collisons
-			if (Collision::PixelPerfectTest(a->sprite, b->sprite))
+			if (Collision::PixelPerfectTest(a->sprite, b->sprite) && b->life)
 			{
 				playSound(&destroySound);
 				a->life = false;
@@ -315,6 +354,28 @@ void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet
 		{
 			a->life = false;
 			delta->PowerUp = 0;
+		}
+	}
+	for (auto a : u->ufoBullets)
+	{
+		// Check ufoBullets and player collisons
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite))
+		{
+			playSound(&destroySound);
+			a->life = false;
+			p->life = false;
+			a->lifes--;
+		}
+	}
+	for (auto b : bullets)
+	{
+		// Check bullets and UFO collisons
+		if (Collision::PixelPerfectTest(b->sprite, u->sprite) && b->life)
+		{
+			playSound(&destroySound);
+			b->life = false;
+			u->life = false;
+			u->lifes--;
 		}
 	}
 }
