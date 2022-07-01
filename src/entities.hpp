@@ -1,4 +1,6 @@
 #include <list>
+#include "sounds.hpp"
+
 float speedScale = sf::VideoMode::getDesktopMode().height / 200;
 float asteroidMaxSpeed[3] = {speedScale, (float)speedScale *(float)1.5, (float)speedScale * 2};
 float asteroidDiffSpeed[3] = {speedScale / 2, (float)speedScale / 2 * (float)1.5, (float)speedScale / 2 * 2};
@@ -229,6 +231,7 @@ public:
 
 			if (canShoot())
 			{
+				playSound(&ufoLaserSound);
 				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
 				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, bulletScale));
 				delta->Shoot = 0;

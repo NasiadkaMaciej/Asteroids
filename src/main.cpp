@@ -16,7 +16,6 @@ int main()
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
 	loadScoreBoard();
-	playMusic();
 	// writeScoreBoard();
 
 	// create objects and lists
