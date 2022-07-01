@@ -125,7 +125,7 @@ int main()
 			}
 			std::thread worker(checkCollision, p, asteroids, bullets, powerUps, progressBar, u);
 
- 			if (p->canShoot())
+			if (p->canShoot())
 			{
 				playSound(&laserSound);
 				if (p->isDoubleShooting) // shoot 2 bullets simultaneously
@@ -225,7 +225,6 @@ int main()
 			for (auto i = powerUps.begin(); i != powerUps.end();)
 			{
 				PowerUp *e = *i;
-				e->update();
 				if (e->life == false)
 				{
 					i = powerUps.erase(i);
@@ -248,7 +247,7 @@ int main()
 			}
 
 			p->update();
-			u->update(p->x, p->y, p->bulletScale());
+			u->update(p->x, p->y);
 
 			if (u->lifes == 0 && !u->life)
 			{
@@ -256,6 +255,7 @@ int main()
 				u->lifes = 10;
 				u->life = true;
 				u->isActive = false;
+				p->givePoints(1000);
 			}
 
 			// Start new level after clearing all asteroids
@@ -311,7 +311,7 @@ int main()
 void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar, UFO *u)
 {
 	for (auto a : asteroids)
-	{  
+	{
 		for (auto b : bullets)
 			// Check bullets and asteroids collisons
 			if (Collision::PixelPerfectTest(a->sprite, b->sprite) && b->life)

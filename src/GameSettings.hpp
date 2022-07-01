@@ -41,13 +41,14 @@ struct GameTime
 public:
   sf::Clock Clock;
   sf::Time Time;
-  float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0;
+  float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0, ufoShoot;
   void gameUpdate()
   {
     PowerUp += Time.asMilliseconds();
     Move += Time.asMilliseconds();
     UFO += Time.asMilliseconds();
     Shoot += Time.asMilliseconds();
+    ufoShoot += Time.asMilliseconds();
   }
 };
 

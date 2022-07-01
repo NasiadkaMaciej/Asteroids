@@ -44,8 +44,6 @@ public:
 		sprite.scale(scale, scale);
 	}
 
-	void update(){};
-
 	void draw(sf::RenderWindow &window)
 	{
 		sprite.setPosition(x, y);
@@ -176,14 +174,15 @@ class Bullet : public Entity
 public:
 	int lifes = 1;
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
-		: Entity(X, Y, cos(ANGLE * degToRad) * 20, cos(ANGLE * degToRad) * 20, ANGLE, TEXTURE)
+		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
 	{
 		sprite.scale(s.x, s.y);
 	};
 	void update()
 	{
-		x_speed = cos(angle * degToRad) * 20 * delta->Move / 15;
-		y_speed = sin(angle * degToRad) * 20 * delta->Move / 15;
+		x_speed = (cos(angle * degToRad) * delta->Move * speedScale) / 5;
+		y_speed = (sin(angle * degToRad) * delta->Move * speedScale) / 5;
+		
 		x += x_speed;
 		y += y_speed;
 		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
@@ -208,12 +207,12 @@ public:
 
 	bool canShoot()
 	{
-		if (delta->Shoot >= bulletFreq)
+		if (delta->ufoShoot >= bulletFreq)
 			return true;
 		else
 			return false;
 	}
-	void update(float pX, float pY, Scale bulletScale)
+	void update(float pX, float pY)
 	{
 		if (isActive)
 		{
@@ -233,8 +232,9 @@ public:
 			{
 				playSound(&ufoLaserSound);
 				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
-				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, bulletScale));
-				delta->Shoot = 0;
+				Scale s(1,1);
+				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, s));
+				delta->ufoShoot = 0;
 			}
 		}
 		else
@@ -248,6 +248,7 @@ public:
 		x = rand() % desktopMode.width;
 		y = rand() % desktopMode.height;
 		isActive = true;
+		delta->ufoShoot = 0;
 	}
 };
 
