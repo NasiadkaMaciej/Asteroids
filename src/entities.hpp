@@ -53,14 +53,13 @@ public:
 };
 class Player : public Entity
 {
-	int bulletFreq = 250, maxSpeed = speedScale*2;
+	int bulletFreq = 250, maxSpeed = speedScale * 2;
 
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
 	int points = 0, lifes = 3, earnedLifes = 1;
-	float deltaShoot;
 
 	sf::Time aliveTime = sf::Time::Zero;
 
@@ -69,7 +68,6 @@ public:
 	void update()
 	{
 		aliveTime += delta->Time;
-		deltaShoot += delta->Time.asMilliseconds();
 		if (life)
 		{
 			float rotateSpeed = 2.5 * delta->Move / 15;
@@ -146,7 +144,7 @@ public:
 	}
 	bool canShoot()
 	{
-		if (isShooting && !isIdle && deltaShoot >= bulletFreq)
+		if (isShooting && !isIdle && delta->Shoot >= bulletFreq)
 			return true;
 		else
 			return false;
@@ -199,7 +197,6 @@ class UFO : public Entity
 	int bulletFreq = 3000;
 
 public:
-	float deltaShoot;
 	bool isActive = false;
 	std::list<Bullet *> ufoBullets;
 
@@ -209,7 +206,7 @@ public:
 
 	bool canShoot()
 	{
-		if (deltaShoot >= bulletFreq)
+		if (delta->Shoot >= bulletFreq)
 			return true;
 		else
 			return false;
@@ -218,7 +215,6 @@ public:
 	{
 		if (isActive)
 		{
-			deltaShoot += delta->Time.asMilliseconds();
 
 			x_speed = (pX - x);
 			y_speed = (pY - y);
@@ -233,11 +229,10 @@ public:
 
 			if (canShoot())
 			{
-				float angle = atan2(pY - y, pX - x) * (180/M_PI);
+				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
 				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, bulletScale));
-				deltaShoot = 0;
+				delta->Shoot = 0;
 			}
-
 		}
 		else
 		{

@@ -30,10 +30,10 @@ extern bool isPlaying, isMenu, isGameOver, isSettings, isSaveScreen, isLeaderBoa
 struct GameValues
 {
 public:
-  int bigAsteroids = 4; // starting game with 6 asteroids (when starting 2 more are added)
-  int roundNum = 0; // round number (when starting game 1 is added)
+  int bigAsteroids = 4;       // starting game with 6 asteroids (when starting 2 more are added)
+  int roundNum = 0;           // round number (when starting game 1 is added)
   int powerUpRestore = 10000; // time to restore power ups
-  int UFORestore = 30000; // UFO exist and respawn time
+  int UFORestore = 30000;     // UFO exist and respawn time
 };
 
 struct GameTime
@@ -41,7 +41,14 @@ struct GameTime
 public:
   sf::Clock Clock;
   sf::Time Time;
-  float PowerUp = 0, Menu = 0, Move = 0, UFO = 0;
+  float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0;
+  void gameUpdate()
+  {
+    PowerUp += Time.asMilliseconds();
+    Move += Time.asMilliseconds();
+    UFO += Time.asMilliseconds();
+    Shoot += Time.asMilliseconds();
+  }
 };
 
 struct GameSettings

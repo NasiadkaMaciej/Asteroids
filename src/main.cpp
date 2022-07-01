@@ -94,9 +94,7 @@ int main()
 		}
 		else
 		{
-			delta->PowerUp += delta->Time.asMilliseconds();
-			delta->Move += delta->Time.asMilliseconds();
-			delta->UFO += delta->Time.asMilliseconds();
+			delta->gameUpdate();
 
 			sf::Event event;
 			while (window.pollEvent(event))
@@ -128,7 +126,7 @@ int main()
 			}
 			std::thread worker(checkCollision, p, asteroids, bullets, powerUps, progressBar, u);
 
-			if (p->canShoot())
+ 			if (p->canShoot())
 			{
 				playSound(&laserSound);
 				if (p->isDoubleShooting) // shoot 2 bullets simultaneously
@@ -144,7 +142,7 @@ int main()
 				}
 				else
 					bullets.push_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
-				p->deltaShoot = 0;
+				delta->Shoot = 0;
 			}
 
 			// checkCollision(p, asteroids, bullets, powerUps, progressBar);
@@ -314,7 +312,7 @@ int main()
 void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar, UFO *u)
 {
 	for (auto a : asteroids)
-	{
+	{  
 		for (auto b : bullets)
 			// Check bullets and asteroids collisons
 			if (Collision::PixelPerfectTest(a->sprite, b->sprite) && b->life)
