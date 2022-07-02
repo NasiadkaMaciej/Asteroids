@@ -59,12 +59,14 @@ public:
   {
     loadSettings();
   }
-  int frames = 60;
+  // Default values
+  int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height;
   bool vsync = true, fs = true, sfx = true, music = true, background = true;
   void loadSettings();
   void saveSettings();
+  int translateFS();
+  bool checkRes();
 };
-int translateFS(int fs);
 
 extern GameValues *gameVal;
 extern GameSettings gameSettings;

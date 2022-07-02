@@ -28,7 +28,7 @@ int main()
 	SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
 	LeaderBoard leaderBoard(leaderBoardEntriesCount, leaderBoardEntries);
 	sf::Sprite background(tBackground);
-	background.setTextureRect(sf::IntRect(0, 0, desktopMode.width, desktopMode.height));
+	background.setTextureRect(sf::IntRect(0, 0, gameSettings.resX, gameSettings.resY));
 
 	std::list<Asteroid *> asteroids;
 	std::list<Bullet *> bullets;

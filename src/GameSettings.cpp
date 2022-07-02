@@ -9,7 +9,7 @@ sf::RenderWindow window;
 sf::Font font;
 sf::Text text;
 
-float scale = (float)sf::VideoMode::getDesktopMode().height / 2000;
+float scale;
 
 // to array?
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
@@ -20,7 +20,8 @@ void GameSettings::loadSettings()
   std::ifstream file("asteroids.cfg");
   if (file.is_open())
   {
-    const int values = 6;
+    // list?
+    const int values = 8;
     int value[values];
     std::string tmpString;
     for (int i = 0; i < values; i++)
@@ -35,9 +36,17 @@ void GameSettings::loadSettings()
     sfx = value[3];
     music = value[4];
     background = value[5];
+    resX = value[6];
+    resY = value[7];
 
+    // Check if is fs and resolutions are in valid video modes
+    checkRes();
+
+    scale = (float)resY / 2000;
     file.close();
   }
+  else
+    saveSettings();
 }
 void GameSettings::saveSettings()
 {
@@ -51,11 +60,20 @@ void GameSettings::saveSettings()
       file << "SFX:" << sfx << "\n";
       file << "Music:" << music << "\n";
       file << "Background:" << background << "\n";
+      file << "resX:" << resY << "\n";
+      file << "resY:" << resX << "\n";
     }
+
+    if (!checkRes())
+    {
+      resX = sf::VideoMode::getFullscreenModes().front().width;
+      resY = sf::VideoMode::getFullscreenModes().front().height;
+    }
+    scale = (float)resY / 2000;
     file.close();
   }
 }
-int translateFS(int fs)
+int GameSettings::translateFS()
 {
   if (fs)
     return sf::Style::Fullscreen;
@@ -63,7 +81,15 @@ int translateFS(int fs)
     return sf::Style::Default;
   return 0;
 }
-
+bool GameSettings::checkRes()
+{
+  for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
+  {
+    if (videoMode.width == resX && videoMode.height == resY)
+      return true;
+  }
+  return false;
+}
 GameValues *gameVal;
 GameSettings gameSettings;
 GameTime *delta;
@@ -71,11 +97,10 @@ GameTime *delta;
 bool loadBase()
 {
   desktopMode = sf::VideoMode::getDesktopMode();
-  window.create(sf::VideoMode(desktopMode.width,
-                              desktopMode.height,
+  window.create(sf::VideoMode(gameSettings.resX,
+                              gameSettings.resY,
                               desktopMode.bitsPerPixel),
-                "Asteroids - Macieson",
-                translateFS(gameSettings.fs));
+                "Asteroids - Macieson", gameSettings.translateFS());
   window.setFramerateLimit(gameSettings.frames);
   window.setVerticalSyncEnabled(gameSettings.vsync);
 

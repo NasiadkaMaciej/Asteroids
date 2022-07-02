@@ -1,7 +1,13 @@
 #include <list>
 #include "sounds.hpp"
 
-float speedScale = sf::VideoMode::getDesktopMode().height / 200;
+#define _PLAYER 1
+#define _ASTEROID 2
+#define _BULLET 3
+#define _UFO 4
+#define _POWERUP 5
+
+float speedScale = gameSettings.resY / 200;
 float asteroidMaxSpeed[3] = {speedScale, (float)speedScale *(float)1.5, (float)speedScale * 2};
 float asteroidDiffSpeed[3] = {speedScale / 2, (float)speedScale / 2 * (float)1.5, (float)speedScale / 2 * 2};
 
@@ -56,6 +62,7 @@ class Player : public Entity
 	int bulletFreq = 250, maxSpeed = speedScale * 2;
 
 public:
+	char type = _PLAYER;
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
@@ -99,18 +106,18 @@ public:
 			x += x_speed * delta->Move / 15;
 			y += y_speed * delta->Move / 15;
 
-			if (x >= desktopMode.width)
+			if (x >= gameSettings.resX)
 				x = 0;
 			else if (x <= 0)
-				x = desktopMode.width;
-			if (y >= desktopMode.height)
+				x = gameSettings.resX;
+			if (y >= gameSettings.resY)
 				y = 0;
 			else if (y <= 0)
-				y = desktopMode.height;
+				y = gameSettings.resY;
 		}
 		else
 		{ // reset player after death
-			sprite.setPosition(desktopMode.width / 2, desktopMode.height / 2);
+			sprite.setPosition(gameSettings.resX / 2, gameSettings.resY / 2);
 			x = sprite.getPosition().x, y = sprite.getPosition().y;
 			x_speed = 0;
 			y_speed = 0;
@@ -153,25 +160,27 @@ public:
 class Asteroid : public Entity
 {
 public:
+	char type = _ASTEROID;
 	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture *TEXTURE)
 		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
 	void update()
 	{
 		x += x_speed * delta->Move / 15;
 		y += y_speed * delta->Move / 15;
-		if (x >= desktopMode.width)
+		if (x >= gameSettings.resX)
 			x = 0;
 		else if (x <= 0)
-			x = desktopMode.width;
-		if (y >= desktopMode.height)
+			x = gameSettings.resX;
+		if (y >= gameSettings.resY)
 			y = 0;
 		else if (y <= 0)
-			y = desktopMode.height;
+			y = gameSettings.resY;
 	}
 };
 class Bullet : public Entity
 {
 public:
+	char type = _BULLET;
 	int lifes = 1;
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
 		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
@@ -185,7 +194,7 @@ public:
 		
 		x += x_speed;
 		y += y_speed;
-		if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
+		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
 		{
 			life = false;
 			lifes--;
@@ -196,14 +205,14 @@ public:
 class UFO : public Entity
 {
 	int bulletFreq = 3000;
-
 public:
+	char type = _UFO;
 	bool isActive = false;
 	std::list<Bullet *> ufoBullets;
 
 	int lifes = 5;
 	UFO()
-		: Entity(rand() % desktopMode.width, rand() % desktopMode.height, 0, 0, -90, &tUFO){};
+		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, &tUFO){};
 
 	bool canShoot()
 	{
@@ -222,7 +231,7 @@ public:
 
 			x += x_speed / 400 * delta->Move / 10;
 			y += y_speed / 400 * delta->Move / 15;
-			if (x > desktopMode.width || x < 0 || y > desktopMode.height || y < 0)
+			if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
 			{
 				life = false;
 				lifes--;
@@ -245,8 +254,8 @@ public:
 	}
 	void activate()
 	{
-		x = rand() % desktopMode.width;
-		y = rand() % desktopMode.height;
+		x = rand() % gameSettings.resX;
+		y = rand() % gameSettings.resY;
 		isActive = true;
 		delta->ufoShoot = 0;
 	}
@@ -255,8 +264,9 @@ public:
 class PowerUp : public Entity
 {
 public:
+	char type = _POWERUP;
 	PowerUp(sf::Texture *TEXTURE)
-		: Entity(rand() % desktopMode.width, rand() % desktopMode.height,
+		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY,
 				 0, 0, -90, TEXTURE){};
 };
 
@@ -270,19 +280,19 @@ generateBigAsteroid()
 	{
 	case 0:
 		x = 0;
-		y = rand() % desktopMode.height;
+		y = rand() % gameSettings.resY;
 		break;
 	case 1:
-		x = desktopMode.width;
-		y = rand() % desktopMode.height;
+		x = gameSettings.resX;
+		y = rand() % gameSettings.resY;
 		break;
 	case 2:
-		x = rand() % desktopMode.width;
+		x = rand() % gameSettings.resX;
 		y = 0;
 		break;
 	case 3:
-		x = rand() % desktopMode.width;
-		y = desktopMode.height;
+		x = rand() % gameSettings.resX;
+		y = gameSettings.resY;
 		break;
 	}
 	Asteroid *a =

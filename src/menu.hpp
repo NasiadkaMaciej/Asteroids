@@ -160,8 +160,8 @@ public:
 			entryText[i].setOrigin(entryText[i].getGlobalBounds().width / 2,
 								   entryText[i].getGlobalBounds().height / 2);
 			entryText[i].setPosition(
-				sf::Vector2f(desktopMode.width / 2,
-							 desktopMode.height / (entriesCount + 1) * (i + 1)));
+				sf::Vector2f(gameSettings.resX / 2,
+							 gameSettings.resY / (entriesCount + 1) * (i + 1)));
 		}
 		// Make active entry look like active one
 		entryText[activeEntry].setFillColor(sf::Color::Red);
@@ -406,8 +406,8 @@ public:
 
 		if (gameSettings.fs)
 		{
-			window.create(sf::VideoMode(desktopMode.width,
-										desktopMode.height,
+			window.create(sf::VideoMode(gameSettings.resX,
+										gameSettings.resY,
 										desktopMode.bitsPerPixel),
 						  "Asteroids - Macieson",
 						  sf::Style::Fullscreen);
@@ -415,8 +415,8 @@ public:
 		}
 		else
 		{
-			window.create(sf::VideoMode(desktopMode.width,
-										desktopMode.height,
+			window.create(sf::VideoMode(gameSettings.resX,
+										gameSettings.resY,
 										desktopMode.bitsPerPixel),
 						  "Asteroids - Macieson");
 			entries[2] = "Fullscreen: Off";
@@ -458,6 +458,17 @@ public:
 			entries[5] = "Background: Off";
 		move(0);
 	}
+	/*
+	Placeholder
+		void switchResolution(){
+		for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
+		{
+			std::cout << "resolution: " << videoMode.width << "x" << videoMode.height;
+			std::cout << ", bits per pixel: " << videoMode.bitsPerPixel << std::endl;
+		}
+		move();
+		}
+	*/
 };
 
 class SaveScore : public Menu
@@ -637,7 +648,7 @@ public:
 	ProgressBar(float HEIGHT)
 	{
 		height = HEIGHT;
-		fullSize = desktopMode.width / 2;
+		fullSize = gameSettings.resX / 2;
 		pg.setFillColor(sf::Color::Black);
 		pg.setOutlineThickness(1);
 		pg.setOutlineColor(sf::Color::White);

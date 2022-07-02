@@ -63,3 +63,5 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] All entities to one list
 * [ ] Less for loops
 * [ ] More optimization
+* [ ] One for loop and type in class name
+* [ ] Choose resolution in game
