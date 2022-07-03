@@ -66,6 +66,7 @@ public:
   void saveSettings();
   int translateFS();
   bool checkRes();
+  std::vector<sf::VideoMode> availRes;
 };
 
 extern GameValues *gameVal;

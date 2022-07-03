@@ -111,7 +111,7 @@ void openInBrowser(std::string p)
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 7, saveScoreEntriesCount = 13,
+		  settingEntriesCount = 8, saveScoreEntriesCount = 13,
 		  leaderBoardEntriesCount = 12;
 std::string returnBool(int value)
 {
@@ -133,6 +133,7 @@ std::string menuEntries[menuEntriesCount]{"Play",
 										"Sound: " + returnBool(gameSettings.sfx),
 										"Music: " + returnBool(gameSettings.music),
 										"Background: " + returnBool(gameSettings.background),
+										"Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY),
 										"Menu"},
 	saveScoreEntries[saveScoreEntriesCount],
 	leaderBoardEntries[leaderBoardEntriesCount];
@@ -361,6 +362,9 @@ public:
 			toggleBackground();
 			break;
 		case 6:
+			switchResolution();
+			break;
+		case 7:
 			setState(menuState);
 			break;
 		}
@@ -458,17 +462,24 @@ public:
 			entries[5] = "Background: Off";
 		move(0);
 	}
-	/*
-	Placeholder
-		void switchResolution(){
-		for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
+	void switchResolution()
+	{
+		if (gameSettings.availRes.end()->width == gameSettings.resX && gameSettings.availRes.end()->height == gameSettings.resY)
 		{
-			std::cout << "resolution: " << videoMode.width << "x" << videoMode.height;
-			std::cout << ", bits per pixel: " << videoMode.bitsPerPixel << std::endl;
+			gameSettings.resX = gameSettings.availRes.begin()->width;
+			gameSettings.resY = gameSettings.availRes.begin()->height;
 		}
-		move();
-		}
-	*/
+		else
+			for (auto it = gameSettings.availRes.begin(); it != gameSettings.availRes.end(); it++)
+				if (it->width == gameSettings.resX && it->height == gameSettings.resY)
+				{
+					it++;
+					entries[6] = "Resolution: " + std::to_string(it->width) + "x" + std::to_string(it->height);
+					gameSettings.resX = it->width;
+					gameSettings.resY = it->height;
+				}
+		move(0);
+	}
 };
 
 class SaveScore : public Menu

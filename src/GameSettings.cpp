@@ -17,6 +17,12 @@ bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
 
 void GameSettings::loadSettings()
 {
+  // Read all available fullscreen resolutions and sort them
+  for (const auto &tmp : sf::VideoMode::getFullscreenModes())
+    if (tmp.bitsPerPixel == 32)
+      availRes.push_back(tmp);
+  std::reverse(availRes.begin(), availRes.end());
+
   std::ifstream file("asteroids.cfg");
   if (file.is_open())
   {
@@ -41,7 +47,6 @@ void GameSettings::loadSettings()
 
     // Check if is fs and resolutions are in valid video modes
     checkRes();
-
     scale = (float)resY / 2000;
     file.close();
   }
@@ -50,28 +55,21 @@ void GameSettings::loadSettings()
 }
 void GameSettings::saveSettings()
 {
+  std::ofstream file("asteroids.cfg");
+  if (file.is_open())
   {
-    std::ofstream file("asteroids.cfg");
-    if (file.is_open())
-    {
-      file << "Frames:" << frames << "\n";
-      file << "VSync:" << vsync << "\n";
-      file << "FullScreen:" << fs << "\n";
-      file << "SFX:" << sfx << "\n";
-      file << "Music:" << music << "\n";
-      file << "Background:" << background << "\n";
-      file << "resX:" << resY << "\n";
-      file << "resY:" << resX << "\n";
-    }
-
-    if (!checkRes())
-    {
-      resX = sf::VideoMode::getFullscreenModes().front().width;
-      resY = sf::VideoMode::getFullscreenModes().front().height;
-    }
-    scale = (float)resY / 2000;
-    file.close();
+    file << "Frames:" << frames << "\n";
+    file << "VSync:" << vsync << "\n";
+    file << "FullScreen:" << fs << "\n";
+    file << "SFX:" << sfx << "\n";
+    file << "Music:" << music << "\n";
+    file << "Background:" << background << "\n";
+    file << "resX:" << resX << "\n";
+    file << "resY:" << resY << "\n";
   }
+
+  scale = (float)resY / 2000;
+  file.close();
 }
 int GameSettings::translateFS()
 {
