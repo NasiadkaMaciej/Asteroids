@@ -62,7 +62,7 @@ class Player : public Entity
 	int bulletFreq = 250, maxSpeed = speedScale * 2;
 
 public:
-	char type = _PLAYER;
+	static const char type = _PLAYER;
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
@@ -160,7 +160,7 @@ public:
 class Asteroid : public Entity
 {
 public:
-	char type = _ASTEROID;
+	static const char type = _ASTEROID;
 	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture *TEXTURE)
 		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
 	void update()
@@ -176,11 +176,59 @@ public:
 		else if (y <= 0)
 			y = gameSettings.resY;
 	}
+	// Generates asteroid at random edge of the screen
+	static Asteroid *generateBig()
+	{
+		int side = std::rand() % 4;
+		float x, y;
+		switch (side)
+		{
+		case 0:
+			x = 0;
+			y = rand() % gameSettings.resY;
+			break;
+		case 1:
+			x = gameSettings.resX;
+			y = rand() % gameSettings.resY;
+			break;
+		case 2:
+			x = rand() % gameSettings.resX;
+			y = 0;
+			break;
+		case 3:
+			x = rand() % gameSettings.resX;
+			y = gameSettings.resY;
+			break;
+		}
+		Asteroid *a =
+			new Asteroid(x, y,
+						 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
+						 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
+						 &tAsteroid[BIG]);
+		return a;
+	}
+	static Asteroid *generate(Asteroid asteroid)
+	{
+		int asteroidNum = 0;
+		if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
+			asteroidNum = MEDIUM;
+		else if (asteroid.sprite.getTexture() == &tAsteroid[MEDIUM])
+			asteroidNum = SMALL;
+		else
+			return NULL;
+		Asteroid *a = new Asteroid(
+			asteroid.x,
+			asteroid.y,
+			random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+			random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+			&tAsteroid[asteroidNum]);
+		return a;
+	}
 };
 class Bullet : public Entity
 {
 public:
-	char type = _BULLET;
+	static const char type = _BULLET;
 	int lifes = 1;
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
 		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
@@ -191,7 +239,7 @@ public:
 	{
 		x_speed = (cos(angle * degToRad) * delta->Move * speedScale) / 5;
 		y_speed = (sin(angle * degToRad) * delta->Move * speedScale) / 5;
-		
+
 		x += x_speed;
 		y += y_speed;
 		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
@@ -205,8 +253,9 @@ public:
 class UFO : public Entity
 {
 	int bulletFreq = 3000;
+
 public:
-	char type = _UFO;
+	static const char type = _UFO;
 	bool isActive = false;
 	std::list<Bullet *> ufoBullets;
 
@@ -241,7 +290,7 @@ public:
 			{
 				playSound(&ufoLaserSound);
 				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
-				Scale s(1,1);
+				Scale s(1, 1);
 				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, s));
 				delta->ufoShoot = 0;
 			}
@@ -264,59 +313,8 @@ public:
 class PowerUp : public Entity
 {
 public:
-	char type = _POWERUP;
+	static const char type = _POWERUP;
 	PowerUp(sf::Texture *TEXTURE)
 		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY,
 				 0, 0, -90, TEXTURE){};
 };
-
-// Generates asteroid at random edge of the screen
-Asteroid *
-generateBigAsteroid()
-{
-	int side = std::rand() % 4;
-	float x, y;
-	switch (side)
-	{
-	case 0:
-		x = 0;
-		y = rand() % gameSettings.resY;
-		break;
-	case 1:
-		x = gameSettings.resX;
-		y = rand() % gameSettings.resY;
-		break;
-	case 2:
-		x = rand() % gameSettings.resX;
-		y = 0;
-		break;
-	case 3:
-		x = rand() % gameSettings.resX;
-		y = gameSettings.resY;
-		break;
-	}
-	Asteroid *a =
-		new Asteroid(x, y,
-					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
-					 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
-					 &tAsteroid[BIG]);
-	return a;
-}
-Asteroid *
-generateAsteroid(Asteroid asteroid)
-{
-	int asteroidNum = 0;
-	if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
-		asteroidNum = MEDIUM;
-	else if (asteroid.sprite.getTexture() == &tAsteroid[MEDIUM])
-		asteroidNum = SMALL;
-	else
-		return NULL;
-	Asteroid *a = new Asteroid(
-		asteroid.x,
-		asteroid.y,
-		random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-		random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-		&tAsteroid[asteroidNum]);
-	return a;
-}

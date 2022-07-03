@@ -199,10 +199,10 @@ int main()
 						p->givePoints(50);
 					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
 						p->givePoints(100);
-					if (generateAsteroid(*e) != NULL)
+					if (Asteroid::generate(*e) != NULL)
 					{
-						asteroids.push_back(generateAsteroid(*e));
-						asteroids.push_back(generateAsteroid(*e));
+						asteroids.push_back(Asteroid::generate(*e));
+						asteroids.push_back(Asteroid::generate(*e));
 					}
 					i = asteroids.erase(i);
 					delete e;
@@ -264,7 +264,7 @@ int main()
 				gameVal->bigAsteroids += 2;
 				gameVal->roundNum++;
 				for (int i = 0; i < gameVal->bigAsteroids; i++)
-					asteroids.push_back(generateBigAsteroid());
+					asteroids.push_back(Asteroid::generateBig());
 				progressBar.reset();
 			}
 
