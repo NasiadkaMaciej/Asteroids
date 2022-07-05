@@ -45,8 +45,6 @@ void GameSettings::loadSettings()
     resX = value[6];
     resY = value[7];
 
-    // Check if is fs and resolutions are in valid video modes
-    checkRes();
     scale = (float)resY / 2000;
     file.close();
   }
@@ -82,10 +80,8 @@ int GameSettings::translateFS()
 bool GameSettings::checkRes()
 {
   for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
-  {
     if (videoMode.width == resX && videoMode.height == resY)
       return true;
-  }
   return false;
 }
 GameValues *gameVal;
@@ -94,6 +90,14 @@ GameTime *delta;
 
 bool loadBase()
 {
+  if (!gameSettings.checkRes()) // Check if is fs and resolutions are in valid video modes
+  {
+    std::cout << "Invalid fullscreen resolution. Available modes are: \n";
+    for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
+      if (videoMode.bitsPerPixel == 32)
+        std::cout << videoMode.width << "x" << videoMode.height << "\n";
+    return false;
+  }
   desktopMode = sf::VideoMode::getDesktopMode();
   window.create(sf::VideoMode(gameSettings.resX,
                               gameSettings.resY,

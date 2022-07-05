@@ -13,7 +13,7 @@ namespace Collision
 	public:
 		~BitmaskManager() {
 			std::map<const sf::Texture*, sf::Uint8*>::const_iterator end = Bitmasks.end();
-			for (std::map<const sf::Texture*, sf::Uint8*>::const_iterator iter = Bitmasks.begin(); iter!=end; iter++)
+			for (std::map<const sf::Texture*, sf::Uint8*>::const_iterator iter = Bitmasks.begin(); iter!=end; ++iter)
 				delete [] iter->second;
 		}
 

@@ -16,6 +16,7 @@ int main()
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
 	loadScoreBoard();
+	music.play();
 	// writeScoreBoard();
 
 	// create objects and lists
@@ -367,7 +368,7 @@ void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet
 	for (auto b : bullets)
 	{
 		// Check bullets and UFO collisons
-		if (Collision::PixelPerfectTest(b->sprite, u->sprite) && b->life)
+		if (Collision::PixelPerfectTest(b->sprite, u->sprite))
 		{
 			playSound(&destroySound);
 			b->life = false;

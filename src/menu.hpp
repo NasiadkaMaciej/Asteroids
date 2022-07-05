@@ -73,7 +73,7 @@ void loadScoreBoard()
 };
 
 // Open link in browser for every operating system
-void openInBrowser(std::string p)
+void openInBrowser(const std::string &p)
 {
 #ifdef _WIN32
 	static int platform = 1;
@@ -191,13 +191,13 @@ public:
 		case up:
 			if (activeEntry - 1 >= 0)
 				activeEntry--;
-			else if (activeEntry - 1 < 0)
+			else
 				activeEntry = entriesCount - 1;
 			break;
 		case down:
 			if (activeEntry + 1 < entriesCount)
 				activeEntry++;
-			else if (activeEntry + 1 >= entriesCount)
+			else
 				activeEntry = 0;
 			break;
 		default:
@@ -575,7 +575,7 @@ public:
 						move(0);
 
 						// Save score to online leaderboard, secret is only in built releases.
-						std::string secret = "";
+						std::string secret = "PapiezPolak";
 						if (secret != "")
 						{
 							transform(name.begin(), name.end(), name.begin(), ::tolower);
