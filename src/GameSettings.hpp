@@ -4,16 +4,22 @@
 #include <SFML/Graphics.hpp>
 
 // states
-#define playState 0
-#define menuState 1
-#define gameoverState 2
-#define settingsState 3
-#define saveScreenState 4
-#define leaderBoardState 5
+enum eStates : char
+{
+  playState,
+  menuState,
+  gameoverState,
+  settingsState,
+  saveScreenState,
+  leaderBoardState
+};
 
-#define BIG 0
-#define MEDIUM 1
-#define SMALL 2
+enum eSizes : char
+{
+  BIG,
+  MEDIUM,
+  SMALL
+};
 
 extern float degToRad;
 
@@ -76,4 +82,4 @@ extern GameTime *delta;
 extern bool loadBase();
 extern void setStates(bool state);
 
-extern void setState(int state);
+extern void setState(eStates state);

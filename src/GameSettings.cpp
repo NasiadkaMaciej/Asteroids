@@ -130,7 +130,7 @@ void setStates(bool state)
   isPlaying = isMenu = isGameOver = isSettings = isSaveScreen = isLeaderBoard = state;
 }
 
-void setState(int state)
+void setState(eStates state)
 {
   // All cases are hiding cursor except for playState
   window.setMouseCursorVisible(true);

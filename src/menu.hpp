@@ -596,10 +596,6 @@ public:
 									fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 								curl_easy_cleanup(curl);
 							}
-							else
-							{
-								// Handle error
-							}
 							curl_global_cleanup();
 						}
 						isSaving = false;
@@ -615,6 +611,7 @@ public:
 	}
 	void reset()
 	{
+		Menu::reset();
 		wasSaved = false;
 		isSaving = true;
 	}

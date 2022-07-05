@@ -4,9 +4,6 @@
 sf::Texture tPlayer, tAsteroid[3], tBullet, tUFO, tUFOBullet;
 sf::Texture tBulletUp, tLifeUp, tDoubleBullet, tPenetratingBullet;
 sf::Texture tBackground;
-#define BIG 0
-#define MEDIUM 1
-#define SMALL 2
 
 bool loadTextures()
 {

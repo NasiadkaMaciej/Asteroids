@@ -1,11 +1,14 @@
 #include <list>
 #include "sounds.hpp"
 
-#define _PLAYER 1
-#define _ASTEROID 2
-#define _BULLET 3
-#define _UFO 4
-#define _POWERUP 5
+enum eTypes : char
+{
+	_PLAYER,
+	_ASTEROID,
+	_BULLET,
+	_UFO,
+	_POWERUP
+};
 
 float speedScale = gameSettings.resY / 200;
 float asteroidMaxSpeed[3] = {speedScale, (float)speedScale *(float)1.5, (float)speedScale * 2};
@@ -34,6 +37,7 @@ int random(int range, int modifier)
 class Entity // general class for all existing entities
 {
 public:
+	static const char type = -1;
 	float x, y, x_speed, y_speed, angle;
 	bool life = true;
 	sf::Sprite sprite;
@@ -209,7 +213,7 @@ public:
 	}
 	static Asteroid *generate(Asteroid asteroid)
 	{
-		int asteroidNum = 0;
+		eSizes asteroidNum;
 		if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
 			asteroidNum = MEDIUM;
 		else if (asteroid.sprite.getTexture() == &tAsteroid[MEDIUM])

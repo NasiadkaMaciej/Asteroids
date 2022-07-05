@@ -31,6 +31,7 @@ int main()
 	sf::Sprite background(tBackground);
 	background.setTextureRect(sf::IntRect(0, 0, gameSettings.resX, gameSettings.resY));
 
+	std::list<Menu *> menus;
 	std::list<Asteroid *> asteroids;
 	std::list<Bullet *> bullets;
 	std::list<PowerUp *> powerUps;
@@ -44,18 +45,16 @@ int main()
 		asteroids.clear();
 		bullets.clear();
 		powerUps.clear();
-		// delete gameVal;
+		delete gameVal;
+		delete delta;
+		delete p;
+		delete u;
 		gameVal = new GameValues;
-		// delete delta;
 		delta = new GameTime;
-		// delete p;
 		p = new Player;
 		u = new UFO();
-		menu.reset();
-		gameOver.reset();
-		saveScore.reset();
-		settings.reset();
-		leaderBoard.reset();
+		for (auto i : menus)
+			i->reset();
 	};
 	reset();
 
@@ -215,7 +214,7 @@ int main()
 			{
 				Bullet *e = *i;
 				e->update();
-				if (e->lifes == 0 && !e->life)
+				if (!e->lifes && !e->life)
 				{
 					i = bullets.erase(i);
 					delete e;
@@ -250,7 +249,7 @@ int main()
 			p->update();
 			u->update(p->x, p->y);
 
-			if (u->lifes == 0 && !u->life)
+			if (!u->life)
 			{
 				delta->UFO = 0;
 				u->lifes = 10;
@@ -260,7 +259,7 @@ int main()
 			}
 
 			// Start new level after clearing all asteroids
-			if (asteroids.size() == 0)
+			if (!asteroids.size())
 			{
 				gameVal->bigAsteroids += 2;
 				gameVal->roundNum++;
@@ -319,8 +318,9 @@ void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet
 			{
 				playSound(&destroySound);
 				a->life = false;
-				b->life = false;
 				b->lifes--;
+				if (!b->lifes)
+					b->life = false;
 				progressBar.retractPoint();
 			}
 		// Check asteroids and player collisions
@@ -371,9 +371,12 @@ void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet
 		if (Collision::PixelPerfectTest(b->sprite, u->sprite))
 		{
 			playSound(&destroySound);
-			b->life = false;
-			u->life = false;
 			u->lifes--;
+			b->lifes--;
+			if (!b->lifes)
+				b->life = false;
+			if (!u->lifes)
+				u->life = false;
 		}
 	}
 }
