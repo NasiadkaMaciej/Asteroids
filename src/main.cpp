@@ -8,7 +8,7 @@
 #include <thread>
 
 // move it somewhere else
-void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar, UFO *u);
+void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *> bullets, std::list<Entity *> powerUps, ProgressBar progressBar, UFO *u);
 
 int main()
 {
@@ -32,9 +32,10 @@ int main()
 	background.setTextureRect(sf::IntRect(0, 0, gameSettings.resX, gameSettings.resY));
 
 	std::list<Menu *> menus;
-	std::list<Asteroid *> asteroids;
-	std::list<Bullet *> bullets;
-	std::list<PowerUp *> powerUps;
+	std::list<Entity *> asteroids;
+	std::list<Entity *> bullets;
+	std::list<Entity *> powerUps;
+
 	ProgressBar progressBar(15), placeholder(0);
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
@@ -55,6 +56,37 @@ int main()
 		u = new UFO();
 		for (auto i : menus)
 			i->reset();
+	};
+
+	auto updateList = [&](std::list<Entity *> &list)
+	{
+		for (auto i = list.begin(); i != list.end();)
+		{
+			Entity *e = *i;
+			e->update();
+			if (!e->life)
+			{
+				if (e->type() == _ASTEROID)
+				{
+					// Generate smaller asteroids after being hit and give points
+					if (e->sprite.getTexture() == &tAsteroid[BIG])
+						p->givePoints(20);
+					else if (e->sprite.getTexture() == &tAsteroid[MEDIUM])
+						p->givePoints(50);
+					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
+						p->givePoints(100);
+					if (Asteroid::generate(*e) != NULL)
+					{
+						list.push_back(Asteroid::generate(*e));
+						list.push_back(Asteroid::generate(*e));
+					}
+				}
+				i = list.erase(i);
+				delete e;
+			}
+			else
+				i++;
+		}
 	};
 	reset();
 
@@ -144,9 +176,6 @@ int main()
 				delta->Shoot = 0;
 			}
 
-			// checkCollision(p, asteroids, bullets, powerUps, progressBar);
-			//  worker.join();
-
 			// Spawn random power up evey 10 seconds and clear old
 			if (delta->PowerUp >= gameVal->powerUpRestore)
 			{
@@ -186,65 +215,10 @@ int main()
 
 			worker.join();
 			// Update all entities and remove dead ones
-			for (auto i = asteroids.begin(); i != asteroids.end();)
-			{
-				Asteroid *e = *i;
-				e->update();
-				if (e->life == false)
-				{
-					// Generate smaller asteroids after being hit and give points
-					if (e->sprite.getTexture() == &tAsteroid[BIG])
-						p->givePoints(20);
-					else if (e->sprite.getTexture() == &tAsteroid[MEDIUM])
-						p->givePoints(50);
-					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
-						p->givePoints(100);
-					if (Asteroid::generate(*e) != NULL)
-					{
-						asteroids.push_back(Asteroid::generate(*e));
-						asteroids.push_back(Asteroid::generate(*e));
-					}
-					i = asteroids.erase(i);
-					delete e;
-				}
-				else
-					i++;
-			}
-			for (auto i = bullets.begin(); i != bullets.end();)
-			{
-				Bullet *e = *i;
-				e->update();
-				if (!e->lifes && !e->life)
-				{
-					i = bullets.erase(i);
-					delete e;
-				}
-				else
-					i++;
-			}
-			for (auto i = powerUps.begin(); i != powerUps.end();)
-			{
-				PowerUp *e = *i;
-				if (e->life == false)
-				{
-					i = powerUps.erase(i);
-					delete e;
-				}
-				else
-					i++;
-			}
-			for (auto i = u->ufoBullets.begin(); i != u->ufoBullets.end();)
-			{
-				Bullet *e = *i;
-				e->update();
-				if (e->lifes == 0 && !e->life)
-				{
-					i = u->ufoBullets.erase(i);
-					delete e;
-				}
-				else
-					i++;
-			}
+			updateList(asteroids);
+			updateList(bullets);
+			updateList(powerUps);
+			updateList(u->ufoBullets);
 
 			p->update();
 			u->update(p->x, p->y);
@@ -308,7 +282,7 @@ int main()
 	return 0;
 }
 
-void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet *> bullets, std::list<PowerUp *> powerUps, ProgressBar progressBar, UFO *u)
+void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *> bullets, std::list<Entity *> powerUps, ProgressBar progressBar, UFO *u)
 {
 	for (auto a : asteroids)
 	{
@@ -363,6 +337,10 @@ void checkCollision(Player *p, std::list<Asteroid *> asteroids, std::list<Bullet
 			a->life = false;
 			p->life = false;
 			a->lifes--;
+			if (!a->lifes)
+				a->life = false;
+			if (!p->lifes)
+				p->life = false;
 		}
 	}
 	for (auto b : bullets)

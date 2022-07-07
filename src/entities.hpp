@@ -37,9 +37,13 @@ int random(int range, int modifier)
 class Entity // general class for all existing entities
 {
 public:
-	static const char type = -1;
+	virtual char type()
+	{
+		return -1;
+	}
 	float x, y, x_speed, y_speed, angle;
 	bool life = true;
+	int lifes = 0;
 	sf::Sprite sprite;
 
 	Entity(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
@@ -60,20 +64,23 @@ public:
 		sprite.setRotation(angle + 90);
 		window.draw(sprite);
 	}
+	virtual void update(){};
 };
 class Player : public Entity
 {
 	int bulletFreq = 250, maxSpeed = speedScale * 2;
 
 public:
-	static const char type = _PLAYER;
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
 	int points = 0, lifes = 3, earnedLifes = 1;
 
 	sf::Time aliveTime = sf::Time::Zero;
-
+	char type()
+	{
+		return _PLAYER;
+	}
 	Player()
 		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer){};
 	void update()
@@ -164,7 +171,10 @@ public:
 class Asteroid : public Entity
 {
 public:
-	static const char type = _ASTEROID;
+	char type()
+	{
+		return _ASTEROID;
+	}
 	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture *TEXTURE)
 		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
 	void update()
@@ -211,7 +221,7 @@ public:
 						 &tAsteroid[BIG]);
 		return a;
 	}
-	static Asteroid *generate(Asteroid asteroid)
+	static Asteroid *generate(Entity asteroid)
 	{
 		eSizes asteroidNum;
 		if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
@@ -232,12 +242,15 @@ public:
 class Bullet : public Entity
 {
 public:
-	static const char type = _BULLET;
-	int lifes = 1;
+	char type()
+	{
+		return _BULLET;
+	}
 	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
 		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
 	{
 		sprite.scale(s.x, s.y);
+		lifes = 1;
 	};
 	void update()
 	{
@@ -259,9 +272,12 @@ class UFO : public Entity
 	int bulletFreq = 3000;
 
 public:
-	static const char type = _UFO;
+	char type()
+	{
+		return _UFO;
+	}
 	bool isActive = false;
-	std::list<Bullet *> ufoBullets;
+	std::list<Entity *> ufoBullets;
 
 	int lifes = 5;
 	UFO()
@@ -284,11 +300,6 @@ public:
 
 			x += x_speed / 400 * delta->Move / 10;
 			y += y_speed / 400 * delta->Move / 15;
-			if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
-			{
-				life = false;
-				lifes--;
-			}
 
 			if (canShoot())
 			{
@@ -317,7 +328,10 @@ public:
 class PowerUp : public Entity
 {
 public:
-	static const char type = _POWERUP;
+	char type()
+	{
+		return _POWERUP;
+	}
 	PowerUp(sf::Texture *TEXTURE)
 		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY,
 				 0, 0, -90, TEXTURE){};

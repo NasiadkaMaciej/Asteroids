@@ -6,19 +6,19 @@
 // states
 enum eStates : char
 {
-  playState,
-  menuState,
-  gameoverState,
-  settingsState,
-  saveScreenState,
-  leaderBoardState
+	playState,
+	menuState,
+	gameoverState,
+	settingsState,
+	saveScreenState,
+	leaderBoardState
 };
 
 enum eSizes : char
 {
-  BIG,
-  MEDIUM,
-  SMALL
+	BIG,
+	MEDIUM,
+	SMALL
 };
 
 extern float degToRad;
@@ -36,43 +36,43 @@ extern bool isPlaying, isMenu, isGameOver, isSettings, isSaveScreen, isLeaderBoa
 struct GameValues
 {
 public:
-  int bigAsteroids = 4;       // starting game with 6 asteroids (when starting 2 more are added)
-  int roundNum = 0;           // round number (when starting game 1 is added)
-  int powerUpRestore = 10000; // time to restore power ups
-  int UFORestore = 30000;     // UFO exist and respawn time
+	int bigAsteroids = 4;		// starting game with 6 asteroids (when starting 2 more are added)
+	int roundNum = 0;			// round number (when starting game 1 is added)
+	int powerUpRestore = 10000; // time to restore power ups
+	int UFORestore = 30000;		// UFO exist and respawn time
 };
 
 struct GameTime
 {
 public:
-  sf::Clock Clock;
-  sf::Time Time;
-  float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0, ufoShoot;
-  void gameUpdate()
-  {
-    PowerUp += Time.asMilliseconds();
-    Move += Time.asMilliseconds();
-    UFO += Time.asMilliseconds();
-    Shoot += Time.asMilliseconds();
-    ufoShoot += Time.asMilliseconds();
-  }
+	sf::Clock Clock;
+	sf::Time Time;
+	float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0, ufoShoot;
+	void gameUpdate()
+	{
+		PowerUp += Time.asMilliseconds();
+		Move += Time.asMilliseconds();
+		UFO += Time.asMilliseconds();
+		Shoot += Time.asMilliseconds();
+		ufoShoot += Time.asMilliseconds();
+	}
 };
 
 struct GameSettings
 {
 public:
-  GameSettings()
-  {
-    loadSettings();
-  }
-  // Default values
-  int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height;
-  bool vsync = true, fs = true, sfx = true, music = true, background = true;
-  void loadSettings();
-  void saveSettings();
-  int translateFS();
-  bool checkRes();
-  std::vector<sf::VideoMode> availRes;
+	GameSettings()
+	{
+		loadSettings();
+	}
+	// Default values
+	int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height;
+	bool vsync = true, fs = true, sfx = true, music = true, background = true;
+	void loadSettings();
+	void saveSettings();
+	int translateFS();
+	bool checkRes();
+	std::vector<sf::VideoMode> availRes;
 };
 
 extern GameValues *gameVal;
