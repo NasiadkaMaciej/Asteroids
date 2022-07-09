@@ -69,12 +69,11 @@ public:
 class Player : public Entity
 {
 	int bulletFreq = 250, maxSpeed = speedScale * 2;
-
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
-	int points = 0, lifes = 3, earnedLifes = 1;
+	int points = 0, earnedLifes = 1;
 
 	sf::Time aliveTime = sf::Time::Zero;
 	char type()
@@ -82,7 +81,9 @@ public:
 		return _PLAYER;
 	}
 	Player()
-		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer){};
+		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer){
+			lifes = 3;
+		};
 	void update()
 	{
 		aliveTime += delta->Time;
@@ -117,13 +118,13 @@ public:
 			x += x_speed * delta->Move / 15;
 			y += y_speed * delta->Move / 15;
 
-			if (x >= gameSettings.resX)
+			if (x > gameSettings.resX)
 				x = 0;
-			else if (x <= 0)
+			else if (x < 0)
 				x = gameSettings.resX;
-			if (y >= gameSettings.resY)
+			if (y > gameSettings.resY)
 				y = 0;
-			else if (y <= 0)
+			else if (y < 0)
 				y = gameSettings.resY;
 		}
 		else
@@ -162,7 +163,7 @@ public:
 	}
 	bool canShoot()
 	{
-		if (isShooting && !isIdle && delta->Shoot >= bulletFreq)
+		if (isShooting && !isIdle && delta->Shoot > bulletFreq)
 			return true;
 		else
 			return false;
@@ -181,13 +182,13 @@ public:
 	{
 		x += x_speed * delta->Move / 15;
 		y += y_speed * delta->Move / 15;
-		if (x >= gameSettings.resX)
+		if (x > gameSettings.resX)
 			x = 0;
-		else if (x <= 0)
+		else if (x < 0)
 			x = gameSettings.resX;
-		if (y >= gameSettings.resY)
+		if (y > gameSettings.resY)
 			y = 0;
-		else if (y <= 0)
+		else if (y < 0)
 			y = gameSettings.resY;
 	}
 	// Generates asteroid at random edge of the screen
@@ -279,9 +280,13 @@ public:
 	bool isActive = false;
 	std::list<Entity *> ufoBullets;
 
-	int lifes = 5;
 	UFO()
-		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, &tUFO){};
+		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, &tUFO)
+	{
+		lifes = 5;
+		life = true;
+		isActive = false;
+	};
 
 	bool canShoot()
 	{
@@ -333,6 +338,5 @@ public:
 		return _POWERUP;
 	}
 	PowerUp(sf::Texture *TEXTURE)
-		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY,
-				 0, 0, -90, TEXTURE){};
+		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, TEXTURE){};
 };

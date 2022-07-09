@@ -19,7 +19,7 @@ void GameSettings::loadSettings()
 {
   // Read all available fullscreen resolutions and sort them
   for (const auto &tmp : sf::VideoMode::getFullscreenModes())
-    if (tmp.bitsPerPixel == 32)
+    if (tmp.bitsPerPixel == 24)
       availRes.push_back(tmp);
   std::reverse(availRes.begin(), availRes.end());
 
@@ -103,6 +103,7 @@ bool loadBase()
                               gameSettings.resY,
                               desktopMode.bitsPerPixel),
                 "Asteroids - Macieson", gameSettings.translateFS());
+                //"Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24,8,16));
   window.setFramerateLimit(gameSettings.frames);
   window.setVerticalSyncEnabled(gameSettings.vsync);
 

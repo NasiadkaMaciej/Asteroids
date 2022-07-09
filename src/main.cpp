@@ -11,7 +11,8 @@
 void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *> bullets, std::list<Entity *> powerUps, ProgressBar progressBar, UFO *u);
 
 int main()
-{
+{    
+	
 	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
@@ -20,8 +21,8 @@ int main()
 	// writeScoreBoard();
 
 	// create objects and lists
-	Player *p;
-	UFO *u;
+	Player *p = new Player;
+	UFO *u = new UFO;
 	// add all of menus to the list and then reset() all of them in changeState() function
 	Menu menu(menuEntriesCount, menuEntries);
 	GameOver gameOver(gameOverEntriesCount, gameOverEntries);
@@ -177,7 +178,7 @@ int main()
 			}
 
 			// Spawn random power up evey 10 seconds and clear old
-			if (delta->PowerUp >= gameVal->powerUpRestore)
+			if (delta->PowerUp > gameVal->powerUpRestore)
 			{
 				int rand = std::rand() % 4;
 				powerUps.clear();
@@ -226,9 +227,7 @@ int main()
 			if (!u->life)
 			{
 				delta->UFO = 0;
-				u->lifes = 10;
-				u->life = true;
-				u->isActive = false;
+				u = new UFO;
 				p->givePoints(1000);
 			}
 
@@ -243,7 +242,6 @@ int main()
 			}
 
 			progressBar.update();
-
 			std::string sPoints = std::to_string(p->points);
 			std::string sTime = std::to_string(p->aliveTime.asMilliseconds() / 10);
 			std::string sLevel = std::to_string(gameVal->roundNum);
@@ -322,7 +320,7 @@ void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *
 			else if (a->sprite.getTexture() == &tPenetratingBullet)
 				p->isDoublePenetrating = true;
 		}
-		else if ((delta->PowerUp >= gameVal->powerUpRestore) && (a->life == true))
+		else if ((delta->PowerUp > gameVal->powerUpRestore))
 		{
 			a->life = false;
 			delta->PowerUp = 0;
@@ -331,7 +329,7 @@ void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *
 	for (auto a : u->ufoBullets)
 	{
 		// Check ufoBullets and player collisons
-		if (Collision::PixelPerfectTest(a->sprite, p->sprite))
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle)
 		{
 			playSound(&destroySound);
 			a->life = false;

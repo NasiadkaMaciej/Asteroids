@@ -225,7 +225,7 @@ public:
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (delta->Menu >= 100)
+			if (delta->Menu > 100)
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				{
