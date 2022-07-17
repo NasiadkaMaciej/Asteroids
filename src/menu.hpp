@@ -654,9 +654,8 @@ public:
 	float removedObjects = 0;
 	float height;
 	ProgressBar(float HEIGHT)
+	: height(HEIGHT), fullSize(gameSettings.resX/2)
 	{
-		height = HEIGHT;
-		fullSize = gameSettings.resX / 2;
 		pg.setFillColor(sf::Color::Black);
 		pg.setOutlineThickness(1);
 		pg.setOutlineColor(sf::Color::White);
@@ -680,3 +679,5 @@ public:
 		objectSize = fullSize / numOfObjects;
 	}
 };
+
+ProgressBar progressBar(15), placeholder(0);

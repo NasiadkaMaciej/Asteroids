@@ -71,11 +71,7 @@ void GameSettings::saveSettings()
 }
 int GameSettings::translateFS()
 {
-  if (fs)
-    return sf::Style::Fullscreen;
-  else
-    return sf::Style::Default;
-  return 0;
+  return fs ? sf::Style::Fullscreen : sf::Style::Default;
 }
 bool GameSettings::checkRes()
 {

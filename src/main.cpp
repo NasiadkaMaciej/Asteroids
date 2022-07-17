@@ -7,12 +7,9 @@
 #include <list>
 #include <thread>
 
-// move it somewhere else
-void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *> bullets, std::list<Entity *> powerUps, ProgressBar progressBar, UFO *u);
-
 int main()
-{    
-	
+{
+
 	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
@@ -21,9 +18,6 @@ int main()
 	// writeScoreBoard();
 
 	// create objects and lists
-	Player *p = new Player;
-	UFO *u = new UFO;
-	// add all of menus to the list and then reset() all of them in changeState() function
 	Menu menu(menuEntriesCount, menuEntries);
 	GameOver gameOver(gameOverEntriesCount, gameOverEntries);
 	Settings settings(settingEntriesCount, settingEntries);
@@ -32,12 +26,6 @@ int main()
 	sf::Sprite background(tBackground);
 	background.setTextureRect(sf::IntRect(0, 0, gameSettings.resX, gameSettings.resY));
 
-	std::list<Menu *> menus;
-	std::list<Entity *> asteroids;
-	std::list<Entity *> bullets;
-	std::list<Entity *> powerUps;
-
-	ProgressBar progressBar(15), placeholder(0);
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
 
@@ -55,8 +43,6 @@ int main()
 		delta = new GameTime;
 		p = new Player;
 		u = new UFO();
-		for (auto i : menus)
-			i->reset();
 	};
 
 	auto updateList = [&](std::list<Entity *> &list)
@@ -156,7 +142,7 @@ int main()
 				else
 					p->isShooting = false;
 			}
-			std::thread worker(checkCollision, p, asteroids, bullets, powerUps, progressBar, u);
+			std::thread worker(checkCollision);
 
 			if (p->canShoot())
 			{
@@ -171,6 +157,7 @@ int main()
 					Bullet *b = new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale());
 					b->lifes = 2;
 					bullets.push_back(b);
+					delete b;
 				}
 				else
 					bullets.push_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
@@ -227,6 +214,7 @@ int main()
 			if (!u->life)
 			{
 				delta->UFO = 0;
+				delete u;
 				u = new UFO;
 				p->givePoints(1000);
 			}
@@ -237,7 +225,8 @@ int main()
 				gameVal->bigAsteroids += 2;
 				gameVal->roundNum++;
 				for (int i = 0; i < gameVal->bigAsteroids; i++)
-					asteroids.push_back(Asteroid::generateBig());
+ 					asteroids.push_back(Asteroid::generateBig());
+					
 				progressBar.reset();
 			}
 
@@ -280,7 +269,7 @@ int main()
 	return 0;
 }
 
-void checkCollision(Player *p, std::list<Entity *> asteroids, std::list<Entity *> bullets, std::list<Entity *> powerUps, ProgressBar progressBar, UFO *u)
+void checkCollision()
 {
 	for (auto a : asteroids)
 	{

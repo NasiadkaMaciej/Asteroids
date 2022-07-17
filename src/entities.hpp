@@ -47,12 +47,8 @@ public:
 	sf::Sprite sprite;
 
 	Entity(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
+		: x(X), y(Y), x_speed(X_SPEED), y_speed(Y_SPEED), angle(ANGLE)
 	{
-		x = X;
-		y = Y;
-		x_speed = X_SPEED;
-		y_speed = Y_SPEED;
-		angle = ANGLE;
 		sprite.setTexture(*TEXTURE, true);
 		sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
 		sprite.scale(scale, scale);
@@ -69,6 +65,7 @@ public:
 class Player : public Entity
 {
 	int bulletFreq = 250, maxSpeed = speedScale * 2;
+
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
@@ -81,9 +78,10 @@ public:
 		return _PLAYER;
 	}
 	Player()
-		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer){
-			lifes = 3;
-		};
+		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer)
+	{
+		lifes = 3;
+	};
 	void update()
 	{
 		aliveTime += delta->Time;
@@ -215,14 +213,12 @@ public:
 			y = gameSettings.resY;
 			break;
 		}
-		Asteroid *a =
-			new Asteroid(x, y,
-						 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
-						 random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
-						 &tAsteroid[BIG]);
-		return a;
+		return new Asteroid(x, y,
+							random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
+							random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
+							&tAsteroid[BIG]);
 	}
-	static Asteroid *generate(Entity asteroid)
+	static Asteroid *generate(const Entity &asteroid)
 	{
 		eSizes asteroidNum;
 		if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
@@ -231,13 +227,12 @@ public:
 			asteroidNum = SMALL;
 		else
 			return NULL;
-		Asteroid *a = new Asteroid(
+		return new Asteroid(
 			asteroid.x,
 			asteroid.y,
 			random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
 			random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
 			&tAsteroid[asteroidNum]);
-		return a;
 	}
 };
 class Bullet : public Entity
@@ -252,11 +247,11 @@ public:
 	{
 		sprite.scale(s.x, s.y);
 		lifes = 1;
-		x_speed = (cos(angle * degToRad) * delta->Move) * speedScale / 5;
-		y_speed = (sin(angle * degToRad) * delta->Move) * speedScale / 5;
 	};
 	void update()
 	{
+		x_speed = (cos(angle * degToRad) * delta->Move) * speedScale / 5;
+		y_speed = (sin(angle * degToRad) * delta->Move) * speedScale / 5;
 		x += x_speed;
 		y += y_speed;
 		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
@@ -304,7 +299,6 @@ public:
 
 			x += x_speed * delta->Move / (1000 * speedScale);
 			y += y_speed * delta->Move / (1000 * speedScale);
-	
 
 			if (canShoot())
 			{
@@ -340,3 +334,9 @@ public:
 	PowerUp(sf::Texture *TEXTURE)
 		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, TEXTURE){};
 };
+
+Player *p = new Player;
+UFO *u = new UFO;
+std::list<Entity *> asteroids;
+std::list<Entity *> bullets;
+std::list<Entity *> powerUps;
