@@ -11,8 +11,8 @@ enum eTypes : char
 };
 
 float speedScale = gameSettings.resY / 200;
-float asteroidMaxSpeed[3] = {speedScale, (float)speedScale *(float)1.5, (float)speedScale * 2};
-float asteroidDiffSpeed[3] = {speedScale / 2, (float)speedScale / 2 * (float)1.5, (float)speedScale / 2 * 2};
+float asteroidMaxSpeed[3] = {speedScale, speedScale * 1.5f, speedScale * 2};
+float asteroidDiffSpeed[3] = {speedScale / 2, speedScale / 2 * 1.5f, speedScale};
 
 struct Scale
 {
@@ -104,8 +104,8 @@ public:
 			}
 			else
 			{
-				x_speed *= (float)(1 - delta->Move / 1200);
-				y_speed *= (float)(1 - delta->Move / 1200);
+				x_speed *= (1 - delta->Move / 1200);
+				y_speed *= (1 - delta->Move / 1200);
 			}
 
 			float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
@@ -252,12 +252,11 @@ public:
 	{
 		sprite.scale(s.x, s.y);
 		lifes = 1;
+		x_speed = (cos(angle * degToRad) * delta->Move) * speedScale / 5;
+		y_speed = (sin(angle * degToRad) * delta->Move) * speedScale / 5;
 	};
 	void update()
 	{
-		x_speed = (cos(angle * degToRad) * delta->Move * speedScale) / 5;
-		y_speed = (sin(angle * degToRad) * delta->Move * speedScale) / 5;
-
 		x += x_speed;
 		y += y_speed;
 		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
@@ -303,8 +302,9 @@ public:
 			x_speed = (pX - x);
 			y_speed = (pY - y);
 
-			x += x_speed / 400 * delta->Move / 10;
-			y += y_speed / 400 * delta->Move / 15;
+			x += x_speed * delta->Move / (1000 * speedScale);
+			y += y_speed * delta->Move / (1000 * speedScale);
+	
 
 			if (canShoot())
 			{

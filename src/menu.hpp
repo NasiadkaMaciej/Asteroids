@@ -575,7 +575,7 @@ public:
 						move(0);
 
 						// Save score to online leaderboard, secret is only in built releases.
-						std::string secret = "PapiezPolak";
+						std::string secret = "";
 						if (secret != "")
 						{
 							transform(name.begin(), name.end(), name.begin(), ::tolower);

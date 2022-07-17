@@ -14,7 +14,7 @@ project(Asteroids
 
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED True)
-
+    set(target_compile_options("-Wall"))
 find_package(SFML COMPONENTS system window graphics audio CONFIG REQUIRED)
 
 file(GLOB SRC
