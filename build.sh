@@ -3,12 +3,11 @@
 CWD=$(pwd)
 
 if [ ! -d $CWD/build ]; then
-  mkdir -p $CWD/build;
+  mkdir $CWD/build
   cd build
   cmake ..
-  cd $CWD
 fi
 
-cd build
+cd $CWD/build
 make
 cp Asteroids ../bin/Asteroids

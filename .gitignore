@@ -4,3 +4,5 @@ main
 /icon
 Asteroids
 build/
+bin/scoreBoard.dat
+bin/asteroids.cfg

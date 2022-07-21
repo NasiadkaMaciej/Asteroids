@@ -19,10 +19,7 @@ ScoreBoard scoreBoard[10];
 // Compare elements in ScoreBoard to sort them
 bool compare(ScoreBoard a, ScoreBoard b)
 {
-	if (a.points < b.points)
-		return false;
-	else
-		return true;
+	return (a.points > b.points);
 }
 
 // Write actual score board to file
@@ -387,6 +384,12 @@ public:
 			gameSettings.frames = 165;
 			break;
 		case 165:
+			gameSettings.frames = 500;
+			break;
+		case 500:
+			gameSettings.frames = 1000;
+			break;
+		case 1000:
 			gameSettings.frames = 60;
 			break;
 		}

@@ -11,10 +11,8 @@ sf::Text text;
 
 float scale;
 
-// to array?
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
      isSaveScreen = false, isLeaderBoard = false;
-
 void GameSettings::loadSettings()
 {
   // Read all available fullscreen resolutions and sort them
@@ -81,8 +79,8 @@ bool GameSettings::checkRes()
   return false;
 }
 GameValues *gameVal;
-GameSettings gameSettings;
 GameTime *delta;
+GameSettings gameSettings;
 
 bool loadBase()
 {

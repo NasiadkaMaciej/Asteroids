@@ -29,8 +29,6 @@ extern sf::Font font;
 extern sf::Text text;
 
 extern float scale;
-
-// to array or struct
 extern bool isPlaying, isMenu, isGameOver, isSettings, isSaveScreen, isLeaderBoard;
 // for storing game values, in future some timers and upgrades
 struct GameValues
@@ -44,7 +42,6 @@ public:
 
 struct GameTime
 {
-public:
 	sf::Clock Clock;
 	sf::Time Time;
 	float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0, ufoShoot;
@@ -60,7 +57,6 @@ public:
 
 struct GameSettings
 {
-public:
 	GameSettings()
 	{
 		loadSettings();
@@ -76,10 +72,10 @@ public:
 };
 
 extern GameValues *gameVal;
-extern GameSettings gameSettings;
 extern GameTime *delta;
+extern GameSettings gameSettings;
+
+extern void setStates(bool state);
+extern void setState(eStates state);
 
 extern bool loadBase();
-extern void setStates(bool state);
-
-extern void setState(eStates state);

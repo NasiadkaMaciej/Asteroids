@@ -61,6 +61,11 @@ public:
 		window.draw(sprite);
 	}
 	virtual void update(){};
+
+	bool operator==(sf::Texture* txt)
+	{
+		return sprite.getTexture() == txt;
+	}
 };
 class Player : public Entity
 {
@@ -161,10 +166,7 @@ public:
 	}
 	bool canShoot()
 	{
-		if (isShooting && !isIdle && delta->Shoot > bulletFreq)
-			return true;
-		else
-			return false;
+		return isShooting && !isIdle && delta->Shoot > bulletFreq;
 	}
 };
 class Asteroid : public Entity

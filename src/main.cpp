@@ -56,11 +56,11 @@ int main()
 				if (e->type() == _ASTEROID)
 				{
 					// Generate smaller asteroids after being hit and give points
-					if (e->sprite.getTexture() == &tAsteroid[BIG])
+					if (*e == &tAsteroid[BIG])
 						p->givePoints(20);
-					else if (e->sprite.getTexture() == &tAsteroid[MEDIUM])
+					else if (*e == &tAsteroid[MEDIUM])
 						p->givePoints(50);
-					else if (e->sprite.getTexture() == &tAsteroid[SMALL])
+					else if (*e == &tAsteroid[SMALL])
 						p->givePoints(100);
 					if (Asteroid::generate(*e) != NULL)
 					{
@@ -113,7 +113,7 @@ int main()
 		else
 		{
 			delta->gameUpdate();
-
+			std::thread worker(checkCollision);
 			sf::Event event;
 			while (window.pollEvent(event))
 			{
@@ -142,7 +142,6 @@ int main()
 				else
 					p->isShooting = false;
 			}
-			std::thread worker(checkCollision);
 
 			if (p->canShoot())
 			{
@@ -225,8 +224,8 @@ int main()
 				gameVal->bigAsteroids += 2;
 				gameVal->roundNum++;
 				for (int i = 0; i < gameVal->bigAsteroids; i++)
- 					asteroids.push_back(Asteroid::generateBig());
-					
+					asteroids.push_back(Asteroid::generateBig());
+
 				progressBar.reset();
 			}
 
@@ -300,13 +299,13 @@ void checkCollision()
 		{
 			a->life = false;
 			delta->PowerUp = 0;
-			if (a->sprite.getTexture() == &tBulletUp)
+			if (*a == &tBulletUp)
 				p->isPowerBullet = true;
-			else if (a->sprite.getTexture() == &tLifeUp)
+			else if (*a == &tLifeUp)
 				p->lifes++;
-			else if (a->sprite.getTexture() == &tDoubleBullet)
+			else if (*a == &tDoubleBullet)
 				p->isDoubleShooting = true;
-			else if (a->sprite.getTexture() == &tPenetratingBullet)
+			else if (*a == &tPenetratingBullet)
 				p->isDoublePenetrating = true;
 		}
 		else if ((delta->PowerUp > gameVal->powerUpRestore))
