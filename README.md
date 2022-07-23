@@ -1,6 +1,6 @@
 # Asteroids
 
-![Game screenshot](https://maciej.ml/projects/Asteroids/Asteroids.png)
+![Game screenshot](https://maciej.ml/projects/Asteroids/Asteroids.png?)
 
 Asteroids game clone. Written in C++ with SFML.  
 Destroy as many asteroids as you can with your spaceship's missiles, but be careful, they come from all sides, at different speeds and, when destroyed, they break into more, even faster and more dangerous fragments. Be cautious! Once in a while, a mysterious UFO shows up and starts shooting to you.
@@ -14,7 +14,8 @@ Enter for choosing menu entry
 F11 for toggling fullscreen (game restart recommended)  
 
 ## Building
-You need SFML and libcurl installed. Use build.sh script or command below
+You need SFML, libcurl and CMAKE installed. Use build.sh script or command below.  
+Cmake works on Linux. I have some problems on Windows due some libraries in vcpkg.
 ````shell
 g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lcurl
 ````
@@ -48,8 +49,6 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [x] Fair play adjustment for different resolutions
 * [ ] Add multiplayer
 * [ ] Scrolling menus
-* [ ] Set game FPS limit to monitor HZ
-* [ ] Check if leaderboard and settings file are ok
 * [ ] Auto maximize and focus game if not in fullscreen
 * [ ] Audio volume settings
 * [ ] Progressbar improvement
@@ -64,4 +63,4 @@ g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-sys
 * [ ] Less for loops
 * [ ] More optimization
 * [ ] One for loop and type in class name
-* [ ] Choose resolution in game
+* [x] Choose resolution in game
