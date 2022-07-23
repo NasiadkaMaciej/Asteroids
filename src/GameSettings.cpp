@@ -78,6 +78,7 @@ bool GameSettings::checkRes()
       return true;
   return false;
 }
+
 GameValues *gameVal;
 GameTime *delta;
 GameSettings gameSettings;
@@ -97,7 +98,7 @@ bool loadBase()
                               gameSettings.resY,
                               desktopMode.bitsPerPixel),
                 "Asteroids - Macieson", gameSettings.translateFS());
-                //"Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24,8,16));
+  //"Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24,8,16));
   window.setFramerateLimit(gameSettings.frames);
   window.setVerticalSyncEnabled(gameSettings.vsync);
 

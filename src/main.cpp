@@ -9,12 +9,11 @@
 
 int main()
 {
-
 	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
+	playMusic();
 	loadScoreBoard();
-	music.play();
 	// writeScoreBoard();
 
 	// create objects and lists
@@ -37,12 +36,10 @@ int main()
 		powerUps.clear();
 		delete gameVal;
 		delete delta;
-		delete p;
-		delete u;
 		gameVal = new GameValues;
 		delta = new GameTime;
-		p = new Player;
-		u = new UFO();
+		p = std::make_unique<Player>();
+		u = std::make_unique<UFO>();
 	};
 
 	auto updateList = [&](std::list<Entity *> &list)
@@ -156,7 +153,6 @@ int main()
 					Bullet *b = new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale());
 					b->lifes = 2;
 					bullets.push_back(b);
-					delete b;
 				}
 				else
 					bullets.push_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
@@ -196,7 +192,6 @@ int main()
 					u->activate();
 				else
 					u->isActive = false;
-
 				delta->UFO = 0;
 			}
 
@@ -213,8 +208,7 @@ int main()
 			if (!u->life)
 			{
 				delta->UFO = 0;
-				delete u;
-				u = new UFO;
+				u = std::make_unique<UFO>();
 				p->givePoints(1000);
 			}
 
@@ -257,7 +251,8 @@ int main()
 			for (auto &i : u->ufoBullets)
 				i->draw(window);
 			p->draw(window);
-			u->draw(window);
+			if (u->isActive)
+				u->draw(window);
 			window.draw(text);
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);

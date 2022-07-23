@@ -62,7 +62,7 @@ struct GameSettings
 		loadSettings();
 	}
 	// Default values
-	int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height;
+	unsigned int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height;
 	bool vsync = true, fs = true, sfx = true, music = true, background = true;
 	void loadSettings();
 	void saveSettings();

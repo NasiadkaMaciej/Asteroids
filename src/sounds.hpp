@@ -38,3 +38,8 @@ void playSound(sf::Sound *sound)
     if (gameSettings.sfx)
         sound->play();
 }
+void playMusic(){
+    if(gameSettings.music){
+        music.play();
+    }
+}

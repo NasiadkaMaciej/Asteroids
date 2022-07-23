@@ -1,5 +1,6 @@
 #include <list>
 #include "sounds.hpp"
+#include <memory>
 
 enum eTypes : char
 {
@@ -62,7 +63,7 @@ public:
 	}
 	virtual void update(){};
 
-	bool operator==(sf::Texture* txt)
+	bool operator==(sf::Texture *txt)
 	{
 		return sprite.getTexture() == txt;
 	}
@@ -337,8 +338,9 @@ public:
 		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, TEXTURE){};
 };
 
-Player *p = new Player;
-UFO *u = new UFO;
+std::unique_ptr<Player> p = std::make_unique<Player>();
+std::unique_ptr<UFO> u = std::make_unique<UFO>();
+
 std::list<Entity *> asteroids;
 std::list<Entity *> bullets;
 std::list<Entity *> powerUps;
