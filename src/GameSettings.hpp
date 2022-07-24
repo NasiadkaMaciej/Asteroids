@@ -21,7 +21,7 @@ enum eSizes : char
 	SMALL
 };
 
-extern float degToRad;
+const static float degToRad = M_PI / 180;
 
 extern sf::VideoMode desktopMode;
 extern sf::RenderWindow window;

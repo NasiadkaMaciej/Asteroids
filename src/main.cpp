@@ -61,8 +61,8 @@ int main()
 						p->givePoints(100);
 					if (Asteroid::generate(*e) != NULL)
 					{
-						list.push_back(Asteroid::generate(*e));
-						list.push_back(Asteroid::generate(*e));
+						list.emplace_back(Asteroid::generate(*e));
+						list.emplace_back(Asteroid::generate(*e));
 					}
 				}
 				i = list.erase(i);
@@ -109,8 +109,8 @@ int main()
 		}
 		else
 		{
-			delta->gameUpdate();
 			std::thread worker(checkCollision);
+			delta->gameUpdate();
 			sf::Event event;
 			while (window.pollEvent(event))
 			{
@@ -145,17 +145,17 @@ int main()
 				playSound(&laserSound);
 				if (p->isDoubleShooting) // shoot 2 bullets simultaneously
 				{
-					bullets.push_back(new Bullet(p->x, p->y, p->angle + 2.5, &tBullet, p->bulletScale()));
-					bullets.push_back(new Bullet(p->x, p->y, p->angle - 2.5, &tBullet, p->bulletScale()));
+					bullets.emplace_back(new Bullet(p->x, p->y, p->angle + 2.5, &tBullet, p->bulletScale()));
+					bullets.emplace_back(new Bullet(p->x, p->y, p->angle - 2.5, &tBullet, p->bulletScale()));
 				}
 				else if (p->isDoublePenetrating)
 				{
 					Bullet *b = new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale());
 					b->lifes = 2;
-					bullets.push_back(b);
+					bullets.emplace_back(b);
 				}
 				else
-					bullets.push_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
+					bullets.emplace_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
 				delta->Shoot = 0;
 			}
 
@@ -167,16 +167,16 @@ int main()
 				switch (rand)
 				{
 				case 0: // Generate bullet resize powerup
-					powerUps.push_back(new PowerUp(&tBulletUp));
+					powerUps.emplace_back(new PowerUp(&tBulletUp));
 					break;
 				case 1: // Generate life bonus powerup
-					powerUps.push_back(new PowerUp(&tLifeUp));
+					powerUps.emplace_back(new PowerUp(&tLifeUp));
 					break;
 				case 2: // Generate double shoot powerup
-					powerUps.push_back(new PowerUp(&tDoubleBullet));
+					powerUps.emplace_back(new PowerUp(&tDoubleBullet));
 					break;
 				case 3: // Generate double penetrate powerup
-					powerUps.push_back(new PowerUp(&tPenetratingBullet));
+					powerUps.emplace_back(new PowerUp(&tPenetratingBullet));
 					break;
 				}
 				delta->PowerUp = 0;
@@ -218,8 +218,7 @@ int main()
 				gameVal->bigAsteroids += 2;
 				gameVal->roundNum++;
 				for (int i = 0; i < gameVal->bigAsteroids; i++)
-					asteroids.push_back(Asteroid::generateBig());
-
+					asteroids.emplace_back(Asteroid::generateBig());
 				progressBar.reset();
 			}
 

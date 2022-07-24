@@ -14,8 +14,8 @@ Enter for choosing menu entry
 F11 for toggling fullscreen (game restart recommended)  
 
 ## Building
-You need SFML, libcurl and CMAKE installed. Use build.sh script or command below.  
-Cmake works on Linux. I have some problems on Windows due some libraries in vcpkg.
+You need SFML, libcurl (with ssl) and CMAKE installed. Use build.sh script or command below.  
+Cmake build works on Linux. I have some problems on Windows due some libraries in vcpkg.  
 ````shell
 g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lcurl
 ````

@@ -2,8 +2,6 @@
 #include <iostream>
 #include <fstream>
 
-float degToRad = M_PI / 180;
-
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
 sf::Font font;
@@ -18,7 +16,7 @@ void GameSettings::loadSettings()
   // Read all available fullscreen resolutions and sort them
   for (const auto &tmp : sf::VideoMode::getFullscreenModes())
     if (tmp.bitsPerPixel == 24)
-      availRes.push_back(tmp);
+      availRes.emplace_back(tmp);
   std::reverse(availRes.begin(), availRes.end());
 
   std::ifstream file("asteroids.cfg");

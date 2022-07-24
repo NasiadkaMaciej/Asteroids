@@ -55,7 +55,7 @@ public:
 		sprite.scale(scale, scale);
 	}
 
-	void draw(sf::RenderWindow &window)
+	const void draw(sf::RenderWindow &window)
 	{
 		sprite.setPosition(x, y);
 		sprite.setRotation(angle + 90);
@@ -63,20 +63,20 @@ public:
 	}
 	virtual void update(){};
 
-	bool operator==(sf::Texture *txt)
+	bool operator==(sf::Texture *txt) const
 	{
 		return sprite.getTexture() == txt;
 	}
 };
 class Player : public Entity
 {
-	int bulletFreq = 250, maxSpeed = speedScale * 2;
+	int bulletFreq = 250, maxSpeed = speedScale * 2, pts = 0;
 
 public:
 	bool thrust = false, isShooting = false, isIdle = true,
 		 isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
-	int points = 0, earnedLifes = 1;
+	const int &points = pts; // readonly variable, to give points, use givePoints(int)
 
 	sf::Time aliveTime = sf::Time::Zero;
 	char type()
@@ -149,8 +149,9 @@ public:
 	}
 	void givePoints(int x)
 	{
-		points += x;
-		if (points / 10000 >= earnedLifes)
+		static int earnedLifes = 1;
+		pts += x;
+       		if (pts / 5000 >= earnedLifes)
 		{
 			earnedLifes++;
 			lifes++;
@@ -224,9 +225,9 @@ public:
 	static Asteroid *generate(const Entity &asteroid)
 	{
 		eSizes asteroidNum;
-		if (asteroid.sprite.getTexture() == &tAsteroid[BIG])
+		if (asteroid == &tAsteroid[BIG])
 			asteroidNum = MEDIUM;
-		else if (asteroid.sprite.getTexture() == &tAsteroid[MEDIUM])
+		else if (asteroid == &tAsteroid[MEDIUM])
 			asteroidNum = SMALL;
 		else
 			return NULL;
@@ -287,10 +288,7 @@ public:
 
 	bool canShoot()
 	{
-		if (delta->ufoShoot >= bulletFreq)
-			return true;
-		else
-			return false;
+		return delta->ufoShoot >= bulletFreq;
 	}
 	void update(float pX, float pY)
 	{
@@ -308,7 +306,7 @@ public:
 				playSound(&ufoLaserSound);
 				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
 				Scale s(1, 1);
-				ufoBullets.push_back(new Bullet(x, y, angle, &tUFOBullet, s));
+				ufoBullets.emplace_back(new Bullet(x, y, angle, &tUFOBullet, s));
 				delta->ufoShoot = 0;
 			}
 		}
