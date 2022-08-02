@@ -11,7 +11,7 @@ Spacebar to shoot
 N for new game  
 ESC for entering and exiting menu  
 Enter for choosing menu entry  
-F11 for toggling fullscreen (game restart recommended)  
+F11 for toggling fullscreen
 
 ## Building
 You need SFML, libcurl (with ssl) and CMAKE installed. Use build.sh script or command below.  
@@ -19,48 +19,3 @@ Cmake build works on Linux. I have some problems on Windows due some libraries i
 ````shell
 g++ Collision.cpp main.cpp -o asteroids -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lcurl
 ````
-## To-Do
-* [ ] Code cleanup
-* [x] Make more functional
-* [x] Repair time problem after starting new game
-* [x] Add asteroids and bullets
-* [x] Check if game works on other systems and resolutions
-* [x] Menu and settings
-* [x] Game over screen
-* [x] Clickable menu options
-* [x] Progress bar
-* [x] Leaderboard
-* [x] Online leaderboard
-* [x] Toggling fullscreen
-* [x] Saving settings
-* [ ] Android Support
-* [x] Make executables for Windows and Linux
-* [x] Toggle plain black background and stars background
-* [x] Repair setting cursor to first position
-* [x] Add delta time
-* [x] Add link to online scoreboard
-* [ ] Integrate local and online scoreboard
-* [ ] Add user agreement to send data
-* [ ] Add info about update
-* [x] Add sound
-* [x] Repair fullscreen and screen frequency settings
-* [x] Add sound mute toggle
-* [x] Add timestamp to scores
-* [x] Fair play adjustment for different resolutions
-* [ ] Add multiplayer
-* [ ] Scrolling menus
-* [ ] Auto maximize and focus game if not in fullscreen
-* [ ] Audio volume settings
-* [ ] Progressbar improvement
-* [ ] Achievments
-* [ ] Upgrades
-* [ ] Cosmetic changes
-* [ ] Reformat readme
-* [ ] More threads
-* [ ] Animated menu background
-* [ ] Async music toggle
-* [ ] All entities to one list
-* [ ] Less for loops
-* [ ] More optimization
-* [ ] One for loop and type in class name
-* [x] Choose resolution in game

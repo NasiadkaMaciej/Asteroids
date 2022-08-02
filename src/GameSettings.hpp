@@ -55,6 +55,9 @@ struct GameTime
 	}
 };
 
+bool checkVersion();
+extern sf::Text newVersion;
+
 struct GameSettings
 {
 	GameSettings()

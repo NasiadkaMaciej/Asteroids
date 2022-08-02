@@ -118,6 +118,7 @@ std::string returnBool(int value)
 		return "On";
 	return "Error";
 }
+// Struct? Some array?
 std::string menuEntries[menuEntriesCount]{"Play",
 										  "Leaderboard",
 										  "Settings",
@@ -260,6 +261,7 @@ public:
 
 		window.clear();
 		draw(window);
+		window.draw(newVersion);
 		window.display();
 	}
 	// only valid for actual Menu
@@ -578,7 +580,7 @@ public:
 						move(0);
 
 						// Save score to online leaderboard, secret is only in built releases.
-						std::string secret = "";
+						std::string const secret = "";
 						if (secret != "")
 						{
 							transform(name.begin(), name.end(), name.begin(), ::tolower);
@@ -586,13 +588,11 @@ public:
 							const char *cRequest = request.c_str();
 							CURL *curl;
 							CURLcode res;
-#ifdef _WIN32
 							curl_global_init(CURL_GLOBAL_ALL);
-#endif
 							curl = curl_easy_init();
 							if (curl)
 							{
-								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/");
+								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/send");
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
 								res = curl_easy_perform(curl);
 								if (res != CURLE_OK)

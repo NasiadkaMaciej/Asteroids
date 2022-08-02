@@ -1,0 +1,13 @@
+Android support 
+Code cleanup 
+Add multiplayer 
+Scrolling menus 
+Auto maximize and focus window 
+Audio volume settings 
+Progress bar rework 
+Player achievments 
+Player upgrades 
+Cosmetic changes 
+Animated menu background 
+Async music toggle 
+All entities to one list 
