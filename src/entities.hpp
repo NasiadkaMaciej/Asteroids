@@ -151,7 +151,7 @@ public:
 	{
 		static int earnedLifes = 1;
 		pts += x;
-       		if (pts / 5000 >= earnedLifes)
+		if (pts / 5000 >= earnedLifes)
 		{
 			earnedLifes++;
 			lifes++;
@@ -173,15 +173,21 @@ public:
 };
 class Asteroid : public Entity
 {
+	float rotation;
 public:
 	char type()
 	{
 		return _ASTEROID;
 	}
 	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture *TEXTURE)
-		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE){};
+		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE)
+	{
+		rotation = (-100 + rand() % (100 + 100 + 1));
+	};
 	void update()
 	{
+		sprite.setRotation(sprite.getRotation() + rotation * delta->Move / 10000);
+
 		x += x_speed * delta->Move / 15;
 		y += y_speed * delta->Move / 15;
 		if (x > gameSettings.resX)
