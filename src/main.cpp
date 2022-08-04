@@ -54,16 +54,19 @@ int main()
 				{
 					// Generate smaller asteroids after being hit and give points
 					if (*e == &tAsteroid[BIG])
+					{
 						p->givePoints(20);
+						list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
+						list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
+					}
 					else if (*e == &tAsteroid[MEDIUM])
+					{
 						p->givePoints(50);
+						list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
+						list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
+					}
 					else if (*e == &tAsteroid[SMALL])
 						p->givePoints(100);
-					if (Asteroid::generate(*e) != NULL)
-					{
-						list.emplace_back(Asteroid::generate(*e));
-						list.emplace_back(Asteroid::generate(*e));
-					}
 				}
 				i = list.erase(i);
 				delete e;
@@ -326,7 +329,7 @@ void checkCollision()
 	for (auto b : bullets)
 	{
 		// Check bullets and UFO collisons
-		if (Collision::PixelPerfectTest(b->sprite, u->sprite))
+		if (Collision::PixelPerfectTest(b->sprite, u->sprite) && !p->isIdle && u->isActive)
 		{
 			playSound(&destroySound);
 			u->lifes--;

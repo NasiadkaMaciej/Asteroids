@@ -24,13 +24,14 @@ struct Scale
 		y = Y;
 	}
 };
-
-// returns random value excluding 0
+// min + rand() % ( max - min + 1 )
+//  returns random value excluding 0
 int random(int range, int modifier)
 {
 	int randomValue;
 	do
 		randomValue = std::rand() % range - modifier;
+	// randomValue = (range - modifier) + std::rand() % (2*modifier + 1);
 	while (randomValue == 0);
 	return randomValue;
 }
@@ -174,6 +175,7 @@ public:
 class Asteroid : public Entity
 {
 	float rotation;
+
 public:
 	char type()
 	{
@@ -187,6 +189,7 @@ public:
 	void update()
 	{
 		sprite.setRotation(sprite.getRotation() + rotation * delta->Move / 10000);
+		angle = sprite.getRotation() - 90;
 
 		x += x_speed * delta->Move / 15;
 		y += y_speed * delta->Move / 15;
@@ -228,18 +231,11 @@ public:
 							random(asteroidMaxSpeed[BIG], asteroidDiffSpeed[BIG]),
 							&tAsteroid[BIG]);
 	}
-	static Asteroid *generate(const Entity &asteroid)
+	static Asteroid *generate(float X, float Y, eSizes asteroidNum)
 	{
-		eSizes asteroidNum;
-		if (asteroid == &tAsteroid[BIG])
-			asteroidNum = MEDIUM;
-		else if (asteroid == &tAsteroid[MEDIUM])
-			asteroidNum = SMALL;
-		else
-			return NULL;
 		return new Asteroid(
-			asteroid.x,
-			asteroid.y,
+			X,
+			Y,
 			random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
 			random(asteroidMaxSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
 			&tAsteroid[asteroidNum]);

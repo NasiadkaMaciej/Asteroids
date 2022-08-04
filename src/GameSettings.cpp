@@ -57,9 +57,9 @@ void GameSettings::loadSettings()
 	if (!checkVersion())
 	{
 		newVersion.setString("New version is available");
-		newVersion.setPosition(60, 60);
+		newVersion.setPosition(30, 30);
 		newVersion.setFont(font);
-		newVersion.setCharacterSize(50);
+		newVersion.setCharacterSize(25);
 		newVersion.setFillColor(sf::Color::White);
 	}
 

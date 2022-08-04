@@ -11,3 +11,4 @@ Cosmetic changes
 Animated menu background 
 Async music toggle 
 All entities to one list 
+Check and improve random number generation 
