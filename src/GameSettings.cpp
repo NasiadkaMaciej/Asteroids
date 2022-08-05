@@ -44,6 +44,8 @@ sf::Text newVersion;
 
 float scale;
 
+
+// State machine?
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
 	 isSaveScreen = false, isLeaderBoard = false;
 void GameSettings::loadSettings()

@@ -12,3 +12,8 @@ Animated menu background
 Async music toggle 
 All entities to one list 
 Check and improve random number generation 
+All lists in one? 
+Class to handle input? 
+Animations 
+Vector graphics? 
+Make CMAKE work on Windows 

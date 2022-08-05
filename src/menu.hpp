@@ -304,6 +304,9 @@ public:
 			}
 		}
 	}
+	virtual ~Menu(){
+		delete[] entryText;
+	}
 };
 
 class GameOver : public Menu

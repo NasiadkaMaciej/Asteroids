@@ -38,8 +38,10 @@ int main()
 		delete delta;
 		gameVal = new GameValues;
 		delta = new GameTime;
-		p = std::make_unique<Player>();
-		u = std::make_unique<UFO>();
+		delete p;
+		delete u;
+		p = new Player;
+		u = new UFO;
 	};
 
 	auto updateList = [&](std::list<Entity *> &list)
@@ -211,7 +213,8 @@ int main()
 			if (!u->life)
 			{
 				delta->UFO = 0;
-				u = std::make_unique<UFO>();
+				delete u;
+				u = new UFO;
 				p->givePoints(1000);
 			}
 
@@ -262,6 +265,11 @@ int main()
 			delta->Move = 0;
 		}
 	}
+	delete p;
+	delete u;
+	clearEntities(asteroids);
+	clearEntities(bullets);
+	clearEntities(powerUps);
 	return 0;
 }
 
