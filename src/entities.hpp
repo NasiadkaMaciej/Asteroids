@@ -76,6 +76,7 @@ void clearEntities(std::list<Entity *> list)
 	for (auto i = list.begin(); i != list.end();)
 	{
 		Entity *e = *i;
+		list.remove(e);
 		i = list.erase(i);
 		delete e;
 	}

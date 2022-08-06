@@ -133,7 +133,7 @@ bool loadBase()
 	{
 		std::cout << "Invalid fullscreen resolution. Available modes are: \n";
 		for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
-			if (videoMode.bitsPerPixel == 32)
+			if (videoMode.bitsPerPixel == 24)
 				std::cout << videoMode.width << "x" << videoMode.height << "\n";
 		return false;
 	}

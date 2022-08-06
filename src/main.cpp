@@ -71,6 +71,7 @@ int main()
 						p->givePoints(100);
 				}
 				i = list.erase(i);
+				list.remove(e);
 				delete e;
 			}
 			else

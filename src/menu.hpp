@@ -304,7 +304,8 @@ public:
 			}
 		}
 	}
-	virtual ~Menu(){
+	virtual ~Menu()
+	{
 		delete[] entryText;
 	}
 };
@@ -474,6 +475,7 @@ public:
 	{
 		if (gameSettings.availRes.end()->width == gameSettings.resX && gameSettings.availRes.end()->height == gameSettings.resY)
 		{
+			entries[6] = "Resolution: " + std::to_string(gameSettings.availRes.begin()->width) + "x" + std::to_string(gameSettings.availRes.begin()->height);
 			gameSettings.resX = gameSettings.availRes.begin()->width;
 			gameSettings.resY = gameSettings.availRes.begin()->height;
 		}
@@ -485,6 +487,7 @@ public:
 					entries[6] = "Resolution: " + std::to_string(it->width) + "x" + std::to_string(it->height);
 					gameSettings.resX = it->width;
 					gameSettings.resY = it->height;
+					break;
 				}
 		move(0);
 	}
