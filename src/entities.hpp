@@ -21,8 +21,8 @@ struct Scale
 	float x, y;
 	Scale(float X, float Y)
 	{
-		x = X;
-		y = Y;
+		x = X * scale;
+		y = Y * scale;
 	}
 };
 
@@ -322,7 +322,7 @@ public:
 			{
 				playSound(&ufoLaserSound);
 				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
-				Scale s(1, 1);
+				Scale s(2, 4);
 				ufoBullets.emplace_back(new Bullet(x, y, angle, &tUFOBullet, s));
 				delta->ufoShoot = 0;
 			}

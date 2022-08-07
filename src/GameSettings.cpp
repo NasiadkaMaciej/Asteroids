@@ -24,7 +24,7 @@ size_t writeCallback(char *buf, size_t size, size_t nmemb, void *up)
 
 bool checkVersion() // Compare local version of the game with the published one
 {
-	const int gameVersion = 107;
+	const int gameVersion = 108;
 
 	CURL *curl;
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -43,7 +43,6 @@ bool checkVersion() // Compare local version of the game with the published one
 sf::Text newVersion;
 
 float scale;
-
 
 // State machine?
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
