@@ -14,18 +14,13 @@ size_t writeCallback(char *buf, size_t size, size_t nmemb, void *up)
 { // callback must have this declaration
 	// buf is a pointer to the data that curl has for us
 	// size*nmemb is the size of the buffer
-
 	for (int c = 0; c < size * nmemb; c++)
-	{
 		data.push_back(buf[c]);
-	}
 	return size * nmemb; // tell curl how many bytes we handled
 }
 
 bool checkVersion() // Compare local version of the game with the published one
 {
-	const int gameVersion = 108;
-
 	CURL *curl;
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
@@ -35,16 +30,12 @@ bool checkVersion() // Compare local version of the game with the published one
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
-	int v = std::stoi(data);
-
-	return gameVersion == v;
+	return GAME_VERSION == std::stoi(data);
 }
 
 sf::Text newVersion;
-
-float scale;
-
-// State machine?
+float screenScale;
+// Use map instead
 bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
 	 isSaveScreen = false, isLeaderBoard = false;
 void GameSettings::loadSettings()
@@ -86,7 +77,7 @@ void GameSettings::loadSettings()
 		resX = value[6];
 		resY = value[7];
 
-		scale = (float)resY / 2000;
+		screenScale = (float)resY / 2000;
 		file.close();
 	}
 	else
@@ -107,7 +98,7 @@ void GameSettings::saveSettings()
 		file << "resY:" << resY << "\n";
 	}
 
-	scale = (float)resY / 2000;
+	screenScale = (float)resY / 2000;
 	file.close();
 }
 int GameSettings::translateFS()
@@ -140,8 +131,7 @@ bool loadBase()
 	window.create(sf::VideoMode(gameSettings.resX,
 								gameSettings.resY,
 								desktopMode.bitsPerPixel),
-				  "Asteroids - Macieson", gameSettings.translateFS());
-	//"Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24,8,16));
+				  "Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24, 8, 16));
 	window.setFramerateLimit(gameSettings.frames);
 	window.setVerticalSyncEnabled(gameSettings.vsync);
 
@@ -164,37 +154,14 @@ bool loadBase()
 	return true;
 }
 
-void setStates(bool state)
-{
-	isPlaying = isMenu = isGameOver = isSettings = isSaveScreen = isLeaderBoard = state;
-}
+char activeState = menuState;
 
 void setState(eStates state)
 {
-	// All cases are hiding cursor except for playState
-	window.setMouseCursorVisible(true);
-	setStates(false);
-
-	switch (state)
-	{
-	case playState:
-		isPlaying = true;
-		break;
-	case menuState:
-		isMenu = true;
-		break;
-	case gameoverState:
-		isGameOver = true;
-		break;
-	case settingsState:
-		isSettings = true;
-		break;
-	case saveScreenState:
-		isSaveScreen = true;
-		break;
-	case leaderBoardState:
-		isLeaderBoard = true;
-		break;
-	}
+	if (state == playState)
+		window.setMouseCursorVisible(false);
+	else
+		window.setMouseCursorVisible(true);
+	activeState = state;
 	delta->Clock.restart();
 }

@@ -9,11 +9,12 @@ Player achievments
 Player upgrades 
 Cosmetic changes 
 Animated menu background 
-Async music toggle 
 All entities to one list 
 Check and improve random number generation 
 All lists in one? 
 Class to handle input? 
 Animations 
 Vector graphics? 
-Make CMAKE work on Windows 
+OpenGL? 
+Make CMAKE work on Windows or use cross compiler 
+Add antialiasing to settings 

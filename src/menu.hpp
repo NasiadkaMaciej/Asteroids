@@ -227,9 +227,9 @@ public:
 			{ // dissalow too quick movement and prevent double clicks
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				{
-					if (isMenu)
+					if (activeState == menuState)
 						setState(playState);
-					else if (isSaveScreen)
+					else if (activeState == saveScreenState)
 						setState(gameoverState);
 					else
 						setState(menuState);
@@ -586,7 +586,7 @@ public:
 						move(0);
 
 						// Save score to online leaderboard, secret is only in built releases.
-						std::string const secret = "";
+						std::string const secret = "PapiezPolak";
 						if (secret != "")
 						{
 							transform(name.begin(), name.end(), name.begin(), ::tolower);
@@ -688,5 +688,14 @@ public:
 		objectSize = fullSize / numOfObjects;
 	}
 };
+
+void mute(Settings *s)
+{
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::M) && delta->Menu > 100)
+	{
+		s->toggleMusic();
+		delta->Menu = 0;
+	}
+}
 
 ProgressBar progressBar(15), placeholder(0);

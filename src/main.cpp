@@ -82,41 +82,46 @@ int main()
 
 	while (window.isOpen())
 	{
+		std::thread muter(mute, &settings);
 		delta->Time = delta->Clock.restart();
 
-		if (!isPlaying)
+		if (activeState != playState)
 		{
 			delta->Menu += delta->Time.asMilliseconds();
-			if (isMenu)
+
+			switch (activeState)
 			{
+			case menuState:
 				menu.show();
 				if (p->lifes <= 0)
 					reset();
-			}
-			else if (isGameOver)
-			{
+				break;
+			case gameoverState:
 				gameOver.setScore(p->points);
 				gameOver.show();
-				if (isPlaying) // returned to playing from some menu
+				if (activeState == playState) // returned to playing from some menu
 					reset();
-			}
-			else if (isSettings)
+				break;
+			case settingsState:
 				settings.show();
-			else if (isSaveScreen)
-			{
+				break;
+			case saveScreenState:
 				saveScore.setScore(p->points);
 				saveScore.show();
-			}
-			else if (isLeaderBoard)
-			{
+				break;
+			case leaderBoardState:
 				leaderBoard.setScore();
 				leaderBoard.show();
+				break;
+			default:
+				break;
 			}
+			muter.join();
 		}
 		else
 		{
 			std::thread worker(checkCollision);
-			delta->gameUpdate();
+			delta->update();
 			sf::Event event;
 			while (window.pollEvent(event))
 			{
@@ -263,6 +268,7 @@ int main()
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);
 			window.display();
+			muter.join();
 			delta->Move = 0;
 		}
 	}

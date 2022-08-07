@@ -21,8 +21,8 @@ struct Scale
 	float x, y;
 	Scale(float X, float Y)
 	{
-		x = X * scale;
-		y = Y * scale;
+		x = X * screenScale;
+		y = Y * screenScale;
 	}
 };
 
@@ -54,7 +54,7 @@ public:
 	{
 		sprite.setTexture(*TEXTURE, true);
 		sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
-		sprite.scale(scale, scale);
+		sprite.scale(screenScale, screenScale);
 	}
 
 	const void draw(sf::RenderWindow &window)
