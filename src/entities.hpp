@@ -84,7 +84,7 @@ void clearEntities(std::list<Entity *> list)
 
 class Player : public Entity
 {
-	int bulletFreq = 250, maxSpeed = speedScale * 2, pts = 0;
+	int bulletFreq = 250, maxSpeed = speedScale * 1.75, pts = 0;
 
 public:
 	bool thrust = false, isShooting = false, isIdle = true,

@@ -266,11 +266,11 @@ int main()
 			delta->Move = 0;
 		}
 	}
-	delete p;
-	delete u;
-	clearEntities(asteroids);
-	clearEntities(bullets);
-	clearEntities(powerUps);
+	// delete p;
+	// delete u;
+	// clearEntities(asteroids);
+	// clearEntities(bullets);
+	// clearEntities(powerUps);
 	return 0;
 }
 
