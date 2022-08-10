@@ -56,12 +56,12 @@ struct Timer
 		end = std::chrono::high_resolution_clock::now();
 		return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	}
-	~Timer()
-	{
-		end = std::chrono::high_resolution_clock::now();
-		unsigned int duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		printf("%ims", duration);
-	}
+	// ~Timer()
+	// {
+	// 	end = std::chrono::high_resolution_clock::now();
+	// 	unsigned int duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	// 	printf("%ims", duration);
+	// }
 };
 
 struct GameTime
@@ -90,13 +90,14 @@ struct GameSettings
 		loadSettings();
 	}
 	// Use map instead
-	unsigned int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height;
+	unsigned int frames = 60, resX = sf::VideoMode::getFullscreenModes().front().width, resY = sf::VideoMode::getFullscreenModes().front().height, antialias = 0;
 	bool vsync = true, fs = true, sfx = true, music = true, background = true;
 	void loadSettings();
 	void saveSettings();
 	int translateFS();
 	bool checkRes();
 	std::vector<sf::VideoMode> availRes;
+	void reloadWindow();
 };
 
 extern GameValues *gameVal;

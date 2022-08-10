@@ -59,7 +59,7 @@ void GameSettings::loadSettings()
 	if (file.is_open())
 	{
 		// list?
-		const int values = 8;
+		const int values = 9;
 		int value[values];
 		std::string tmpString;
 		for (int i = 0; i < values; i++)
@@ -76,6 +76,7 @@ void GameSettings::loadSettings()
 		background = value[5];
 		resX = value[6];
 		resY = value[7];
+		antialias = value[8];
 
 		screenScale = (float)resY / 2000;
 		file.close();
@@ -96,6 +97,7 @@ void GameSettings::saveSettings()
 		file << "Background:" << background << "\n";
 		file << "resX:" << resX << "\n";
 		file << "resY:" << resY << "\n";
+		file << "Antialiasing:" << antialias << "\n";
 	}
 
 	screenScale = (float)resY / 2000;
@@ -112,7 +114,13 @@ bool GameSettings::checkRes()
 			return true;
 	return false;
 }
-
+void GameSettings::reloadWindow()
+{
+	window.create(sf::VideoMode(gameSettings.resX, gameSettings.resY, desktopMode.bitsPerPixel),
+				  "Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24, 8, gameSettings.antialias));
+	window.setFramerateLimit(gameSettings.frames);
+	window.setVerticalSyncEnabled(gameSettings.vsync);
+}
 GameValues *gameVal;
 GameTime *delta;
 GameSettings gameSettings;
@@ -128,12 +136,7 @@ bool loadBase()
 		return false;
 	}
 	desktopMode = sf::VideoMode::getDesktopMode();
-	window.create(sf::VideoMode(gameSettings.resX,
-								gameSettings.resY,
-								desktopMode.bitsPerPixel),
-				  "Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24, 8, 16));
-	window.setFramerateLimit(gameSettings.frames);
-	window.setVerticalSyncEnabled(gameSettings.vsync);
+	gameSettings.reloadWindow();
 
 	sf::Image image;
 

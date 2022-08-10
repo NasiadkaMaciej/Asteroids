@@ -83,8 +83,7 @@ int main()
 	while (window.isOpen())
 	{
 		std::thread muter(mute, &settings);
-		delta->update();
-
+		delta->Menu += delta->timer.ms();
 		if (activeState != playState)
 		{
 			delta->Menu += delta->timer.ms();
@@ -120,6 +119,7 @@ int main()
 		}
 		else
 		{
+			delta->update();
 			std::thread worker(checkCollision);
 			sf::Event event;
 			while (window.pollEvent(event))

@@ -103,7 +103,7 @@ void openInBrowser(const std::string &p)
 #define down 2
 
 const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 8, saveScoreEntriesCount = 13,
+		  settingEntriesCount = 9, saveScoreEntriesCount = 13,
 		  leaderBoardEntriesCount = 12;
 std::string returnBool(int value)
 {
@@ -127,6 +127,7 @@ std::string menuEntries[menuEntriesCount]{"Play",
 										"Music: " + returnBool(gameSettings.music),
 										"Background: " + returnBool(gameSettings.background),
 										"Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY),
+										"Antialiasing: " + std::to_string(gameSettings.antialias),
 										"Menu"},
 	saveScoreEntries[saveScoreEntriesCount],
 	leaderBoardEntries[leaderBoardEntriesCount];
@@ -363,9 +364,13 @@ public:
 			switchResolution();
 			break;
 		case 7:
+			switchAA();
+			break;
+		case 8:
 			setState(menuState);
 			break;
 		}
+		move(0);
 		gameSettings.saveSettings();
 	}
 	void switchRefreshRate()
@@ -396,81 +401,39 @@ public:
 		}
 		window.setFramerateLimit(gameSettings.frames);
 		entries[0] = "Frame rate limit: " + std::to_string(gameSettings.frames);
-		move(0);
 	}
 	void toggleVsync()
 	{
 		gameSettings.vsync = !gameSettings.vsync;
 		window.setVerticalSyncEnabled(gameSettings.vsync);
-		if (gameSettings.vsync)
-			entries[1] = "VSync: On";
-		else
-			entries[1] = "VSync: Off";
-		move(0);
+		entries[1] = "VSync: " + returnBool(gameSettings.fs);
 	}
 	void toggleFS()
 	{
 		gameSettings.fs = !gameSettings.fs;
-
-		if (gameSettings.fs)
-		{
-			window.create(sf::VideoMode(gameSettings.resX,
-										gameSettings.resY,
-										desktopMode.bitsPerPixel),
-						  "Asteroids - Macieson",
-						  sf::Style::Fullscreen);
-			entries[2] = "Fullscreen: On";
-		}
-		else
-		{
-			window.create(sf::VideoMode(gameSettings.resX,
-										gameSettings.resY,
-										desktopMode.bitsPerPixel),
-						  "Asteroids - Macieson");
-			entries[2] = "Fullscreen: Off";
-		}
-		window.setFramerateLimit(gameSettings.frames);
-		window.setVerticalSyncEnabled(gameSettings.vsync);
-		move(0);
+		gameSettings.reloadWindow();
+		entries[2] = "Fullscreen: " + returnBool(gameSettings.fs);
 	}
 	void toggleSFX()
 	{
 		gameSettings.sfx = !gameSettings.sfx;
-		if (gameSettings.sfx)
-			entries[3] = "Sound: On";
-		else
-			entries[3] = "Sound: Off";
-		move(0);
+		entries[3] = "Sound: " + returnBool(gameSettings.sfx);
 	}
 	void toggleMusic()
 	{
 		gameSettings.music = !gameSettings.music;
-		if (gameSettings.music)
-		{
-			music.play();
-			entries[4] = "Music: On";
-		}
-		else
-		{
-			entries[4] = "Music: Off";
-			music.stop();
-		}
-		move(0);
+		entries[4] = "Music: " + returnBool(gameSettings.music);
+		playMusic();
 	}
 	void toggleBackground()
 	{
 		gameSettings.background = !gameSettings.background;
-		if (gameSettings.background)
-			entries[5] = "Background: On";
-		else
-			entries[5] = "Background: Off";
-		move(0);
+		entries[5] = "Background: " + returnBool(gameSettings.background);
 	}
 	void switchResolution()
 	{
 		if (gameSettings.availRes.end()->width == gameSettings.resX && gameSettings.availRes.end()->height == gameSettings.resY)
 		{
-			entries[6] = "Resolution: " + std::to_string(gameSettings.availRes.begin()->width) + "x" + std::to_string(gameSettings.availRes.begin()->height);
 			gameSettings.resX = gameSettings.availRes.begin()->width;
 			gameSettings.resY = gameSettings.availRes.begin()->height;
 		}
@@ -479,12 +442,23 @@ public:
 				if (it->width == gameSettings.resX && it->height == gameSettings.resY)
 				{
 					it++;
-					entries[6] = "Resolution: " + std::to_string(it->width) + "x" + std::to_string(it->height);
 					gameSettings.resX = it->width;
 					gameSettings.resY = it->height;
 					break;
 				}
-		move(0);
+		entries[6] = "Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY);
+	}
+	void switchAA()
+	{
+		if (gameSettings.antialias == 0)
+			gameSettings.antialias = 2;
+		else if (gameSettings.antialias < 16)
+			gameSettings.antialias = gameSettings.antialias * 2;
+		else if (gameSettings.antialias == 16)
+			gameSettings.antialias = 0;
+
+		entries[7] = "Antialiasing: " + std::to_string(gameSettings.antialias);
+		gameSettings.reloadWindow();
 	}
 };
 
@@ -494,7 +468,6 @@ public:
 	std::string name;
 	unsigned int points;
 	bool isSaving = true, wasSaved = false;
-	//  int iNameChar, activeChar = 0;
 	SaveScore(int EntriesCount, std::string entries[])
 		: Menu(EntriesCount, entries){};
 	void click()
@@ -509,9 +482,6 @@ public:
 			break;
 		case 12:
 			setState(menuState);
-			break;
-		default:
-			// delete active entry
 			break;
 		}
 	}
