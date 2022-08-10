@@ -2,6 +2,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <SFML/Graphics.hpp>
+#include <chrono>
+
 #define GAME_VERSION 108
 
 enum eStates : char // Game States
@@ -38,19 +40,43 @@ public:
 	int UFORestore = 30000;		// UFO exist and respawn time
 };
 
+struct Timer
+{
+	std::chrono::_V2::system_clock::time_point start, end;
+	Timer()
+	{
+		start = std::chrono::high_resolution_clock::now();
+	}
+	void reset()
+	{
+		start = std::chrono::high_resolution_clock::now();
+	}
+	unsigned int ms()
+	{
+		end = std::chrono::high_resolution_clock::now();
+		return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	}
+	~Timer()
+	{
+		end = std::chrono::high_resolution_clock::now();
+		unsigned int duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		printf("%ims", duration);
+	}
+};
+
 struct GameTime
 {
-	sf::Clock Clock;
-	sf::Time Time;
+	Timer timer;
 	float Shoot = 0, PowerUp = 0, Menu = 0, Move = 0, UFO = 0, ufoShoot = 0;
 	void update()
 	{
-		Shoot += Time.asMilliseconds();
-		PowerUp += Time.asMilliseconds();
-		Menu += Time.asMilliseconds();
-		Move += Time.asMilliseconds();
-		UFO += Time.asMilliseconds();
-		ufoShoot += Time.asMilliseconds();
+		Shoot += timer.ms();
+		PowerUp += timer.ms();
+		Menu += timer.ms();
+		Move += timer.ms();
+		UFO += timer.ms();
+		ufoShoot += timer.ms();
+		timer.reset();
 	}
 };
 

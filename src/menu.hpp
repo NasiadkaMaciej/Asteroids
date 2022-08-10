@@ -16,12 +16,6 @@ struct ScoreBoard
 
 ScoreBoard scoreBoard[10];
 
-// Compare elements in ScoreBoard to sort them
-bool compare(ScoreBoard a, ScoreBoard b)
-{
-	return (a.points > b.points);
-}
-
 // Write actual score board to file
 void writeScoreBoard()
 {
@@ -66,7 +60,9 @@ void loadScoreBoard()
 		}
 		writeScoreBoard();
 	}
-	std::sort(scoreBoard, scoreBoard + 10, compare);
+
+	std::sort(scoreBoard, scoreBoard + 10, [&](ScoreBoard a, ScoreBoard b)
+			  { return a.points > b.points; });
 };
 
 // Open link in browser for every operating system
@@ -100,8 +96,7 @@ void openInBrowser(const std::string &p)
 		default:
 			str = "Unknown operating system, for info enter: " + p;
 		}
-	str.append(" " + p);
-	std::system(str.c_str());
+	std::system(str.append(" " + p).c_str());
 }
 
 #define up 1
@@ -577,7 +572,8 @@ public:
 							scoreBoard[9] = {points, name};
 							isSaving = false;
 							wasSaved = true;
-							std::sort(scoreBoard, scoreBoard + 10, compare);
+							std::sort(scoreBoard, scoreBoard + 10, [&](ScoreBoard a, ScoreBoard b)
+									  { return a.points > b.points; });
 						}
 						// Show 10 scores and "Your score" at the top
 						for (int i = 1; i < 11; i++)
@@ -688,7 +684,6 @@ public:
 		objectSize = fullSize / numOfObjects;
 	}
 };
-
 void mute(Settings *s)
 {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::M) && delta->Menu > 100)

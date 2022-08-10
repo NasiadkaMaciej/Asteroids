@@ -83,11 +83,11 @@ int main()
 	while (window.isOpen())
 	{
 		std::thread muter(mute, &settings);
-		delta->Time = delta->Clock.restart();
+		delta->update();
 
 		if (activeState != playState)
 		{
-			delta->Menu += delta->Time.asMilliseconds();
+			delta->Menu += delta->timer.ms();
 
 			switch (activeState)
 			{
@@ -121,7 +121,6 @@ int main()
 		else
 		{
 			std::thread worker(checkCollision);
-			delta->update();
 			sf::Event event;
 			while (window.pollEvent(event))
 			{
@@ -236,7 +235,7 @@ int main()
 
 			progressBar.update();
 			std::string sPoints = std::to_string(p->points);
-			std::string sTime = std::to_string(p->aliveTime.asMilliseconds() / 10);
+			std::string sTime = std::to_string(p->aliveTime / 10);
 			std::string sLevel = std::to_string(gameVal->roundNum);
 			std::string sLifes;
 			if (p->lifes == 1)
@@ -272,11 +271,11 @@ int main()
 			delta->Move = 0;
 		}
 	}
-	// delete p;
-	// delete u;
-	// clearEntities(asteroids);
-	// clearEntities(bullets);
-	// clearEntities(powerUps);
+	delete p;
+	delete u;
+	clearEntities(asteroids);
+	clearEntities(bullets);
+	clearEntities(powerUps);
 	return 0;
 }
 

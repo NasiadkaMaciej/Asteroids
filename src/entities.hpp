@@ -76,7 +76,6 @@ void clearEntities(std::list<Entity *> list)
 	for (auto i = list.begin(); i != list.end();)
 	{
 		Entity *e = *i;
-		list.remove(e);
 		i = list.erase(i);
 		delete e;
 	}
@@ -92,7 +91,7 @@ public:
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
 	const int &points = pts; // readonly variable, to give points, use givePoints(int)
 
-	sf::Time aliveTime = sf::Time::Zero;
+	unsigned long long aliveTime = 0;
 	char type()
 	{
 		return _PLAYER;
@@ -104,7 +103,7 @@ public:
 	};
 	void update()
 	{
-		aliveTime += delta->Time;
+		aliveTime += delta->Move;
 		if (life)
 		{
 			float rotateSpeed = 18 * delta->Move / 100;
@@ -152,7 +151,7 @@ public:
 			x_speed = 0;
 			y_speed = 0;
 			lifes--;
-			aliveTime = sf::Time::Zero;
+			aliveTime = 0;
 
 			if (lifes <= 0)
 				setState(gameoverState);

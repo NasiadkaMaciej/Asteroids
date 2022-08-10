@@ -17,4 +17,4 @@ Animations
 Vector graphics? 
 OpenGL? 
 Make CMAKE work on Windows or use cross compiler 
-Add antialiasing to settings 
+Add antialiasing to settings

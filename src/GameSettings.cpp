@@ -163,5 +163,5 @@ void setState(eStates state)
 	else
 		window.setMouseCursorVisible(true);
 	activeState = state;
-	delta->Clock.restart();
+	delta->timer.reset();
 }
