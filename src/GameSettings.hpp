@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <chrono>
 
-#define GAME_VERSION 108
+#define GAME_VERSION 109
 
 enum eStates : char // Game States
 {

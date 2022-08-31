@@ -27,7 +27,7 @@ struct Scale
 };
 
 // min + rand() % ( max - min + 1 )
-//  returns random value excluding 0
+// returns random value excluding 0
 int random(int range, int modifier)
 {
 	int randomValue;

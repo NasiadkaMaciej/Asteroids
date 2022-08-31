@@ -18,7 +18,6 @@ bool loadSounds()
         !deathBuffer.loadFromFile(dir + "death.wav") ||
         !menuBuffer.loadFromFile(dir + "menu.wav") ||
         !ufoLaserBuffer.loadFromFile(dir + "ufoLaser.wav") ||
-
         !music.openFromFile(dir + "music.wav"))
     {
         std::cout << "Error loading sounds\n";
@@ -29,7 +28,6 @@ bool loadSounds()
     deathSound.setBuffer(deathBuffer);
     menuSound.setBuffer(menuBuffer);
     ufoLaserSound.setBuffer(ufoLaserBuffer);
-
     music.setLoop(true);
     return true;
 }
@@ -38,8 +36,7 @@ void playSound(sf::Sound *sound)
     if (gameSettings.sfx)
         sound->play();
 }
-void playMusic(){
-    if(gameSettings.music){
-        music.play();
-    }
+void playMusic()
+{
+    gameSettings.music ? music.play() : music.stop();
 }

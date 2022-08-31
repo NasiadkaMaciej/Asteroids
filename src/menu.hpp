@@ -217,11 +217,12 @@ public:
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
+			bool clicked = false;
 			if (event.type == sf::Event::Closed)
 				window.close();
 			if (delta->Menu > 100)
 			{ // dissalow too quick movement and prevent double clicks
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) || sf::Joystick::isButtonPressed(0, 1))
 				{
 					if (activeState == menuState)
 						setState(playState);
@@ -229,22 +230,32 @@ public:
 						setState(gameoverState);
 					else
 						setState(menuState);
+					clicked = true;
 				}
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Joystick::isButtonPressed(0, 13))
+				{
 					move(up);
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+					clicked = true;
+				}
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Joystick::isButtonPressed(0, 14))
+				{
 					move(down);
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+					clicked = true;
+				};
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) || sf::Joystick::isButtonPressed(0, 0))
+				{
 					click();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
-					playSound(&menuSound);
+					clicked = true;
+				}
 				delta->Menu = 0;
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
 				mouseClick();
-				playSound(&menuSound);
+				clicked = true;
 			}
+			if (clicked)
+				playSound(&menuSound);
 
 			if (event.type == sf::Event::MouseWheelScrolled)
 			{
@@ -656,7 +667,7 @@ public:
 };
 void mute(Settings *s)
 {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::M) && delta->Menu > 100)
+	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::M) || sf::Joystick::isButtonPressed(0, 5)) && delta->Menu > 200)
 	{
 		s->toggleMusic();
 		delta->Menu = 0;

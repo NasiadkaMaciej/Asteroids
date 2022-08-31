@@ -71,7 +71,6 @@ int main()
 						p->givePoints(100);
 				}
 				i = list.erase(i);
-				list.remove(e);
 				delete e;
 			}
 			else
@@ -86,8 +85,6 @@ int main()
 		delta->Menu += delta->timer.ms();
 		if (activeState != playState)
 		{
-			delta->Menu += delta->timer.ms();
-
 			switch (activeState)
 			{
 			case menuState:
@@ -126,25 +123,25 @@ int main()
 			{
 				if (event.type == sf::Event::Closed)
 					window.close();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) || sf::Joystick::isButtonPressed(0, 9))
 					setState(menuState);
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::N) || sf::Joystick::isButtonPressed(0, 2))
 					reset();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11) || sf::Joystick::isButtonPressed(0, 4))
 					settings.toggleFS();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) > 0)
 					p->isRotatingRight = true;
 				else
 					p->isRotatingRight = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) < 0)
 					p->isRotatingLeft = true;
 				else
 					p->isRotatingLeft = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::R) > 0)
 					p->thrust = true;
 				else
 					p->thrust = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Joystick::isButtonPressed(0, 0))
 					p->isShooting = true;
 				else
 					p->isShooting = false;
