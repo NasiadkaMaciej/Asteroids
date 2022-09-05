@@ -5,7 +5,7 @@
 Asteroids game clone. Written in C++ with SFML.  
 Destroy as many asteroids as you can with your spaceship's missiles, but be careful, they come from all sides, at different speeds and, when destroyed, they break into more, even faster and more dangerous fragments. Be cautious! Once in a while, a mysterious evil UFO shows up and starts shooting to you.
 Each level ends after destroying all visible asteroids. After that, you get into the next level, which has 2 more asteroids than the previous one.
-You start the game with 3 lives, after you lose one, you enter idle state, in which asteroids cannot hurt you, but you can't shoot them. To continue the game, simply move your ship. When you loose all your lives you can save your score and send it to [Asteroids online leaderboard](https://maciej.ml/Asteroids/)  
+You start the game with 3 lives, after you lose one, you enter idle state, in which asteroids cannot hurt you, but you can't shoot them. To continue the game, simply move your ship. When you lose all your lives you can save your score and send it to [Asteroids online leaderboard](https://maciej.ml/Asteroids/)  
 ## Steering
 ### Keyboard
 Arrows or WASD - Move  

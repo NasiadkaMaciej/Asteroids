@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include "control.hpp"
 #include <fstream>
 #include <iostream>
 #include <curl/curl.h>
@@ -222,7 +223,7 @@ public:
 				window.close();
 			if (delta->Menu > 100)
 			{ // dissalow too quick movement and prevent double clicks
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) || sf::Joystick::isButtonPressed(0, 1))
+				if (CONTROL::isESC())
 				{
 					if (activeState == menuState)
 						setState(playState);
@@ -232,24 +233,24 @@ public:
 						setState(menuState);
 					clicked = true;
 				}
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Joystick::isButtonPressed(0, 13))
+				if (CONTROL::isUP())
 				{
 					move(up);
 					clicked = true;
 				}
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Joystick::isButtonPressed(0, 14))
+				else if (CONTROL::isDOWN())
 				{
 					move(down);
 					clicked = true;
 				};
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) || sf::Joystick::isButtonPressed(0, 0))
+				if (CONTROL::isEnter())
 				{
 					click();
 					clicked = true;
 				}
 				delta->Menu = 0;
 			}
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			if (CONTROL::isClick())
 			{
 				mouseClick();
 				clicked = true;
@@ -524,8 +525,6 @@ public:
 				{
 					if (event.type == sf::Event::Closed)
 						window.close();
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-						setState(gameoverState);
 					if (event.type == sf::Event::TextEntered)
 					{
 						//
@@ -544,8 +543,7 @@ public:
 						}
 						move(0);
 					}
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && name != "" &&
-						!wasSaved)
+					if (CONTROL::isEnter() && name != "" && !wasSaved)
 					{
 						// If last entry in leaderboard is lower, replace it with current score
 						if (scoreBoard[9].points < points)
@@ -563,7 +561,7 @@ public:
 						move(0);
 
 						// Save score to online leaderboard, secret is only in built releases.
-						std::string const secret = "PapiezPolak";
+						std::string const secret = "";
 						if (secret != "")
 						{
 							transform(name.begin(), name.end(), name.begin(), ::tolower);
@@ -667,10 +665,11 @@ public:
 };
 void mute(Settings *s)
 {
-	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::M) || sf::Joystick::isButtonPressed(0, 5)) && delta->Menu > 200)
+	if (CONTROL::mute() && delta->Menu > 200)
 	{
 		s->toggleMusic();
 		delta->Menu = 0;
+		gameSettings.saveSettings();
 	}
 }
 

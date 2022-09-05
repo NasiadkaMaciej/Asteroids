@@ -4,6 +4,7 @@
 #include "entities.hpp"
 #include "sounds.hpp"
 #include "menu.hpp"
+#include "control.hpp"
 #include <list>
 #include <thread>
 
@@ -27,7 +28,6 @@ int main()
 
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
-
 	// resetting game to base values
 	auto reset = [&]()
 	{
@@ -42,6 +42,7 @@ int main()
 		delete u;
 		p = new Player;
 		u = new UFO;
+		saveScore.reset();
 	};
 
 	auto updateList = [&](std::list<Entity *> &list)
@@ -123,25 +124,25 @@ int main()
 			{
 				if (event.type == sf::Event::Closed)
 					window.close();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) || sf::Joystick::isButtonPressed(0, 9))
+				if (CONTROL::isESC())
 					setState(menuState);
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::N) || sf::Joystick::isButtonPressed(0, 2))
+				if (CONTROL::isReset())
 					reset();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11) || sf::Joystick::isButtonPressed(0, 4))
+				if (CONTROL::isFS())
 					settings.toggleFS();
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) > 0)
+				if (CONTROL::isRight())
 					p->isRotatingRight = true;
 				else
 					p->isRotatingRight = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) < 0)
+				if (CONTROL::isLeft())
 					p->isRotatingLeft = true;
 				else
 					p->isRotatingLeft = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::R) > 0)
+				if (CONTROL::isThrust())
 					p->thrust = true;
 				else
 					p->thrust = false;
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Joystick::isButtonPressed(0, 0))
+				if (CONTROL::isSpace())
 					p->isShooting = true;
 				else
 					p->isShooting = false;

@@ -107,6 +107,8 @@ public:
 		if (life)
 		{
 			float rotateSpeed = 18 * delta->Move / 100;
+			if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) != 0)
+				rotateSpeed *= std::abs(sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) / 100.f);
 			if (isRotatingRight)
 				sprite.setRotation(sprite.getRotation() + rotateSpeed);
 			else if (isRotatingLeft)
