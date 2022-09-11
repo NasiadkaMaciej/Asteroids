@@ -490,7 +490,7 @@ public:
 			saveScore();
 			break;
 		case 11:
-			openInBrowser("https://maciej.ml/Asteroids");
+			openInBrowser("https://asteroids.ml/");
 			break;
 		case 12:
 			setState(menuState);
@@ -568,12 +568,12 @@ public:
 							std::string request = "name=" + name + "&points=" + std::to_string(points) + "&secret=" + secret;
 							const char *cRequest = request.c_str();
 							CURL *curl;
-							CURLcode res;
 							curl_global_init(CURL_GLOBAL_ALL);
 							curl = curl_easy_init();
+							CURLcode res;
 							if (curl)
 							{
-								curl_easy_setopt(curl, CURLOPT_URL, "https://maciej.ml/Asteroids/send");
+								curl_easy_setopt(curl, CURLOPT_URL, "https://asteroids.ml/send");
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
 								res = curl_easy_perform(curl);
 								if (res != CURLE_OK)
@@ -611,7 +611,7 @@ public:
 		switch (activeEntry)
 		{
 		case 10:
-			openInBrowser("https://maciej.ml/Asteroids");
+			openInBrowser("https://asteroids.ml/");
 			break;
 		case 11:
 			setState(menuState);

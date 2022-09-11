@@ -1,5 +1,6 @@
 #include <list>
 #include "sounds.hpp"
+#include "control.hpp"
 #include <memory>
 
 enum eTypes : char
@@ -107,8 +108,8 @@ public:
 		if (life)
 		{
 			float rotateSpeed = 18 * delta->Move / 100;
-			if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) != 0)
-				rotateSpeed *= std::abs(sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X) / 100.f);
+			if (CONTROL::getAxisPos(sf::Joystick::Axis::X) != 0)
+				rotateSpeed *= std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::X));
 			if (isRotatingRight)
 				sprite.setRotation(sprite.getRotation() + rotateSpeed);
 			else if (isRotatingLeft)
@@ -117,8 +118,8 @@ public:
 
 			if (thrust)
 			{
-				x_speed += cos(angle * degToRad) * delta->Move / 100;
-				y_speed += sin(angle * degToRad) * delta->Move / 100;
+				x_speed += cos(angle * degToRad) * delta->Move / 100 * std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::R));
+				y_speed += sin(angle * degToRad) * delta->Move / 100 * std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::R));
 				isIdle = false;
 			}
 			else

@@ -21,3 +21,4 @@ Add antialiasing to settings
 Discord rich presence 
 Improve gamepad 
 Prevent start when player is in asteroid 
+Add version info 

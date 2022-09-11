@@ -51,4 +51,8 @@ namespace CONTROL
     {
         return sf::Keyboard::isKeyPressed(sf::Keyboard::M) || sf::Joystick::isButtonPressed(0, 5);
     }
+    float getAxisPos(sf::Joystick::Axis axis)
+    {
+        return sf::Joystick::getAxisPosition(0, axis)/100.f;
+    }
 };
