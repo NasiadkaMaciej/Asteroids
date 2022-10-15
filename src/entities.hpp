@@ -118,8 +118,9 @@ public:
 
 			if (thrust)
 			{
-				x_speed += cos(angle * degToRad) * delta->Move / 100 * std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::R));
-				y_speed += sin(angle * degToRad) * delta->Move / 100 * std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::R));
+				float axPos = (axPos == !0.f) ? std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::R)) : 1;
+				x_speed += cos(angle * degToRad) * delta->Move / 100 * axPos;
+				y_speed += sin(angle * degToRad) * delta->Move / 100 * axPos;
 				isIdle = false;
 			}
 			else
