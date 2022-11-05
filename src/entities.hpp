@@ -82,6 +82,33 @@ void clearEntities(std::list<Entity *> list)
 	}
 }
 
+class Bullet : public Entity
+{
+public:
+	char type()
+	{
+		return _BULLET;
+	}
+	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
+		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
+	{
+		sprite.scale(s.x, s.y);
+		lifes = 1;
+	};
+	void update()
+	{
+		x_speed = (cos(angle * degToRad) * delta->Move / 5) * speedScale;
+		y_speed = (sin(angle * degToRad) * delta->Move / 5) * speedScale;
+		x += x_speed;
+		y += y_speed;
+		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
+		{
+			life = false;
+			lifes--;
+		}
+	}
+};
+
 class Player : public Entity
 {
 	int bulletFreq = 250, maxSpeed = speedScale * 1.75, pts = 0;
@@ -188,6 +215,34 @@ public:
 	{
 		return isShooting && !isIdle && delta->Shoot > bulletFreq;
 	}
+	void getControl()
+	{
+		isRotatingRight = CONTROL::isRight();
+		isRotatingLeft = CONTROL::isLeft();
+		thrust = CONTROL::isThrust();
+		isShooting = CONTROL::isSpace();
+	}
+	void shoot(std::__cxx11::list<Entity *> *list)
+	{
+		if (canShoot())
+		{
+			playSound(&laserSound);
+			if (isDoubleShooting) // shoot 2 bullets simultaneously
+			{
+				list->emplace_back(new Bullet(x, y, angle + 2.5, &tBullet, bulletScale()));
+				list->emplace_back(new Bullet(x, y, angle - 2.5, &tBullet, bulletScale()));
+			}
+			else if (isDoublePenetrating)
+			{
+				Bullet *b = new Bullet(x, y, angle, &tBullet, bulletScale());
+				b->lifes = 2;
+				list->emplace_back(b);
+			}
+			else
+				list->emplace_back(new Bullet(x, y, angle, &tBullet, bulletScale()));
+			delta->Shoot = 0;
+		}
+	}
 };
 class Asteroid : public Entity
 {
@@ -259,32 +314,6 @@ public:
 			&tAsteroid[asteroidNum]);
 	}
 };
-class Bullet : public Entity
-{
-public:
-	char type()
-	{
-		return _BULLET;
-	}
-	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
-		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
-	{
-		sprite.scale(s.x, s.y);
-		lifes = 1;
-	};
-	void update()
-	{
-		x_speed = (cos(angle * degToRad) * delta->Move / 5) * speedScale;
-		y_speed = (sin(angle * degToRad) * delta->Move / 5) * speedScale;
-		x += x_speed;
-		y += y_speed;
-		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
-		{
-			life = false;
-			lifes--;
-		}
-	}
-};
 
 class UFO : public Entity
 {
@@ -338,11 +367,19 @@ public:
 	}
 	void activate()
 	{
-		x = rand() % gameSettings.resX;
-		y = rand() % gameSettings.resY;
-		isActive = true;
-		delta->ufoShoot = 0;
+		if (delta->UFO >= gameVal->UFORestore)
+			if (isActive)
+				isActive = false;
+			else
+			{
+				x = rand() % gameSettings.resX;
+				y = rand() % gameSettings.resY;
+				isActive = true;
+				delta->ufoShoot = 0;
+			}
+		delta->UFO = 0;
 	}
+
 	~UFO()
 	{
 		clearEntities(ufoBullets);
@@ -355,6 +392,36 @@ public:
 	char type()
 	{
 		return _POWERUP;
+	}
+
+	static void generate(std::__cxx11::list<Entity *> *e, Player *p)
+	{
+		if (delta->PowerUp > gameVal->powerUpRestore)
+		{
+			int rand = std::rand() % 4;
+			e->clear();
+			switch (rand)
+			{
+			case 0: // Generate bullet resize powerup
+				e->emplace_back(new PowerUp(&tBulletUp));
+				break;
+			case 1: // Generate life bonus powerup
+				e->emplace_back(new PowerUp(&tLifeUp));
+				break;
+			case 2: // Generate double shoot powerup
+				e->emplace_back(new PowerUp(&tDoubleBullet));
+				break;
+			case 3: // Generate double penetrate powerup
+				e->emplace_back(new PowerUp(&tPenetratingBullet));
+				break;
+			}
+			delta->PowerUp = 0;
+			// After 10 seconds of last powerUp collection, restore basic gameplay
+			// (for now, only bullet)
+			p->isPowerBullet = false;
+			p->isDoubleShooting = false;
+			p->isDoublePenetrating = false;
+		}
 	}
 	PowerUp(sf::Texture *TEXTURE)
 		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, TEXTURE){};

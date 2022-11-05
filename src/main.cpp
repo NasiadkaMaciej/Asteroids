@@ -84,39 +84,31 @@ int main()
 	{
 		std::thread muter(mute, &settings);
 		delta->Menu += delta->timer.ms();
-		if (activeState != playState)
+		switch (activeState)
 		{
-			switch (activeState)
-			{
-			case menuState:
-				menu.show();
-				if (p->lifes <= 0)
-					reset();
-				break;
-			case gameoverState:
-				gameOver.setScore(p->points);
-				gameOver.show();
-				if (activeState == playState) // returned to playing from some menu
-					reset();
-				break;
-			case settingsState:
-				settings.show();
-				break;
-			case saveScreenState:
-				saveScore.setScore(p->points);
-				saveScore.show();
-				break;
-			case leaderBoardState:
-				leaderBoard.setScore();
-				leaderBoard.show();
-				break;
-			default:
-				break;
-			}
-			muter.join();
-		}
-		else
-		{
+		case menuState:
+			menu.show();
+			if (p->lifes <= 0)
+				reset();
+			break;
+		case gameoverState:
+			gameOver.setScore(p->points);
+			gameOver.show();
+			if (activeState == playState) // returned to playing from some menu
+				reset();
+			break;
+		case settingsState:
+			settings.show();
+			break;
+		case saveScreenState:
+			saveScore.setScore(p->points);
+			saveScore.show();
+			break;
+		case leaderBoardState:
+			leaderBoard.setScore();
+			leaderBoard.show();
+			break;
+		case playState:
 			delta->update();
 			std::thread worker(checkCollision);
 			sf::Event event;
@@ -130,78 +122,14 @@ int main()
 					reset();
 				if (CONTROL::isFS())
 					settings.toggleFS();
-				if (CONTROL::isRight())
-					p->isRotatingRight = true;
-				else
-					p->isRotatingRight = false;
-				if (CONTROL::isLeft())
-					p->isRotatingLeft = true;
-				else
-					p->isRotatingLeft = false;
-				if (CONTROL::isThrust())
-					p->thrust = true;
-				else
-					p->thrust = false;
-				if (CONTROL::isSpace())
-					p->isShooting = true;
-				else
-					p->isShooting = false;
+				p->getControl();
 			}
-
-			if (p->canShoot())
-			{
-				playSound(&laserSound);
-				if (p->isDoubleShooting) // shoot 2 bullets simultaneously
-				{
-					bullets.emplace_back(new Bullet(p->x, p->y, p->angle + 2.5, &tBullet, p->bulletScale()));
-					bullets.emplace_back(new Bullet(p->x, p->y, p->angle - 2.5, &tBullet, p->bulletScale()));
-				}
-				else if (p->isDoublePenetrating)
-				{
-					Bullet *b = new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale());
-					b->lifes = 2;
-					bullets.emplace_back(b);
-				}
-				else
-					bullets.emplace_back(new Bullet(p->x, p->y, p->angle, &tBullet, p->bulletScale()));
-				delta->Shoot = 0;
-			}
+			p->shoot(&bullets);
 
 			// Spawn random power up evey 10 seconds and clear old
-			if (delta->PowerUp > gameVal->powerUpRestore)
-			{
-				int rand = std::rand() % 4;
-				powerUps.clear();
-				switch (rand)
-				{
-				case 0: // Generate bullet resize powerup
-					powerUps.emplace_back(new PowerUp(&tBulletUp));
-					break;
-				case 1: // Generate life bonus powerup
-					powerUps.emplace_back(new PowerUp(&tLifeUp));
-					break;
-				case 2: // Generate double shoot powerup
-					powerUps.emplace_back(new PowerUp(&tDoubleBullet));
-					break;
-				case 3: // Generate double penetrate powerup
-					powerUps.emplace_back(new PowerUp(&tPenetratingBullet));
-					break;
-				}
-				delta->PowerUp = 0;
-				// After 10 seconds of last powerUp collection, restore basic gameplay
-				// (for now, only bullet)
-				p->isPowerBullet = false;
-				p->isDoubleShooting = false;
-				p->isDoublePenetrating = false;
-			}
-			if (delta->UFO >= gameVal->UFORestore)
-			{
-				if (!u->isActive)
-					u->activate();
-				else
-					u->isActive = false;
-				delta->UFO = 0;
-			}
+			PowerUp::generate(&powerUps, p);
+
+			u->activate();
 
 			worker.join();
 			// Update all entities and remove dead ones
@@ -265,9 +193,10 @@ int main()
 			window.draw(placeholder.pg);
 			window.draw(progressBar.pg);
 			window.display();
-			muter.join();
 			delta->Move = 0;
+			break;
 		}
+		muter.join();
 	}
 	delete p;
 	delete u;
