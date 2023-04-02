@@ -561,7 +561,7 @@ public:
 						move(0);
 
 						// Save score to online leaderboard, secret is only in built releases.
-						std::string const secret = "";
+						std::string const secret = "PapiezPolak";
 						if (secret != "")
 						{
 							transform(name.begin(), name.end(), name.begin(), ::tolower);
@@ -665,7 +665,7 @@ public:
 };
 void mute(Settings *s)
 {
-	if (CONTROL::mute() && delta->Menu > 200)
+	if (CONTROL::mute() && delta->Menu > 300)
 	{
 		s->toggleMusic();
 		delta->Menu = 0;

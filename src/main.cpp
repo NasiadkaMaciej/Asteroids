@@ -82,8 +82,8 @@ int main()
 
 	while (window.isOpen())
 	{
-		std::thread muter(mute, &settings);
 		delta->Menu += delta->timer.ms();
+		mute(&settings);
 		switch (activeState)
 		{
 		case menuState:
@@ -196,7 +196,6 @@ int main()
 			delta->Move = 0;
 			break;
 		}
-		muter.join();
 	}
 	delete p;
 	delete u;
