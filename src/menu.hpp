@@ -243,7 +243,7 @@ public:
 					move(down);
 					clicked = true;
 				};
-				if (CONTROL::isEnter())
+				if (CONTROL::isEnter() || CONTROL::isSpace())
 				{
 					click();
 					clicked = true;
@@ -490,7 +490,7 @@ public:
 			saveScore();
 			break;
 		case 11:
-			openInBrowser("https://asteroids.ml/");
+			openInBrowser("https://nasiadka.pl/asteroids/");
 			break;
 		case 12:
 			setState(menuState);
@@ -573,7 +573,7 @@ public:
 							CURLcode res;
 							if (curl)
 							{
-								curl_easy_setopt(curl, CURLOPT_URL, "https://asteroids.ml/send");
+								curl_easy_setopt(curl, CURLOPT_URL, "https://nasiadka.pl/asteroids/send");
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
 								res = curl_easy_perform(curl);
 								if (res != CURLE_OK)
@@ -611,7 +611,7 @@ public:
 		switch (activeEntry)
 		{
 		case 10:
-			openInBrowser("https://asteroids.ml/");
+			openInBrowser("https://nasiadka.pl/asteroids/");
 			break;
 		case 11:
 			setState(menuState);

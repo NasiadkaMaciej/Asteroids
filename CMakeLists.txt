@@ -14,10 +14,11 @@ project(Asteroids
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED True)
     set(target_compile_options("-Wall"))
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     set(VCPKG_LIBRARY_LINKAGE static)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 
-find_package(SFML 2.5.1 COMPONENTS system window graphics audio CONFIG REQUIRED)
+find_package(SFML 2.6.0 COMPONENTS system window graphics audio CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 
 file(GLOB SRC

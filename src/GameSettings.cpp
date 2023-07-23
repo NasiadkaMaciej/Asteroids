@@ -24,7 +24,7 @@ bool checkVersion() // Compare local version of the game with the published one
 	CURL *curl;
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, "https://asteroids.ml/ver");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://nasiadka.pl/asteroids/ver");
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
 	curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
