@@ -13,6 +13,7 @@ int main()
 	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds())
 		return 0;
+	std::thread versionChecker(checkVersion);
 	playMusic();
 	loadScoreBoard();
 	// writeScoreBoard();
@@ -28,6 +29,8 @@ int main()
 
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
+	versionChecker.join();
+
 	// resetting game to base values
 	auto reset = [&]()
 	{
