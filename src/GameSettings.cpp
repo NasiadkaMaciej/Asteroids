@@ -3,6 +3,7 @@
 #include <curl/curl.h>
 #include <fstream>
 #include <iostream>
+#include <thread>
 
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
@@ -22,15 +23,31 @@ size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up) { // callba
 bool checkVersion() // Compare local version of the game with the published one
 {
 	CURL* curl;
+	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, "https://asteroids.nasiadka.pl/ver");
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
-	curl_easy_perform(curl);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+	res = curl_easy_perform(curl);
+	if (res != CURLE_OK) {
+		std::cerr << "Error during request: " << curl_easy_strerror(res) << std::endl;
+		curl_easy_cleanup(curl);
+		curl_global_cleanup();
+		return EXIT_FAILURE;
+	}
+	std::string remoteVersion = data;
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
-	return GAME_VERSION == std::stoi(data);
+	if (GAME_VERSION != std::stoi(data)) {
+		newVersion.setString("New version is available");
+		newVersion.setPosition({ 30, 30 });
+		newVersion.setCharacterSize(25);
+		newVersion.setFillColor(sf::Color::White);
+	}
+	return EXIT_SUCCESS;
 }
 
 sf::Text newVersion(font);
@@ -43,14 +60,6 @@ void GameSettings::loadSettings() {
 	for (const auto& tmp : sf::VideoMode::getFullscreenModes())
 		if (tmp.bitsPerPixel == 24) availRes.emplace_back(tmp);
 	std::reverse(availRes.begin(), availRes.end());
-
-	if (!checkVersion()) {
-		newVersion.setString("New version is available");
-		newVersion.setPosition(sf::Vector2f(30, 30));
-		newVersion.setFont(font);
-		newVersion.setCharacterSize(25);
-		newVersion.setFillColor(sf::Color::White);
-	}
 
 	std::ifstream file("asteroids.cfg");
 	if (file.is_open()) {
