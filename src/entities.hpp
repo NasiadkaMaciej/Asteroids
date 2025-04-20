@@ -1,27 +1,21 @@
-#include <list>
-#include "sounds.hpp"
 #include "control.hpp"
+#include "sounds.hpp"
+#include "textures.hpp"
+#include <SFML/Audio.hpp>
+#include <SFML/System/Angle.hpp>
+#include <list>
 #include <memory>
 
-enum eTypes : char
-{
-	_PLAYER,
-	_ASTEROID,
-	_BULLET,
-	_UFO,
-	_POWERUP
-};
+enum eTypes : char { _PLAYER, _ASTEROID, _BULLET, _UFO, _POWERUP };
 
 // Multiplier that ensures equal speed of entities at all resolutions
 float speedScale = gameSettings.resY / 200;
-float asteroidSpeed[3] = {speedScale, speedScale * 1.5f, speedScale * 2};
-float asteroidDiffSpeed[3] = {asteroidSpeed[0] / 2, asteroidSpeed[1] / 2, asteroidSpeed[2] / 2};
+float asteroidSpeed[3] = { speedScale, speedScale * 1.5f, speedScale * 2 };
+float asteroidDiffSpeed[3] = { asteroidSpeed[0] / 2, asteroidSpeed[1] / 2, asteroidSpeed[2] / 2 };
 
-struct Scale
-{
+struct Scale {
 	float x, y;
-	Scale(float X, float Y)
-	{
+	Scale(float X, float Y) {
 		x = X * screenScale;
 		y = Y * screenScale;
 	}
@@ -29,8 +23,7 @@ struct Scale
 
 // min + rand() % ( max - min + 1 )
 // returns random value excluding 0
-int random(int range, int modifier)
-{
+int random(int range, int modifier) {
 	int randomValue;
 	do
 		randomValue = std::rand() % range - modifier;
@@ -40,125 +33,112 @@ int random(int range, int modifier)
 
 class Entity // general class for all existing entities
 {
-public:
-	virtual char type()
-	{
-		return -1;
-	}
-	float x, y, x_speed, y_speed, angle;
+  public:
+	virtual char type() { return -1; }
+	float x, y, x_speed, y_speed;
+	sf::Angle angle;
 	bool life = true;
 	int lifes = 0;
 	sf::Sprite sprite;
 
-	Entity(float X, float Y, float X_SPEED, float Y_SPEED, float ANGLE, sf::Texture *TEXTURE)
-		: x(X), y(Y), x_speed(X_SPEED), y_speed(Y_SPEED), angle(ANGLE)
-	{
-		sprite.setTexture(*TEXTURE, true);
-		sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getGlobalBounds().height / 2);
-		sprite.scale(screenScale, screenScale);
+	Entity(float X, float Y, float X_SPEED, float Y_SPEED, sf::Angle ANGLE, sf::Texture* TEXTURE)
+	  : x(X)
+	  , y(Y)
+	  , x_speed(X_SPEED)
+	  , y_speed(Y_SPEED)
+	  , angle(ANGLE)
+	  , sprite(*TEXTURE) {
+
+		auto bounds = sprite.getGlobalBounds();
+		sprite.setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
+		sprite.scale(sf::Vector2f{ screenScale, screenScale });
 	}
 
-	const void draw(sf::RenderWindow &window)
-	{
-		sprite.setPosition(x, y);
-		sprite.setRotation(angle + 90);
+	const void draw(sf::RenderWindow& window) {
+		sprite.setPosition(sf::Vector2f{ x, y });
+		sprite.setRotation(angle + sf::degrees(90.f));
 		window.draw(sprite);
 	}
-	virtual void update(){};
+	virtual void update() {};
 
-	bool operator==(sf::Texture *txt) const
-	{
-		return sprite.getTexture() == txt;
-	}
+	bool operator==(const sf::Texture* txt) const { return &sprite.getTexture() == txt; }
 };
 
-void clearEntities(std::list<Entity *> list)
-{
-	for (auto i = list.begin(); i != list.end();)
-	{
-		Entity *e = *i;
+void clearEntities(std::list<Entity*> list) {
+	for (auto i = list.begin(); i != list.end();) {
+		Entity* e = *i;
 		i = list.erase(i);
 		delete e;
 	}
 }
 
-class Bullet : public Entity
-{
-public:
-	char type()
-	{
-		return _BULLET;
-	}
-	Bullet(float X, float Y, float ANGLE, sf::Texture *TEXTURE, Scale s)
-		: Entity(X, Y, 0, 0, ANGLE, TEXTURE)
-	{
-		sprite.scale(s.x, s.y);
+class Bullet : public Entity {
+  public:
+	char type() { return _BULLET; }
+	Bullet(float X, float Y, sf::Angle ANGLE, sf::Texture* TEXTURE, Scale s)
+	  : Entity(X, Y, 0, 0, ANGLE, TEXTURE) {
+		sprite.scale({ s.x, s.y });
 		lifes = 1;
 	};
-	void update()
-	{
-		x_speed = (cos(angle * degToRad) * delta->Move / 5) * speedScale;
-		y_speed = (sin(angle * degToRad) * delta->Move / 5) * speedScale;
+	void update() {
+		sf::Angle angle_rad = angle; // convert angle in degrees to sf::Angle
+
+		// Calculate x_speed and y_speed using sf::Angle
+		x_speed = (cos(angle_rad.asRadians()) * delta->Move / 5) * speedScale;
+		y_speed = (sin(angle_rad.asRadians()) * delta->Move / 5) * speedScale;
 		x += x_speed;
 		y += y_speed;
-		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0)
-		{
+		if (x > gameSettings.resX || x < 0 || y > gameSettings.resY || y < 0) {
 			life = false;
 			lifes--;
 		}
 	}
 };
 
-class Player : public Entity
-{
+class Player : public Entity {
 	int bulletFreq = 250, maxSpeed = speedScale * 1.75, pts = 0;
 
-public:
-	bool thrust = false, isShooting = false, isIdle = true,
-		 isRotatingRight = false, isRotatingLeft = false,
+  public:
+	bool thrust = false, isShooting = false, isIdle = true, isRotatingRight = false, isRotatingLeft = false,
 		 isDoubleShooting = false, isPowerBullet = false, isDoublePenetrating = false;
-	const int &points = pts; // readonly variable, to give points, use givePoints(int)
+	const int& points = pts; // readonly variable, to give points, use givePoints(int)
 
 	unsigned long long aliveTime = 0;
-	char type()
-	{
-		return _PLAYER;
-	}
+	char type() { return _PLAYER; }
 	Player()
-		: Entity(window.getView().getCenter().x, window.getView().getCenter().y, 0, 0, 0, &tPlayer)
-	{
+
+	  : Entity(window.getView().getCenter().x,
+			   window.getView().getCenter().y,
+			   0.f, // x‐speed
+			   0.f, // y‐speed
+			   sf::degrees(0.f),
+			   &tPlayer) {
 		lifes = 3;
-	};
-	void update()
-	{
+	}
+	void update() {
 		aliveTime += delta->Move;
-		if (life)
-		{
+		if (life) {
 			float rotateSpeed = 18 * delta->Move / 100;
 			if (CONTROL::getAxisPos(sf::Joystick::Axis::X) != 0)
 				rotateSpeed *= std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::X));
 			if (isRotatingRight)
-				sprite.setRotation(sprite.getRotation() + rotateSpeed);
+				sprite.setRotation(sprite.getRotation() + sf::degrees(rotateSpeed));
 			else if (isRotatingLeft)
-				sprite.setRotation(sprite.getRotation() - rotateSpeed);
-			angle = sprite.getRotation() - 90;
+				sprite.setRotation(sprite.getRotation() - sf::degrees(rotateSpeed));
 
-			if (thrust)
-			{
+			angle = sprite.getRotation() - sf::degrees(90.f);
+			if (thrust) {
 				float axPos = (axPos == !0.f) ? std::abs(CONTROL::getAxisPos(sf::Joystick::Axis::R)) : 1;
-				x_speed += cos(angle * degToRad) * delta->Move / 100 * axPos;
-				y_speed += sin(angle * degToRad) * delta->Move / 100 * axPos;
+				x_speed += std::cos(angle.asRadians()) * delta->Move / 100.f * axPos;
+				y_speed += std::sin(angle.asRadians()) * delta->Move / 100.f * axPos;
 				isIdle = false;
-			}
-			else
-			{
+			} else {
 				x_speed *= (1 - delta->Move / 1000);
 				y_speed *= (1 - delta->Move / 1000);
 			}
 
 			float speed = sqrt(x_speed * x_speed + y_speed * y_speed);
-			if (speed > maxSpeed)
-			{
+			if (speed > maxSpeed) {
 				x_speed *= maxSpeed / speed;
 				y_speed *= maxSpeed / speed;
 			}
@@ -174,10 +154,8 @@ public:
 				y = 0;
 			else if (y < 0)
 				y = gameSettings.resY;
-		}
-		else
-		{ // reset player after death
-			sprite.setPosition(gameSettings.resX / 2, gameSettings.resY / 2);
+		} else { // reset player after death
+			sprite.setPosition(sf::Vector2f(gameSettings.resX / 2, gameSettings.resY / 2));
 			x = sprite.getPosition().x, y = sprite.getPosition().y;
 			x_speed = 0;
 			y_speed = 0;
@@ -191,19 +169,16 @@ public:
 			isIdle = true;
 		}
 	}
-	void givePoints(int x)
-	{
+	void givePoints(int x) {
 		static int tmpPoints = 0;
 		pts += x;
 		tmpPoints += x;
-		if (tmpPoints >= 5000)
-		{
+		if (tmpPoints >= 5000) {
 			lifes++;
 			tmpPoints = 0;
 		}
 	}
-	Scale bulletScale()
-	{
+	Scale bulletScale() {
 		if (isPowerBullet)
 			return Scale(2, 2);
 		else if (isDoublePenetrating)
@@ -211,58 +186,42 @@ public:
 		else
 			return Scale(1, 1);
 	}
-	bool canShoot()
-	{
-		return isShooting && !isIdle && delta->Shoot > bulletFreq;
-	}
-	void getControl()
-	{
+	bool canShoot() { return isShooting && !isIdle && delta->Shoot > bulletFreq; }
+	void getControl() {
 		isRotatingRight = CONTROL::isRight();
 		isRotatingLeft = CONTROL::isLeft();
 		thrust = CONTROL::isThrust();
 		isShooting = CONTROL::isSpace();
 	}
-	void shoot(std::__cxx11::list<Entity *> *list)
-	{
-		if (canShoot())
-		{
+	void shoot(std::__cxx11::list<Entity*>* list) {
+		if (canShoot()) {
 			playSound(&laserSound);
 			if (isDoubleShooting) // shoot 2 bullets simultaneously
 			{
-				list->emplace_back(new Bullet(x, y, angle + 2.5, &tBullet, bulletScale()));
-				list->emplace_back(new Bullet(x, y, angle - 2.5, &tBullet, bulletScale()));
-			}
-			else if (isDoublePenetrating)
-			{
-				Bullet *b = new Bullet(x, y, angle, &tBullet, bulletScale());
+				list->emplace_back(new Bullet(x, y, angle + sf::degrees(2.5f), &tBullet, bulletScale()));
+				list->emplace_back(new Bullet(x, y, angle - sf::degrees(2.5f), &tBullet, bulletScale()));
+			} else if (isDoublePenetrating) {
+				Bullet* b = new Bullet(x, y, angle, &tBullet, bulletScale());
 				b->lifes = 2;
 				list->emplace_back(b);
-			}
-			else
+			} else
 				list->emplace_back(new Bullet(x, y, angle, &tBullet, bulletScale()));
 			delta->Shoot = 0;
 		}
 	}
 };
-class Asteroid : public Entity
-{
+class Asteroid : public Entity {
 	float rotation;
 
-public:
-	char type()
-	{
-		return _ASTEROID;
-	}
-	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture *TEXTURE)
-		: Entity(X, Y, X_SPEED, Y_SPEED, rand() % 360, TEXTURE)
-	{
-		rotation = (-100 + rand() % (100 + 100 + 1));
-	};
-	void update()
-	{
+  public:
+	char type() { return _ASTEROID; }
+	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture* TEXTURE)
+	  : Entity(X, Y, X_SPEED, Y_SPEED, sf::degrees(static_cast<float>(std::rand() % 360)), TEXTURE) {};
+
+	void update() {
 		// Slowly rotate asteroids
-		sprite.setRotation(sprite.getRotation() + rotation * delta->Move / 10000);
-		angle = sprite.getRotation() - 90;
+		sprite.setRotation(sprite.getRotation() + sf::degrees(rotation * delta->Move / 10000.f));
+		angle = sprite.getRotation() - sf::degrees(90.f);
 
 		x += x_speed * delta->Move / 10;
 		y += y_speed * delta->Move / 10;
@@ -276,12 +235,10 @@ public:
 			y = gameSettings.resY;
 	}
 	// Generates asteroid at random edge of the screen
-	static Asteroid *generateBig()
-	{
+	static Asteroid* generateBig() {
 		int side = std::rand() % 4;
 		float x, y;
-		switch (side)
-		{
+		switch (side) {
 		case 0:
 			x = 0;
 			y = rand() % gameSettings.resY;
@@ -299,50 +256,44 @@ public:
 			y = gameSettings.resY;
 			break;
 		}
-		return new Asteroid(x, y,
+		return new Asteroid(x,
+							y,
 							random(asteroidSpeed[BIG], asteroidDiffSpeed[BIG]),
 							random(asteroidSpeed[BIG], asteroidDiffSpeed[BIG]),
 							&tAsteroid[BIG]);
 	}
-	static Asteroid *generate(float X, float Y, eSizes asteroidNum)
-	{
-		return new Asteroid(
-			X,
-			Y,
-			random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-			random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-			&tAsteroid[asteroidNum]);
+	static Asteroid* generate(float X, float Y, eSizes asteroidNum) {
+		return new Asteroid(X,
+							Y,
+							random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+							random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+							&tAsteroid[asteroidNum]);
 	}
 };
 
-class UFO : public Entity
-{
+class UFO : public Entity {
 	int bulletFreq = 3000;
 
-public:
-	char type()
-	{
-		return _UFO;
-	}
+  public:
+	char type() { return _UFO; }
 	bool isActive = false;
-	std::list<Entity *> ufoBullets;
+	std::list<Entity*> ufoBullets;
 
 	UFO()
-		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, &tUFO)
-	{
+	  : Entity(static_cast<float>(std::rand() % gameSettings.resX),
+			   static_cast<float>(std::rand() % gameSettings.resY),
+			   0,
+			   0,
+			   sf::degrees(-90.f),
+			   &tUFO) {
 		lifes = 5;
 		life = true;
 		isActive = false;
-	};
-
-	bool canShoot()
-	{
-		return delta->ufoShoot >= bulletFreq;
 	}
-	void update(float pX, float pY)
-	{
-		if (isActive)
-		{
+
+	bool canShoot() { return delta->ufoShoot >= bulletFreq; }
+	void update(float pX, float pY) {
+		if (isActive) {
 
 			x_speed = (pX - x) / 100;
 			y_speed = (pY - y) / 100;
@@ -350,28 +301,23 @@ public:
 			x += x_speed * delta->Move / 100 * speedScale;
 			y += y_speed * delta->Move / 100 * speedScale;
 
-			if (canShoot())
-			{
+			if (canShoot()) {
 				playSound(&ufoLaserSound);
-				float angle = atan2(pY - y, pX - x) * (180 / M_PI);
+				sf::Angle angle = sf::radians(atan2(pY - y, pX - x));
 				Scale s(2, 4);
 				ufoBullets.emplace_back(new Bullet(x, y, angle, &tUFOBullet, s));
 				delta->ufoShoot = 0;
 			}
-		}
-		else
-		{
+		} else {
 			x = 10000;
 			y = 10000;
 		}
 	}
-	void activate()
-	{
+	void activate() {
 		if (delta->UFO >= gameVal->UFORestore)
 			if (isActive)
 				isActive = false;
-			else
-			{
+			else {
 				x = rand() % gameSettings.resX;
 				y = rand() % gameSettings.resY;
 				isActive = true;
@@ -380,28 +326,18 @@ public:
 		delta->UFO = 0;
 	}
 
-	~UFO()
-	{
-		clearEntities(ufoBullets);
-	}
+	~UFO() { clearEntities(ufoBullets); }
 };
 
-class PowerUp : public Entity
-{
-public:
-	char type()
-	{
-		return _POWERUP;
-	}
+class PowerUp : public Entity {
+  public:
+	char type() { return _POWERUP; }
 
-	static void generate(std::__cxx11::list<Entity *> *e, Player *p)
-	{
-		if (delta->PowerUp > gameVal->powerUpRestore)
-		{
+	static void generate(std::__cxx11::list<Entity*>* e, Player* p) {
+		if (delta->PowerUp > gameVal->powerUpRestore) {
 			int rand = std::rand() % 4;
 			e->clear();
-			switch (rand)
-			{
+			switch (rand) {
 			case 0: // Generate bullet resize powerup
 				e->emplace_back(new PowerUp(&tBulletUp));
 				break;
@@ -423,16 +359,21 @@ public:
 			p->isDoublePenetrating = false;
 		}
 	}
-	PowerUp(sf::Texture *TEXTURE)
-		: Entity(rand() % gameSettings.resX, rand() % gameSettings.resY, 0, 0, -90, TEXTURE){};
+	PowerUp(sf::Texture* TEXTURE)
+	  : Entity(static_cast<float>(std::rand() % gameSettings.resX),
+			   static_cast<float>(std::rand() % gameSettings.resY),
+			   0,
+			   0,
+			   sf::degrees(-90.f),
+			   TEXTURE) {};
 };
 
-Player *p;
-UFO *u;
+Player* p;
+UFO* u;
 
 // std::unique_ptr<Player> p = std::make_unique<Player>();
 // std::unique_ptr<UFO> u = std::make_unique<UFO>();
 
-std::list<Entity *> asteroids;
-std::list<Entity *> bullets;
-std::list<Entity *> powerUps;
+std::list<Entity*> asteroids;
+std::list<Entity*> bullets;
+std::list<Entity*> powerUps;

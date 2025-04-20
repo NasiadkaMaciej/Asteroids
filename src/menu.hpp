@@ -1,74 +1,66 @@
-#include <SFML/Graphics.hpp>
 #include "control.hpp"
+#include <SFML/Graphics.hpp>
+#include <algorithm>
+#include <cctype>
+#include <curl/curl.h>
 #include <fstream>
 #include <iostream>
-#include <curl/curl.h>
+#include <optional>
 #include <string>
 
-struct ScoreBoard
-{
+extern sf::Font font;
+
+struct ScoreBoard {
 	unsigned int points;
 	std::string name;
-	std::string toString()
-	{
-		return std::to_string(points) + " - " + name;
-	}
+	std::string toString() { return std::to_string(points) + " - " + name; }
 };
 
 ScoreBoard scoreBoard[10];
 
 // Write actual score board to file
-void writeScoreBoard()
-{
+void writeScoreBoard() {
 	std::ofstream file("scoreBoard.dat");
-	if (file.is_open())
-	{
-		for (int i = 0; i < 10; i++)
-		{
+	if (file.is_open()) {
+		for (int i = 0; i < 10; i++) {
 			file << scoreBoard[i].points << ":";
 			file << scoreBoard[i].name;
-			if (i < 9)
-				file << "\n";
+			if (i < 9) file << "\n";
 		}
 	}
 	file.close();
 };
 
 // Load score board from file if exists,
-void loadScoreBoard()
-{
+inline void loadScoreBoard() {
 	std::ifstream file("scoreBoard.dat");
-	if (file.is_open())
-	{
+	if (file.is_open()) {
 		std::string tmpString;
 		int i = 0;
-		while (file.good())
-		{
+		while (file.good()) {
 			std::getline(file, tmpString, ':');
-			scoreBoard[i].points = stoi(tmpString);
+			if (tmpString.empty()) break;
+			scoreBoard[i].points = std::stoi(tmpString);
+
 			std::getline(file, tmpString);
 			scoreBoard[i].name = tmpString;
 			i++;
 		}
 		file.close();
-	}
-	else
-	{
-		for (int i = 0; i < 10; i++)
-		{
+	} else {
+		for (int i = 0; i < 10; i++) {
 			scoreBoard[i].points = 0;
 			scoreBoard[i].name = "";
 		}
 		writeScoreBoard();
 	}
 
-	std::sort(scoreBoard, scoreBoard + 10, [&](ScoreBoard a, ScoreBoard b)
-			  { return a.points > b.points; });
+	std::sort(
+	  scoreBoard, scoreBoard + 10, [](const ScoreBoard& a, const ScoreBoard& b) { return a.points > b.points; });
 };
 
 // Open link in browser for every operating system
-void openInBrowser(const std::string &p)
-{
+void openInBrowser(const std::string& p) {
 #ifdef _WIN32
 	static int platform = 1;
 #elif _WIN64
@@ -82,9 +74,7 @@ void openInBrowser(const std::string &p)
 #endif
 
 	std::string str;
-	if (platform)
-		switch (platform)
-		{
+	if (platform) switch (platform) {
 		case 1:
 			str = "explorer";
 			break;
@@ -103,11 +93,9 @@ void openInBrowser(const std::string &p)
 #define up 1
 #define down 2
 
-const int menuEntriesCount = 5, gameOverEntriesCount = 3,
-		  settingEntriesCount = 9, saveScoreEntriesCount = 13,
+const int menuEntriesCount = 5, gameOverEntriesCount = 3, settingEntriesCount = 9, saveScoreEntriesCount = 13,
 		  leaderBoardEntriesCount = 12;
-std::string returnBool(int value)
-{
+std::string returnBool(int value) {
 	if (value == 0)
 		return "Off";
 	else if (value == 1)
@@ -115,74 +103,66 @@ std::string returnBool(int value)
 	return "Error";
 }
 // Struct? Some array?
-std::string menuEntries[menuEntriesCount]{"Play",
-										  "Leaderboard",
-										  "Settings",
-										  "Info",
-										  "Exit"},
-	gameOverEntries[gameOverEntriesCount]{"Your score", "New game", "Menu"},
-	settingEntries[settingEntriesCount]{"Frame rate limit: " + std::to_string(gameSettings.frames),
-										"VSync: " + returnBool(gameSettings.vsync),
-										"Fullscreen: " + returnBool(gameSettings.fs),
-										"Sound: " + returnBool(gameSettings.sfx),
-										"Music: " + returnBool(gameSettings.music),
-										"Background: " + returnBool(gameSettings.background),
-										"Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY),
-										"Antialiasing: " + std::to_string(gameSettings.antialias),
-										"Menu"},
-	saveScoreEntries[saveScoreEntriesCount],
-	leaderBoardEntries[leaderBoardEntriesCount];
+std::string menuEntries[menuEntriesCount]{ "Play", "Leaderboard", "Settings", "Info", "Exit" },
+  gameOverEntries[gameOverEntriesCount]{ "Your score", "New game", "Menu" },
+  settingEntries[settingEntriesCount]{ "Frame rate limit: " + std::to_string(gameSettings.frames),
+									   "VSync: " + returnBool(gameSettings.vsync),
+									   "Fullscreen: " + returnBool(gameSettings.fs),
+									   "Sound: " + returnBool(gameSettings.sfx),
+									   "Music: " + returnBool(gameSettings.music),
+									   "Background: " + returnBool(gameSettings.background),
+									   "Resolution: " + std::to_string(gameSettings.resX) + "x" +
+										 std::to_string(gameSettings.resY),
+									   "Antialiasing: " + std::to_string(gameSettings.antialias),
+									   "Menu" },
+  saveScoreEntries[saveScoreEntriesCount], leaderBoardEntries[leaderBoardEntriesCount];
 
 // General class for all menus
-class Menu
-{
-public:
+class Menu {
+  public:
 	int activeEntry = 0;
-	// eventually
 	int entriesCount;
-	sf::Text *entryText;
-	std::string *entries;
+	std::vector<sf::Text> entryText;
+	std::vector<std::string> entries;
 	Menu(int ENTRIESCOUNT, std::string ENTRIES[])
-	{
-		entries = ENTRIES;
-		entriesCount = ENTRIESCOUNT;
-		entryText = new sf::Text[entriesCount];
-		for (int i = 0; i < entriesCount; i++)
-		{
-			entryText[i].setString(entries[i]);
-			entryText[i].setFont(font);
-			entryText[i].setCharacterSize(50);
+	  : entriesCount(ENTRIESCOUNT) {
+		entryText.clear();
+		entryText.reserve(entriesCount);
+
+		entries.clear();
+		entries.reserve(entriesCount);
+		for (int i = 0; i < entriesCount; ++i)
+			entries.push_back(ENTRIES[i]);
+
+		for (int i = 0; i < entriesCount; ++i) {
+			entryText.emplace_back(font, entries[i], 30);
 			entryText[i].setFillColor(sf::Color::White);
-			entryText[i].setOrigin(entryText[i].getGlobalBounds().width / 2,
-								   entryText[i].getGlobalBounds().height / 2);
+
+			auto bounds = entryText[i].getGlobalBounds();
+			entryText[i].setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
 			entryText[i].setPosition(
-				sf::Vector2f(gameSettings.resX / 2,
-							 gameSettings.resY / (entriesCount + 1) * (i + 1)));
+			  sf::Vector2f(gameSettings.resX / 2.f, gameSettings.resY / (entriesCount + 1.f) * (i + 1.f)));
 		}
-		// Make active entry look like active one
+
+		entryText[activeEntry].setString("> " + entries[activeEntry] + " <");
 		entryText[activeEntry].setFillColor(sf::Color::Red);
-		entryText[activeEntry].setString("> " + entryText[activeEntry].getString() +
-										 " <");
-		entryText[activeEntry].setOrigin(
-			entryText[activeEntry].getGlobalBounds().width / 2,
-			entryText[activeEntry].getGlobalBounds().height / 2);
+
+		// Update origin again since text width changed
+		auto bounds = entryText[activeEntry].getGlobalBounds();
+		entryText[activeEntry].setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
 	}
-	void draw(sf::RenderWindow &window)
-	{
-		for (int i = 0; i < entriesCount; i++)
-			window.draw(entryText[i]);
+	void draw(sf::RenderWindow& window) {
+		for (auto& txt : entryText)
+			window.draw(txt);
 	}
-	void reset()
-	{
+	void reset() {
 		do
 			move(up);
 		while (activeEntry != 0);
 	}
-	void move(int direction)
-	{
+	void move(int direction) {
 		// actually move
-		switch (direction)
-		{
+		switch (direction) {
 		case up:
 			if (activeEntry - 1 >= 0)
 				activeEntry--;
@@ -199,32 +179,28 @@ public:
 			break;
 		}
 		// format and color
-		for (int i = 0; i < entriesCount; i++)
-		{
+		for (int i = 0; i < entriesCount; ++i) {
 			entryText[i].setFillColor(sf::Color::White);
-			entryText[i].setString(entries[i]);
-			entryText[i].setOrigin(entryText[i].getGlobalBounds().width / 2,
-								   entryText[i].getGlobalBounds().height / 2);
+			entryText[i].setString(entries[i]); // Normal entries
+			auto b = entryText[i].getGlobalBounds();
+			entryText[i].setOrigin(sf::Vector2f(b.size.x / 2.f, b.size.y / 2.f));
 		}
+
+		entryText[activeEntry].setString("> " + entries[activeEntry] + " <");
 		entryText[activeEntry].setFillColor(sf::Color::Red);
-		entryText[activeEntry].setString("> " + entryText[activeEntry].getString() +
-										 " <");
-		entryText[activeEntry].setOrigin(
-			entryText[activeEntry].getGlobalBounds().width / 2,
-			entryText[activeEntry].getGlobalBounds().height / 2);
+
+		// Update origin again since text width changed
+		auto bounds = entryText[activeEntry].getGlobalBounds();
+		entryText[activeEntry].setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
 	}
-	virtual void show()
-	{
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
+
+	virtual void show() {
+		while (const std::optional event = window.pollEvent()) {
+			if (event->is<sf::Event::Closed>()) window.close();
+
 			bool clicked = false;
-			if (event.type == sf::Event::Closed)
-				window.close();
-			if (delta->Menu > 100)
-			{ // dissalow too quick movement and prevent double clicks
-				if (CONTROL::isESC())
-				{
+			if (delta->Menu > 100) { // dissalow too quick movement and prevent double clicks
+				if (CONTROL::isESC()) {
 					if (activeState == menuState)
 						setState(playState);
 					else if (activeState == saveScreenState)
@@ -233,37 +209,32 @@ public:
 						setState(menuState);
 					clicked = true;
 				}
-				if (CONTROL::isUP())
-				{
+				if (CONTROL::isUP()) {
 					move(up);
 					clicked = true;
-				}
-				else if (CONTROL::isDOWN())
-				{
+				} else if (CONTROL::isDOWN()) {
 					move(down);
 					clicked = true;
 				};
-				if (CONTROL::isEnter() || CONTROL::isSpace())
-				{
+				if (CONTROL::isEnter() || CONTROL::isSpace()) {
 					click();
 					clicked = true;
 				}
 				delta->Menu = 0;
 			}
-			if (CONTROL::isClick())
-			{
+			if (CONTROL::isClick()) {
 				mouseClick();
 				clicked = true;
 			}
-			if (clicked)
-				playSound(&menuSound);
+			if (clicked) playSound(&menuSound);
 
-			if (event.type == sf::Event::MouseWheelScrolled)
-			{
-				if (event.mouseWheelScroll.delta > 0)
-					move(up);
-				else if (event.mouseWheelScroll.delta < 0)
-					move(down);
+			if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
+				if (mouseWheelScrolled->wheel == sf::Mouse::Wheel::Vertical) {
+					if (mouseWheelScrolled->delta > 0)
+						move(up);
+					else if (mouseWheelScrolled->delta < 0)
+						move(down);
+				}
 			}
 		}
 
@@ -273,10 +244,8 @@ public:
 		window.display();
 	}
 	// only valid for actual Menu
-	virtual void click()
-	{
-		switch (activeEntry)
-		{
+	virtual void click() {
+		switch (activeEntry) {
 		case 0:
 			setState(playState);
 			break;
@@ -294,15 +263,12 @@ public:
 			break;
 		}
 	}
-	virtual void mouseClick()
-	{ // Select entry or click selected
+	virtual void mouseClick() { // Select entry or click selected
 		auto mouse_pos = sf::Mouse::getPosition(window);
 		auto translated_pos = window.mapPixelToCoords(mouse_pos);
 
-		for (int i = 0; i < entriesCount; i++)
-		{
-			if (entryText[i].getGlobalBounds().contains(translated_pos))
-			{
+		for (int i = 0; i < entriesCount; i++) {
+			if (entryText[i].getGlobalBounds().contains(translated_pos)) {
 				if (activeEntry == i)
 					click();
 				else
@@ -312,21 +278,15 @@ public:
 			}
 		}
 	}
-	virtual ~Menu()
-	{
-		delete[] entryText;
-	}
+	virtual ~Menu() = default;
 };
 
-class GameOver : public Menu
-{
-public:
+class GameOver : public Menu {
+  public:
 	GameOver(int EntriesCount, std::string entries[])
-		: Menu(EntriesCount, entries){};
-	void click()
-	{
-		switch (activeEntry)
-		{
+	  : Menu(EntriesCount, entries) {};
+	void click() {
+		switch (activeEntry) {
 		case 0:
 			setState(saveScreenState);
 			break;
@@ -338,22 +298,18 @@ public:
 			break;
 		}
 	}
-	void setScore(int POINTS)
-	{
+	void setScore(int POINTS) {
 		entries[0] = "Your score " + std::to_string(POINTS);
 		move(0);
 	}
 };
 
-class Settings : public Menu
-{
-public:
+class Settings : public Menu {
+  public:
 	Settings(int EntriesCount, std::string entries[])
-		: Menu(EntriesCount, entries){};
-	void click()
-	{
-		switch (activeEntry)
-		{
+	  : Menu(EntriesCount, entries) {};
+	void click() {
+		switch (activeEntry) {
 		case 0:
 			switchRefreshRate();
 			break;
@@ -385,10 +341,8 @@ public:
 		move(0);
 		gameSettings.saveSettings();
 	}
-	void switchRefreshRate()
-	{
-		switch (gameSettings.frames)
-		{
+	void switchRefreshRate() {
+		switch (gameSettings.frames) {
 		case 60:
 			gameSettings.frames = 75;
 			break;
@@ -414,54 +368,45 @@ public:
 		window.setFramerateLimit(gameSettings.frames);
 		entries[0] = "Frame rate limit: " + std::to_string(gameSettings.frames);
 	}
-	void toggleVsync()
-	{
+	void toggleVsync() {
 		gameSettings.vsync = !gameSettings.vsync;
 		window.setVerticalSyncEnabled(gameSettings.vsync);
 		entries[1] = "VSync: " + returnBool(gameSettings.fs);
 	}
-	void toggleFS()
-	{
+	void toggleFS() {
 		gameSettings.fs = !gameSettings.fs;
 		gameSettings.reloadWindow();
 		entries[2] = "Fullscreen: " + returnBool(gameSettings.fs);
 	}
-	void toggleSFX()
-	{
+	void toggleSFX() {
 		gameSettings.sfx = !gameSettings.sfx;
 		entries[3] = "Sound: " + returnBool(gameSettings.sfx);
 	}
-	void toggleMusic()
-	{
+	void toggleMusic() {
 		gameSettings.music = !gameSettings.music;
 		entries[4] = "Music: " + returnBool(gameSettings.music);
 		playMusic();
 	}
-	void toggleBackground()
-	{
+	void toggleBackground() {
 		gameSettings.background = !gameSettings.background;
 		entries[5] = "Background: " + returnBool(gameSettings.background);
 	}
-	void switchResolution()
-	{
-		if (gameSettings.availRes.end()->width == gameSettings.resX && gameSettings.availRes.end()->height == gameSettings.resY)
-		{
-			gameSettings.resX = gameSettings.availRes.begin()->width;
-			gameSettings.resY = gameSettings.availRes.begin()->height;
-		}
-		else
+	void switchResolution() {
+		if (gameSettings.availRes.end()->size.x == gameSettings.resX &&
+			gameSettings.availRes.end()->size.y == gameSettings.resY) {
+			gameSettings.resX = gameSettings.availRes.begin()->size.x;
+			gameSettings.resY = gameSettings.availRes.begin()->size.y;
+		} else
 			for (auto it = gameSettings.availRes.begin(); it != gameSettings.availRes.end(); it++)
-				if (it->width == gameSettings.resX && it->height == gameSettings.resY)
-				{
+				if (it->size.x == gameSettings.resX && it->size.y == gameSettings.resY) {
 					it++;
-					gameSettings.resX = it->width;
-					gameSettings.resY = it->height;
+					gameSettings.resX = it->size.x;
+					gameSettings.resY = it->size.y;
 					break;
 				}
 		entries[6] = "Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY);
 	}
-	void switchAA()
-	{
+	void switchAA() {
 		if (gameSettings.antialias == 0)
 			gameSettings.antialias = 2;
 		else if (gameSettings.antialias < 16)
@@ -474,31 +419,27 @@ public:
 	}
 };
 
-class SaveScore : public Menu
-{
-public:
+class SaveScore : public Menu {
+  public:
 	std::string name;
 	unsigned int points;
 	bool isSaving = true, wasSaved = false;
 	SaveScore(int EntriesCount, std::string entries[])
-		: Menu(EntriesCount, entries){};
-	void click()
-	{
-		switch (activeEntry)
-		{
+	  : Menu(EntriesCount, entries) {};
+	void click() {
+		switch (activeEntry) {
 		case 0:
 			saveScore();
 			break;
 		case 11:
-			openInBrowser("https://nasiadka.pl/asteroids/");
+			openInBrowser("https://asteroids.nasiadka.pl/");
 			break;
 		case 12:
 			setState(menuState);
 			break;
 		}
 	}
-	void setScore(int POINTS)
-	{
+	void setScore(int POINTS) {
 		for (int i = 1; i < 11; i++)
 			entries[i] = scoreBoard[i - 1].toString();
 
@@ -509,50 +450,39 @@ public:
 		move(0);
 		name = "";
 	}
-	void saveScore()
-	{
+	void saveScore() {
 		move(0);
-		if (!wasSaved)
-		{
+		if (!wasSaved) {
 			entries[0] = "Your name: ";
 			name = "";
 			move(0);
-			sf::Event event;
 
-			while (isSaving)
-			{
-				while (window.pollEvent(event))
-				{
-					if (event.type == sf::Event::Closed)
-						window.close();
-					if (event.type == sf::Event::TextEntered)
-					{
-						//
-						if ((event.text.unicode != 8 && name.length() <= 18 && std::isalnum(event.text.unicode)) ||
-							(event.text.unicode == 32 && name.length() <= 18))
-						{
-							name += event.text.unicode;
-							entries[0] += event.text.unicode;
-						}
-						else if (event.text.unicode == 8)
-						{
-							if (name.length() > 0)
-								name.pop_back();
-							if (entries[0] != "Your name: " + name)
-								entries[0].pop_back();
+			while (isSaving) {
+				while (const std::optional event = window.pollEvent()) {
+					if (event->sf::Event::is<sf::Event::Closed>()) window.close();
+					if (const auto* textEntered = event->getIf<sf::Event::TextEntered>()) {
+						// only ASCII, up to 18 chars, or backspace (8)
+						auto unicode = textEntered->unicode;
+						if ((unicode != 8 && name.length() < 18 && std::isalnum(unicode)) ||
+							(unicode == 32 && name.length() < 18)) {
+							char c = static_cast<char>(unicode);
+							name += c;
+							entries[0] += c;
+						} else if (unicode == 8 && !name.empty()) {
+							name.pop_back();
+							entries[0].pop_back();
 						}
 						move(0);
 					}
-					if (CONTROL::isEnter() && name != "" && !wasSaved)
-					{
+					if (CONTROL::isEnter() && name != "" && !wasSaved) {
 						// If last entry in leaderboard is lower, replace it with current score
-						if (scoreBoard[9].points < points)
-						{
-							scoreBoard[9] = {points, name};
+						if (scoreBoard[9].points < points) {
+							scoreBoard[9] = { points, name };
 							isSaving = false;
 							wasSaved = true;
-							std::sort(scoreBoard, scoreBoard + 10, [&](ScoreBoard a, ScoreBoard b)
-									  { return a.points > b.points; });
+							std::sort(scoreBoard, scoreBoard + 10, [&](ScoreBoard a, ScoreBoard b) {
+								return a.points > b.points;
+							});
 						}
 						// Show 10 scores and "Your score" at the top
 						for (int i = 1; i < 11; i++)
@@ -562,18 +492,17 @@ public:
 
 						// Save score to online leaderboard, secret is only in built releases.
 						std::string const secret = "PapiezPolak";
-						if (secret != "")
-						{
+						if (secret != "") {
 							transform(name.begin(), name.end(), name.begin(), ::tolower);
-							std::string request = "name=" + name + "&points=" + std::to_string(points) + "&secret=" + secret;
-							const char *cRequest = request.c_str();
-							CURL *curl;
+							std::string request =
+							  "name=" + name + "&points=" + std::to_string(points) + "&secret=" + secret;
+							const char* cRequest = request.c_str();
+							CURL* curl;
 							curl_global_init(CURL_GLOBAL_ALL);
 							curl = curl_easy_init();
 							CURLcode res;
-							if (curl)
-							{
-								curl_easy_setopt(curl, CURLOPT_URL, "https://nasiadka.pl/asteroids/send");
+							if (curl) {
+								curl_easy_setopt(curl, CURLOPT_URL, "https://asteroids.nasiadka.pl/send");
 								curl_easy_setopt(curl, CURLOPT_POSTFIELDS, cRequest);
 								res = curl_easy_perform(curl);
 								if (res != CURLE_OK)
@@ -593,23 +522,19 @@ public:
 		}
 		writeScoreBoard();
 	}
-	void reset()
-	{
+	void reset() {
 		Menu::reset();
 		wasSaved = false;
 		isSaving = true;
 	}
 };
 
-class LeaderBoard : public GameOver
-{
-public:
+class LeaderBoard : public GameOver {
+  public:
 	LeaderBoard(int EntriesCount, std::string entries[])
-		: GameOver(EntriesCount, entries){};
-	void click()
-	{
-		switch (activeEntry)
-		{
+	  : GameOver(EntriesCount, entries) {};
+	void click() {
+		switch (activeEntry) {
 		case 10:
 			openInBrowser("https://nasiadka.pl/asteroids/");
 			break;
@@ -618,8 +543,7 @@ public:
 			break;
 		}
 	}
-	void setScore()
-	{
+	void setScore() {
 		for (int i = 0; i < 10; i++)
 			entries[i] = scoreBoard[i].toString();
 		entries[10] = "Global leaderboard";
@@ -628,9 +552,8 @@ public:
 	}
 };
 
-struct ProgressBar
-{
-public:
+struct ProgressBar {
+  public:
 	float fullSize;
 	sf::RectangleShape pg;
 	float objectSize;
@@ -638,35 +561,30 @@ public:
 	float removedObjects = 0;
 	float height;
 	ProgressBar(float HEIGHT)
-		: height(HEIGHT), fullSize(gameSettings.resX / 2)
-	{
+	  : height(HEIGHT)
+	  , fullSize(gameSettings.resX / 2) {
 		pg.setFillColor(sf::Color::Black);
 		pg.setOutlineThickness(1);
 		pg.setOutlineColor(sf::Color::White);
 	}
 
-	void retractPoint()
-	{
+	void retractPoint() {
 		numOfObjects--;
 		removedObjects += objectSize;
 	}
-	void update()
-	{
+	void update() {
 		pg.setSize(sf::Vector2f(fullSize - removedObjects, height));
-		pg.setOrigin(pg.getGlobalBounds().width / 2, pg.getGlobalBounds().height / 2);
-		pg.setPosition(window.getView().getCenter().x, window.getView().getCenter().y * 1.95);
+		pg.setOrigin(pg.getSize() / 2.f);
+		pg.setPosition({ window.getView().getCenter().x, window.getView().getCenter().y * 1.95f });
 	}
-	void reset()
-	{
+	void reset() {
 		removedObjects = 0;
 		numOfObjects = gameVal->bigAsteroids + gameVal->bigAsteroids * 2 + gameVal->bigAsteroids * 4;
 		objectSize = fullSize / numOfObjects;
 	}
 };
-void mute(Settings *s)
-{
-	if (CONTROL::mute() && delta->Menu > 300)
-	{
+void mute(Settings* s) {
+	if (CONTROL::mute() && delta->Menu > 300) {
 		s->toggleMusic();
 		delta->Menu = 0;
 		gameSettings.saveSettings();

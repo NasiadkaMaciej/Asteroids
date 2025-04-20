@@ -1,17 +1,17 @@
 #include "GameSettings.hpp"
-#include <iostream>
-#include <fstream>
+#include <algorithm>
 #include <curl/curl.h>
+#include <fstream>
+#include <iostream>
 
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
 sf::Font font;
-sf::Text text;
+sf::Text text(font);
 
 std::string data;
 
-size_t writeCallback(char *buf, size_t size, size_t nmemb, void *up)
-{ // callback must have this declaration
+size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up) { // callback must have this declaration
 	// buf is a pointer to the data that curl has for us
 	// size*nmemb is the size of the buffer
 	for (int c = 0; c < size * nmemb; c++)
@@ -21,10 +21,10 @@ size_t writeCallback(char *buf, size_t size, size_t nmemb, void *up)
 
 bool checkVersion() // Compare local version of the game with the published one
 {
-	CURL *curl;
+	CURL* curl;
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, "https://nasiadka.pl/asteroids/ver");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://asteroids.nasiadka.pl/ver");
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
 	curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
@@ -33,37 +33,32 @@ bool checkVersion() // Compare local version of the game with the published one
 	return GAME_VERSION == std::stoi(data);
 }
 
-sf::Text newVersion;
+sf::Text newVersion(font);
 float screenScale;
 // Use map instead
-bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false,
-	 isSaveScreen = false, isLeaderBoard = false;
-void GameSettings::loadSettings()
-{
+bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false, isSaveScreen = false,
+	 isLeaderBoard = false;
+void GameSettings::loadSettings() {
 	// Read all available fullscreen resolutions and sort them
-	for (const auto &tmp : sf::VideoMode::getFullscreenModes())
-		if (tmp.bitsPerPixel == 24)
-			availRes.emplace_back(tmp);
+	for (const auto& tmp : sf::VideoMode::getFullscreenModes())
+		if (tmp.bitsPerPixel == 24) availRes.emplace_back(tmp);
 	std::reverse(availRes.begin(), availRes.end());
 
-	if (!checkVersion())
-	{
+	if (!checkVersion()) {
 		newVersion.setString("New version is available");
-		newVersion.setPosition(30, 30);
+		newVersion.setPosition(sf::Vector2f(30, 30));
 		newVersion.setFont(font);
 		newVersion.setCharacterSize(25);
 		newVersion.setFillColor(sf::Color::White);
 	}
 
 	std::ifstream file("asteroids.cfg");
-	if (file.is_open())
-	{
+	if (file.is_open()) {
 		// list?
 		const int values = 9;
 		int value[values];
 		std::string tmpString;
-		for (int i = 0; i < values; i++)
-		{
+		for (int i = 0; i < values; i++) {
 			std::getline(file, tmpString, ':');
 			std::getline(file, tmpString);
 			value[i] = stoi(tmpString);
@@ -80,15 +75,12 @@ void GameSettings::loadSettings()
 
 		screenScale = (float)resY / 2000;
 		file.close();
-	}
-	else
+	} else
 		saveSettings();
 }
-void GameSettings::saveSettings()
-{
+void GameSettings::saveSettings() {
 	std::ofstream file("asteroids.cfg");
-	if (file.is_open())
-	{
+	if (file.is_open()) {
 		file << "Frames:" << frames << "\n";
 		file << "VSync:" << vsync << "\n";
 		file << "FullScreen:" << fs << "\n";
@@ -103,36 +95,37 @@ void GameSettings::saveSettings()
 	screenScale = (float)resY / 2000;
 	file.close();
 }
-int GameSettings::translateFS()
-{
-	return fs ? sf::Style::Fullscreen : sf::Style::Default;
+sf::State GameSettings::translateFS() {
+	return fs ? sf::State::Fullscreen : sf::State::Windowed;
 }
-bool GameSettings::checkRes()
-{
-	for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
-		if (videoMode.width == resX && videoMode.height == resY)
-			return true;
+bool GameSettings::checkRes() {
+	for (const auto& videoMode : sf::VideoMode::getFullscreenModes())
+		if (videoMode.size.x == resX && videoMode.size.y == resY) return true;
 	return false;
 }
-void GameSettings::reloadWindow()
-{
-	window.create(sf::VideoMode(gameSettings.resX, gameSettings.resY, desktopMode.bitsPerPixel),
-				  "Asteroids - Macieson", gameSettings.translateFS(), sf::ContextSettings(24, 8, gameSettings.antialias));
+void GameSettings::reloadWindow() {
+	sf::ContextSettings settings;
+	settings.depthBits = 24;
+	settings.stencilBits = 8;
+	settings.antiAliasingLevel = gameSettings.antialias;
+
+	window.create(sf::VideoMode(sf::Vector2u(gameSettings.resX, gameSettings.resY), desktopMode.bitsPerPixel),
+				  "Asteroids - Macieson",
+				  gameSettings.translateFS(),
+				  settings);
 	window.setFramerateLimit(gameSettings.frames);
 	window.setVerticalSyncEnabled(gameSettings.vsync);
 }
-GameValues *gameVal;
-GameTime *delta;
+GameValues* gameVal;
+GameTime* delta;
 GameSettings gameSettings;
 
-bool loadBase()
-{
+bool loadBase() {
 	if (!gameSettings.checkRes()) // Check if is fs and resolutions are in valid video modes
 	{
 		std::cout << "Invalid fullscreen resolution. Available modes are: \n";
-		for (const auto &videoMode : sf::VideoMode::getFullscreenModes())
-			if (videoMode.bitsPerPixel == 24)
-				std::cout << videoMode.width << "x" << videoMode.height << "\n";
+		for (const auto& videoMode : sf::VideoMode::getFullscreenModes())
+			if (videoMode.bitsPerPixel == 24) std::cout << videoMode.size.x << "x" << videoMode.size.y << "\n";
 		return false;
 	}
 	desktopMode = sf::VideoMode::getDesktopMode();
@@ -140,8 +133,7 @@ bool loadBase()
 
 	sf::Image image;
 
-	if (!font.loadFromFile("textures/Hyperspace.otf") || !image.loadFromFile("textures/icon.png"))
-	{
+	if (!font.openFromFile("textures/Hyperspace.otf") || !image.loadFromFile("textures/icon.png")) {
 		std::cout << "Error loading font or icon\n";
 		return false;
 	}
@@ -149,9 +141,9 @@ bool loadBase()
 	text.setFont(font);
 	text.setCharacterSize(50);
 	text.setFillColor(sf::Color::White);
-	text.setPosition(60, 60);
+	text.setPosition(sf::Vector2f(60, 60));
 
-	window.setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
+	window.setIcon(image);
 
 	srand(time(NULL));
 	return true;
@@ -159,8 +151,7 @@ bool loadBase()
 
 char activeState = menuState;
 
-void setState(eStates state)
-{
+void setState(eStates state) {
 	if (state == playState)
 		window.setMouseCursorVisible(false);
 	else
