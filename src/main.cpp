@@ -1,14 +1,30 @@
 #include "Collision.h"
 #include "GameSettings.hpp"
 #include "control.hpp"
-#include "entities.hpp"
+#include "entities/Asteroid.hpp"
+#include "entities/Bullet.hpp"
+#include "entities/Player.hpp"
+#include "entities/PowerUp.hpp"
+#include "entities/UFO.hpp"
+#include "entities/utils.hpp"
 #include "menu.hpp"
 #include "sounds.hpp"
 #include "textures.hpp"
 #include <list>
 #include <thread>
 
+Player* p;
+UFO* u;
+
+// std::unique_ptr<Player> p = std::make_unique<Player>();
+// std::unique_ptr<UFO> u = std::make_unique<UFO>();
+
+std::list<Entity*> asteroids;
+std::list<Entity*> bullets;
+std::list<Entity*> powerUps;
+
 int main() {
+
 	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds()) return 0;
 	std::thread versionChecker(checkVersion);
@@ -176,9 +192,18 @@ int main() {
 	}
 	delete p;
 	delete u;
-	clearEntities(asteroids);
-	clearEntities(bullets);
-	clearEntities(powerUps);
+
+	// Clean up remaining entities
+	auto cleanupEntityList = [](std::list<Entity*>& entityList) {
+		for (auto entity : entityList)
+			delete entity;
+		entityList.clear();
+	};
+
+	cleanupEntityList(asteroids);
+	cleanupEntityList(bullets);
+	cleanupEntityList(powerUps);
+	cleanupEntityList(u->ufoBullets);
 	return 0;
 }
 
