@@ -27,7 +27,6 @@ class Entity // general class for all existing entities
 
 	const void draw(sf::RenderWindow& window) {
 		sprite.setPosition(sf::Vector2f{ x, y });
-		sprite.setRotation(angle + sf::degrees(90.f));
 		window.draw(sprite);
 	}
 	virtual void update() {};

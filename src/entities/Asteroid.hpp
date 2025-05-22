@@ -6,7 +6,6 @@
 class Asteroid : public Entity {
 	float rotationSpeed; // degrees per second
 
-	// Remove redundant enum - use eSizes from utils.hpp
 	// enum AsteroidSize { SMALL, MEDIUM, BIG };
 	eSizes size;
 
@@ -28,7 +27,7 @@ class Asteroid : public Entity {
 	void update() {
 		// Apply time-based rotation
 		sprite.setOrigin(sf::Vector2f{ sprite.getLocalBounds().size.x / 2, sprite.getLocalBounds().size.y / 2 });
-		float dt = delta->timer.ms() / 1000.0f; // Convert milliseconds to seconds
+		float dt = delta->Move / 1000.0f; // Convert time delta to seconds
 
 		// Convert angle to float, add rotation, and convert back
 		float angleAsFloat = angle.asDegrees();

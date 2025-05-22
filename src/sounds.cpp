@@ -26,4 +26,5 @@ void playSound(sf::Sound* sound) {
 
 void playMusic() {
 	if (gameSettings.music) music.play();
+	else music.stop();
 }

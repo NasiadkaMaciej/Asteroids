@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Entity.hpp"
+#include "Player.hpp"
 #include "utils.hpp"
 
 class PowerUp : public Entity {
   public:
 	char type() { return _POWERUP; }
 
-	static void generate(std::__cxx11::list<Entity*>* e, Player* p) {
+	static void generate(std::list<Entity*>* e, const std::unique_ptr<Player>& p) {
 		if (delta->PowerUp > gameVal->powerUpRestore) {
 			int rand = std::rand() % 4;
 			e->clear();

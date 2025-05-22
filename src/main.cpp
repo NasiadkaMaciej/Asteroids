@@ -11,13 +11,11 @@
 #include "sounds.hpp"
 #include "textures.hpp"
 #include <list>
+#include <memory>
 #include <thread>
 
-Player* p;
-UFO* u;
-
-// std::unique_ptr<Player> p = std::make_unique<Player>();
-// std::unique_ptr<UFO> u = std::make_unique<UFO>();
+std::unique_ptr<Player> p;
+std::unique_ptr<UFO> u;
 
 std::list<Entity*> asteroids;
 std::list<Entity*> bullets;
@@ -54,10 +52,8 @@ int main() {
 		delete delta;
 		gameVal = new GameValues;
 		delta = new GameTime;
-		delete p;
-		delete u;
-		p = new Player;
-		u = new UFO;
+		p = std::make_unique<Player>();
+		u = std::make_unique<UFO>();
 		saveScore.reset();
 	};
 
@@ -114,6 +110,7 @@ int main() {
 			break;
 		case playState:
 			delta->update();
+			delta->UFO += delta->timer.ms();
 			std::thread worker(checkCollision);
 			while (const std::optional event = window.pollEvent()) {
 				if (event->is<sf::Event::Closed>()) window.close();
@@ -141,8 +138,7 @@ int main() {
 
 			if (!u->life) {
 				delta->UFO = 0;
-				delete u;
-				u = new UFO;
+				u = std::make_unique<UFO>();
 				p->givePoints(1000);
 			}
 
@@ -190,8 +186,6 @@ int main() {
 			break;
 		}
 	}
-	delete p;
-	delete u;
 
 	// Clean up remaining entities
 	auto cleanupEntityList = [](std::list<Entity*>& entityList) {
