@@ -1,12 +1,6 @@
-
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
-IF(WIN32)
-	set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "" FORCE) # vcpkg path
-	set(VCPKG_TARGET_TRIPLET "x86-windows-static" CACHE STRING "" FORCE)
-ENDIF()
-
-set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
+#set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
 
 project(Asteroids
 		LANGUAGES CXX)
@@ -20,9 +14,11 @@ project(Asteroids
 
 find_package(SFML 3.0.0 COMPONENTS Window Graphics Audio CONFIG REQUIRED)
 find_package(CURL REQUIRED)
-
 file(GLOB SRC
-	src/*.cpp)
+	src/*.cpp
+	src/entities/*.cpp
+	src/ui/*.cpp
+	src/utils/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC})
 

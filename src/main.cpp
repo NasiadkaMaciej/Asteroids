@@ -1,15 +1,22 @@
-#include "Collision.h"
-#include "GameSettings.hpp"
-#include "control.hpp"
 #include "entities/Asteroid.hpp"
 #include "entities/Bullet.hpp"
 #include "entities/Player.hpp"
 #include "entities/PowerUp.hpp"
 #include "entities/UFO.hpp"
 #include "entities/utils.hpp"
-#include "menu.hpp"
-#include "sounds.hpp"
-#include "textures.hpp"
+#include "ui/GameOver.hpp"
+#include "ui/GlobalMenuData.hpp"
+#include "ui/LeaderBoard.hpp"
+#include "ui/Menu.hpp"
+#include "ui/MenuUtils.hpp"
+#include "ui/ProgressBar.hpp"
+#include "ui/SaveScore.hpp"
+#include "ui/Settings.hpp"
+#include "utils/Collision.h"
+#include "utils/GameSettings.hpp"
+#include "utils/control.hpp"
+#include "utils/sounds.hpp"
+#include "utils/textures.hpp"
 #include <list>
 #include <memory>
 #include <thread>
@@ -37,11 +44,13 @@ int main() {
 	SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
 	LeaderBoard leaderBoard(leaderBoardEntriesCount, leaderBoardEntries);
 	sf::Sprite background(tBackground);
+	ProgressBar progressBar(10.0f), placeholder(10.0f);
 	background.setTextureRect(
 	  sf::IntRect({ 0, 0 }, { static_cast<int>(gameSettings.resX), static_cast<int>(gameSettings.resY) }));
 
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
+	initializeSpeedValues();
 	versionChecker.join();
 	// resetting game to base values
 	auto reset = [&]() {
@@ -55,6 +64,7 @@ int main() {
 		p = std::make_unique<Player>();
 		u = std::make_unique<UFO>();
 		saveScore.reset();
+		progressBar.reset();
 	};
 
 	auto updateList = [&](std::list<Entity*>& list) {

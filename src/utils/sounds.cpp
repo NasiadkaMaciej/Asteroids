@@ -4,8 +4,8 @@
 // define buffers first
 sf::SoundBuffer laserBuffer, destroyBuffer, deathBuffer, menuBuffer, ufoLaserBuffer;
 // then sounds, each bound to its buffer
-sf::Sound laserSound{ laserBuffer }, destroySound{ destroyBuffer }, deathSound{ deathBuffer },
-  menuSound{ menuBuffer }, ufoLaserSound{ ufoLaserBuffer };
+sf::Sound laserSound{ laserBuffer }, destroySound{ destroyBuffer }, deathSound{ deathBuffer }, menuSound{ menuBuffer },
+  ufoLaserSound{ ufoLaserBuffer };
 sf::Music music;
 
 bool loadSounds(const std::filesystem::path& dir) {
@@ -25,6 +25,8 @@ void playSound(sf::Sound* sound) {
 }
 
 void playMusic() {
-	if (gameSettings.music) music.play();
-	else music.stop();
+	if (gameSettings.music)
+		music.play();
+	else
+		music.stop();
 }

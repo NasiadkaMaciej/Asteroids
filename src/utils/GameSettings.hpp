@@ -46,12 +46,6 @@ struct Timer {
 		end = std::chrono::high_resolution_clock::now();
 		return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	}
-	// ~Timer()
-	// {
-	// 	end = std::chrono::high_resolution_clock::now();
-	// 	unsigned int duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	// 	printf("%ims", duration);
-	// }
 };
 
 struct GameTime {
