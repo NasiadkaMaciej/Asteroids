@@ -4,10 +4,6 @@
 #include "Bullet.hpp"
 #include "utils.hpp"
 
-char UFO::type() {
-	return _UFO;
-}
-
 UFO::UFO()
   : Entity(static_cast<float>(std::rand() % gameSettings.resX),
 		   static_cast<float>(std::rand() % gameSettings.resY),

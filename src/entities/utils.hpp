@@ -12,8 +12,6 @@
 // Forward declaration
 class Entity;
 
-enum eTypes : char { _PLAYER, _ASTEROID, _BULLET, _UFO, _POWERUP };
-
 // Multiplier that ensures equal speed of entities at all resolutions
 extern float speedScale;
 extern float bulletSpeed;

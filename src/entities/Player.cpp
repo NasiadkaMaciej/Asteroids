@@ -5,10 +5,6 @@
 #include "utils.hpp"
 #include <SFML/System/Angle.hpp>
 
-char Player::type() {
-	return _PLAYER;
-}
-
 Player::Player()
   : Entity(window.getView().getCenter().x,
 		   window.getView().getCenter().y,

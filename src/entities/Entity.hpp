@@ -6,7 +6,6 @@
 class Entity // general class for all existing entities
 {
   public:
-	virtual char type();
 	float x, y, x_speed, y_speed;
 	sf::Angle angle;
 	bool life = true;

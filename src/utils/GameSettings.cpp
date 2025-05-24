@@ -52,9 +52,7 @@ bool checkVersion() // Compare local version of the game with the published one
 
 sf::Text newVersion(font);
 float screenScale;
-// Use map instead
-bool isPlaying = false, isMenu = true, isGameOver = false, isSettings = false, isSaveScreen = false,
-	 isLeaderBoard = false;
+
 void GameSettings::loadSettings() {
 	// Read all available fullscreen resolutions and sort them
 	for (const auto& tmp : sf::VideoMode::getFullscreenModes())

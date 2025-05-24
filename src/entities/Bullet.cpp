@@ -1,10 +1,6 @@
 #include "Bullet.hpp"
 #include "../utils/GameSettings.hpp"
 
-char Bullet::type() {
-	return _BULLET;
-}
-
 Bullet::Bullet(float X, float Y, sf::Angle ANGLE, sf::Texture* TEXTURE, Scale s)
   : Entity(X, Y, 0, 0, ANGLE, TEXTURE) {
 	sprite.scale({ s.x * 2, s.y * 2 });

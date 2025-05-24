@@ -44,7 +44,7 @@ int main() {
 	SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
 	LeaderBoard leaderBoard(leaderBoardEntriesCount, leaderBoardEntries);
 	sf::Sprite background(tBackground);
-	ProgressBar progressBar(10.0f), placeholder(10.0f);
+	ProgressBar progressBar(15), placeholder(0);
 	background.setTextureRect(
 	  sf::IntRect({ 0, 0 }, { static_cast<int>(gameSettings.resX), static_cast<int>(gameSettings.resY) }));
 
@@ -72,16 +72,18 @@ int main() {
 			Entity* e = i->get();
 			e->update();
 			if (!e->life) {
-				if (e->type() == _ASTEROID) {
+				if (e == dynamic_cast<Asteroid*>(e)) {
 					// Generate smaller asteroids after being hit and give points
 					if (*e == &tAsteroid[BIG]) {
 						p->givePoints(20);
 						list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
 						list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
+						progressBar.retractPoint();
 					} else if (*e == &tAsteroid[MEDIUM]) {
 						p->givePoints(50);
 						list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
 						list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
+						progressBar.retractPoint();
 					} else if (*e == &tAsteroid[SMALL])
 						p->givePoints(100);
 				}

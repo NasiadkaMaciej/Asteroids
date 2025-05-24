@@ -7,7 +7,6 @@ class UFO : public Entity {
 	int bulletFreq = 3000;
 
   public:
-	char type() override;
 	bool isActive = false;
 	std::list<std::unique_ptr<Entity>> ufoBullets;
 

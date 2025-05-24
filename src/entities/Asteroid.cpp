@@ -1,10 +1,6 @@
 #include "Asteroid.hpp"
 #include "../utils/textures.hpp"
 
-char Asteroid::type() {
-	return _ASTEROID;
-}
-
 Asteroid::Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture* TEXTURE)
   : Entity(X, Y, X_SPEED, Y_SPEED, sf::degrees(static_cast<float>(std::rand() % 360)), TEXTURE) {
 	// Determine size based on texture

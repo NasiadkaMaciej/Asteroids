@@ -1,9 +1,5 @@
 #include "Entity.hpp"
 
-char Entity::type() {
-	return -1;
-}
-
 Entity::Entity(float X, float Y, float X_SPEED, float Y_SPEED, sf::Angle ANGLE, sf::Texture* TEXTURE)
   : x(X)
   , y(Y)

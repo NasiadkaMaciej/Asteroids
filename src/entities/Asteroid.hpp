@@ -10,7 +10,6 @@ class Asteroid : public Entity {
 	eSizes size;
 
   public:
-	char type() override;
 	Asteroid(float X, float Y, float X_SPEED, float Y_SPEED, sf::Texture* TEXTURE);
 	void update() override;
 

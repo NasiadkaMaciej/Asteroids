@@ -3,10 +3,6 @@
 #include "../utils/textures.hpp"
 #include "utils.hpp"
 
-char PowerUp::type() {
-	return _POWERUP;
-}
-
 void PowerUp::generate(std::list<std::unique_ptr<Entity>>* e, const std::unique_ptr<Player>& p) {
 	if (delta->PowerUp > gameVal->powerUpRestore) {
 		int rand = std::rand() % 4;

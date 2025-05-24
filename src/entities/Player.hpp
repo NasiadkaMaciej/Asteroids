@@ -7,7 +7,6 @@
 
 class Player : public Entity {
   public:
-	char type() override;
 	Player();
 
 	void givePoints(int x);
