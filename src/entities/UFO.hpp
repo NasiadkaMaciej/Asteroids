@@ -9,7 +9,7 @@ class UFO : public Entity {
   public:
 	char type() override;
 	bool isActive = false;
-	std::list<Entity*> ufoBullets;
+	std::list<std::unique_ptr<Entity>> ufoBullets;
 
 	UFO();
 	bool canShoot();

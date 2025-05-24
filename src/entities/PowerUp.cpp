@@ -7,22 +7,22 @@ char PowerUp::type() {
 	return _POWERUP;
 }
 
-void PowerUp::generate(std::list<Entity*>* e, const std::unique_ptr<Player>& p) {
+void PowerUp::generate(std::list<std::unique_ptr<Entity>>* e, const std::unique_ptr<Player>& p) {
 	if (delta->PowerUp > gameVal->powerUpRestore) {
 		int rand = std::rand() % 4;
 		e->clear();
 		switch (rand) {
 		case 0: // Generate bullet resize powerup
-			e->emplace_back(new PowerUp(&tBulletUp));
+			e->emplace_back(std::make_unique<PowerUp>(&tBulletUp));
 			break;
 		case 1: // Generate life bonus powerup
-			e->emplace_back(new PowerUp(&tLifeUp));
+			e->emplace_back(std::make_unique<PowerUp>(&tLifeUp));
 			break;
 		case 2: // Generate double shoot powerup
-			e->emplace_back(new PowerUp(&tDoubleBullet));
+			e->emplace_back(std::make_unique<PowerUp>(&tDoubleBullet));
 			break;
 		case 3: // Generate double penetrate powerup
-			e->emplace_back(new PowerUp(&tPenetratingBullet));
+			e->emplace_back(std::make_unique<PowerUp>(&tPenetratingBullet));
 			break;
 		}
 		delta->PowerUp = 0;

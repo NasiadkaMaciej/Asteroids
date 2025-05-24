@@ -22,8 +22,8 @@ bool UFO::canShoot() {
 
 void UFO::update(float pX, float pY) {
 	if (isActive) {
-		x_speed = (pX - x) / 100;
-		y_speed = (pY - y) / 100;
+		x_speed = (pX - x) / 1000;
+		y_speed = (pY - y) / 1000;
 
 		x += x_speed * delta->Move / 10 * speedScale;
 		y += y_speed * delta->Move / 10 * speedScale;
@@ -32,7 +32,7 @@ void UFO::update(float pX, float pY) {
 			playSound(&ufoLaserSound);
 			sf::Angle angle = sf::radians(atan2(pY - y, pX - x));
 			Scale s(2, 4);
-			ufoBullets.emplace_back(new Bullet(x, y, angle, &tUFOBullet, s));
+			ufoBullets.emplace_back(std::make_unique<Bullet>(x, y, angle, &tUFOBullet, s));
 			delta->ufoShoot = 0;
 		}
 	} else {
@@ -56,9 +56,5 @@ void UFO::activate() {
 }
 
 UFO::~UFO() {
-	for (auto i = ufoBullets.begin(); i != ufoBullets.end();) {
-		Entity* e = *i;
-		i = ufoBullets.erase(i);
-		delete e;
-	}
+	ufoBullets.clear();
 }

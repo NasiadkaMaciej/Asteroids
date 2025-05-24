@@ -15,6 +15,6 @@ class Asteroid : public Entity {
 	void update() override;
 
 	// Generates asteroid at random edge of the screen
-	static Asteroid* generateBig();
-	static Asteroid* generate(float X, float Y, eSizes asteroidNum);
+	static std::unique_ptr<Asteroid> generateBig();
+	static std::unique_ptr<Asteroid> generate(float X, float Y, eSizes asteroidNum);
 };

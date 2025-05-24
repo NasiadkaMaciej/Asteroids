@@ -24,14 +24,14 @@
 std::unique_ptr<Player> p;
 std::unique_ptr<UFO> u;
 
-std::list<Entity*> asteroids;
-std::list<Entity*> bullets;
-std::list<Entity*> powerUps;
+std::list<std::unique_ptr<Entity>> asteroids;
+std::list<std::unique_ptr<Entity>> bullets;
+std::list<std::unique_ptr<Entity>> powerUps;
 
 int main() {
 
 	// load all assets TODO: Check if textues and ScoreBoard is ok
-	if (!loadBase() || !loadTextures() || !loadSounds()) return 0;
+	if (!loadBase() || !loadTextures() || !loadSounds()) return EXIT_FAILURE;
 	std::thread versionChecker(checkVersion);
 	playMusic();
 	loadScoreBoard();
@@ -67,9 +67,9 @@ int main() {
 		progressBar.reset();
 	};
 
-	auto updateList = [&](std::list<Entity*>& list) {
+	auto updateList = [&](std::list<std::unique_ptr<Entity>>& list) {
 		for (auto i = list.begin(); i != list.end();) {
-			Entity* e = *i;
+			Entity* e = i->get();
 			e->update();
 			if (!e->life) {
 				if (e->type() == _ASTEROID) {
@@ -86,7 +86,6 @@ int main() {
 						p->givePoints(100);
 				}
 				i = list.erase(i);
-				delete e;
 			} else
 				i++;
 		}
@@ -197,76 +196,69 @@ int main() {
 		}
 	}
 
-	// Clean up remaining entities
-	auto cleanupEntityList = [](std::list<Entity*>& entityList) {
-		for (auto entity : entityList)
-			delete entity;
-		entityList.clear();
-	};
-
-	cleanupEntityList(asteroids);
-	cleanupEntityList(bullets);
-	cleanupEntityList(powerUps);
-	cleanupEntityList(u->ufoBullets);
+	asteroids.clear();
+	bullets.clear();
+	powerUps.clear();
+	u->ufoBullets.clear();
 	return 0;
 }
 
 void checkCollision() {
-	for (auto a : asteroids) {
-		for (auto b : bullets)
+	for (auto& a : asteroids) {
+		for (auto& b : bullets)
 			// Check bullets and asteroids collisons
-			if (Collision::PixelPerfectTest(a->sprite, b->sprite) && b->life) {
+			if (Collision::PixelPerfectTest(a.get()->sprite, b.get()->sprite) && b.get()->life) {
 				playSound(&destroySound);
-				a->life = false;
-				b->lifes--;
+				a.get()->life = false;
+				b.get()->lifes--;
 				if (!b->lifes) b->life = false;
 				progressBar.retractPoint();
 			}
 		// Check asteroids and player collisions
-		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle) {
+		if (Collision::PixelPerfectTest(a.get()->sprite, p.get()->sprite) && !p->isIdle) {
 			playSound(&deathSound);
-			a->life = false;
-			p->life = false;
+			a.get()->life = false;
+			p.get()->life = false;
 			progressBar.retractPoint();
 		}
 	}
 	// Check power ups and player collisions
-	for (auto a : powerUps) {
-		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle) {
-			a->life = false;
+	for (auto& a : powerUps) {
+		if (Collision::PixelPerfectTest(a.get()->sprite, p.get()->sprite) && !p.get()->isIdle) {
+			a.get()->life = false;
 			delta->PowerUp = 0;
 			if (*a == &tBulletUp)
-				p->isPowerBullet = true;
+				p.get()->isPowerBullet = true;
 			else if (*a == &tLifeUp)
-				p->lifes++;
+				p.get()->lifes++;
 			else if (*a == &tDoubleBullet)
-				p->isDoubleShooting = true;
+				p.get()->isDoubleShooting = true;
 			else if (*a == &tPenetratingBullet)
-				p->isDoublePenetrating = true;
+				p.get()->isDoublePenetrating = true;
 		} else if ((delta->PowerUp > gameVal->powerUpRestore)) {
-			a->life = false;
+			a.get()->life = false;
 			delta->PowerUp = 0;
 		}
 	}
-	for (auto a : u->ufoBullets) {
+	for (auto& a : u->ufoBullets) {
 		// Check ufoBullets and player collisons
 		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle) {
 			playSound(&destroySound);
-			a->life = false;
-			p->life = false;
-			a->lifes--;
-			if (!a->lifes) a->life = false;
-			if (!p->lifes) p->life = false;
+			a.get()->life = false;
+			p.get()->life = false;
+			a.get()->lifes--;
+			if (!a->lifes) a.get()->life = false;
+			if (!p->lifes) p.get()->life = false;
 		}
 	}
-	for (auto b : bullets) {
+	for (auto& b : bullets) {
 		// Check bullets and UFO collisons
 		if (Collision::PixelPerfectTest(b->sprite, u->sprite) && !p->isIdle && u->isActive) {
 			playSound(&destroySound);
-			u->lifes--;
-			b->lifes--;
-			if (!b->lifes) b->life = false;
-			if (!u->lifes) u->life = false;
+			u.get()->lifes--;
+			b.get()->lifes--;
+			if (!b.get()->lifes) b.get()->life = false;
+			if (!u.get()->lifes) u.get()->life = false;
 		}
 	}
 }

@@ -14,7 +14,7 @@ class Player : public Entity {
 	Scale bulletScale();
 	bool canShoot();
 	void getControl();
-	void shoot(std::list<Entity*>* list);
+	void shoot(std::list<std::unique_ptr<Entity>>* list);
 	void update() override;
 
 	int points = 0;

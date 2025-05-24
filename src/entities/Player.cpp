@@ -49,20 +49,18 @@ void Player::getControl() {
 	isShooting = CONTROL::isSpace();
 }
 
-void Player::shoot(std::list<Entity*>* list) {
+void Player::shoot(std::list<std::unique_ptr<Entity>>* list) {
 	if (canShoot()) {
 		playSound(&laserSound);
 		delta->Shoot = 0;
 
 		// Create bullet with appropriate speed
-		Bullet* b = new Bullet(x, y, angle, &tBullet, bulletScale());
-		list->push_back(b);
+		list->emplace_back(std::make_unique<Bullet>(x, y, angle, &tBullet, bulletScale()));
 
 		// Handle double shooting if active
 		if (isDoubleShooting) {
 			// Create second bullet
-			Bullet* b2 = new Bullet(x, y, angle, &tBullet, bulletScale());
-			list->push_back(b2);
+			list->emplace_back(std::make_unique<Bullet>(x, y, angle, &tBullet, bulletScale()));
 		}
 	}
 }

@@ -105,7 +105,7 @@ void Menu::show() {
 				move(DOWN);
 				clicked = true;
 			}
-			if (CONTROL::isEnter() || CONTROL::isSpace()) {
+			if (CONTROL::isEnter()) {
 				click();
 				clicked = true;
 			}

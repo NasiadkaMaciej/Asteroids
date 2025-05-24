@@ -49,7 +49,7 @@ void Asteroid::update() {
 		y = gameSettings.resY;
 }
 
-Asteroid* Asteroid::generateBig() {
+std::unique_ptr<Asteroid> Asteroid::generateBig() {
 	// Create asteroid at random edge of the screen
 	int posX, posY;
 	int edge = rand() % 4; // 0: top, 1: right, 2: bottom, 3: left
@@ -73,17 +73,17 @@ Asteroid* Asteroid::generateBig() {
 		break;
 	}
 
-	return new Asteroid(posX,
-						posY,
-						random(asteroidSpeed[BIG], asteroidDiffSpeed[BIG]),
-						random(asteroidSpeed[BIG], asteroidDiffSpeed[BIG]),
-						&tAsteroid[BIG]);
+	return std::make_unique<Asteroid>(posX,
+									  posY,
+									  random(asteroidSpeed[BIG], asteroidDiffSpeed[BIG]),
+									  random(asteroidSpeed[BIG], asteroidDiffSpeed[BIG]),
+									  &tAsteroid[BIG]);
 }
 
-Asteroid* Asteroid::generate(float X, float Y, eSizes asteroidNum) {
-	return new Asteroid(X,
-						Y,
-						random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-						random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
-						&tAsteroid[asteroidNum]);
+std::unique_ptr<Asteroid> Asteroid::generate(float X, float Y, eSizes asteroidNum) {
+	return std::make_unique<Asteroid>(X,
+									  Y,
+									  random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+									  random(asteroidSpeed[asteroidNum], asteroidDiffSpeed[asteroidNum]),
+									  &tAsteroid[asteroidNum]);
 }
