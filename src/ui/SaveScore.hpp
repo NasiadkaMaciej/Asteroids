@@ -14,8 +14,8 @@ class SaveScore : public Menu {
 	void reset();
 
   private:
-	std::string m_name;
-	unsigned int m_points;
-	bool m_isSaving;
-	bool m_wasSaved;
+	std::string name;
+	unsigned int points;
+	bool isSaving;
+	bool wasSaved;
 };

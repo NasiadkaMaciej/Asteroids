@@ -29,8 +29,8 @@ class Menu {
 	virtual void show();
 
   protected:
-	std::vector<std::unique_ptr<MenuItem>> m_items;
-	size_t m_selectedIndex;
+	std::vector<std::unique_ptr<MenuItem>> items;
+	size_t selectedIndex;
 
 	void updateItemPositions();
 };

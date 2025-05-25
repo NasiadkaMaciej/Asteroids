@@ -12,15 +12,15 @@ extern GameTime* delta;
 
 SaveScore::SaveScore()
   : Menu()
-  , m_name("")
-  , m_points(0)
-  , m_isSaving(false)
-  , m_wasSaved(false) {
+  , name("")
+  , points(0)
+  , isSaving(false)
+  , wasSaved(false) {
 
 	addItem("Your score: 0", [this]() {
-		if (!m_isSaving && !m_wasSaved) {
-			m_isSaving = true;
-			getItem(0)->setText("Your name: " + m_name);
+		if (!isSaving && !wasSaved) {
+			isSaving = true;
+			getItem(0)->setText("Your name: " + name);
 		}
 	});
 
@@ -38,34 +38,34 @@ void SaveScore::update() {
 	Menu::update();
 
 	// Handle input mode for the first item
-	if (m_selectedIndex == 0) {
-		if (CONTROL::isEnter() && !m_isSaving && !m_wasSaved && delta->Menu > 100) {
-			m_isSaving = true;
-			getItem(0)->setText("Your name: " + m_name);
+	if (this->selectedIndex == 0) {
+		if (CONTROL::isEnter() && !this->isSaving && !this->wasSaved && delta->Menu > 100) {
+			this->isSaving = true;
+			getItem(0)->setText("Your name: " + this->name);
 			delta->Menu = 0;
 		}
 
-		if (m_isSaving && !m_wasSaved) {
+		if (this->isSaving && !this->wasSaved) {
 			// Show input prompt
-			if (!m_name.empty())
-				getItem(0)->setText("Your name: " + m_name);
+			if (!this->name.empty())
+				getItem(0)->setText("Your name: " + this->name);
 			else
 				getItem(0)->setText("Your name: ");
 
 			// Handle enter to save score
-			if (CONTROL::isEnter() && !m_name.empty() && delta->Menu > 100) {
+			if (CONTROL::isEnter() && !this->name.empty() && delta->Menu > 100) {
 				saveScore();
 				delta->Menu = 0;
 			}
 		}
-	} else if (m_isSaving && !m_wasSaved) {
-		m_isSaving = false;
-		getItem(0)->setText("Your score: " + std::to_string(m_points));
+	} else if (this->isSaving && !this->wasSaved) {
+		this->isSaving = false;
+		getItem(0)->setText("Your score: " + std::to_string(this->points));
 	}
 }
 
 void SaveScore::show() {
-	m_selectedIndex = 0;
+	this->selectedIndex = 0;
 	while (window.isOpen() && activeState == saveScreenState) {
 		delta->update();
 
@@ -103,7 +103,7 @@ void SaveScore::show() {
 			// Text entry handling for name input
 			if (const auto* textEntered = event->getIf<sf::Event::TextEntered>()) {
 				if (textEntered->unicode == 13) { // Enter key
-					if (m_isSaving && !m_wasSaved && !m_name.empty()) saveScore();
+					if (this->isSaving && !this->wasSaved && !this->name.empty()) saveScore();
 				} else if (textEntered->unicode == 8) { // Backspace
 					onTextEntered(8);
 				} else if (textEntered->unicode < 128) { // ASCII only
@@ -121,7 +121,7 @@ void SaveScore::show() {
 }
 
 void SaveScore::setScore(int points) {
-	m_points = points;
+	this->points = points;
 	getItem(0)->setText("Your score: " + std::to_string(points));
 
 	// Update the leaderboard display
@@ -138,12 +138,12 @@ void SaveScore::setScore(int points) {
 }
 
 void SaveScore::saveScore() {
-	if (m_wasSaved || m_name.empty()) return;
+	if (this->wasSaved || this->name.empty()) return;
 
 	// Create and insert new score
 	ScoreBoard newScore;
-	newScore.points = m_points;
-	newScore.name = m_name;
+	newScore.points = this->points;
+	newScore.name = this->name;
 
 	if (scoreBoard[9].points < newScore.points) scoreBoard[9] = newScore;
 
@@ -153,7 +153,7 @@ void SaveScore::saveScore() {
 	writeScoreBoard();
 
 	// Update display
-	getItem(0)->setText("Your score: " + std::to_string(m_points));
+	getItem(0)->setText("Your score: " + std::to_string(this->points));
 
 	// Update the leaderboard display
 	for (int i = 0; i < 10; i++) {
@@ -168,9 +168,9 @@ void SaveScore::saveScore() {
 	// Save score to online leaderboard, secret is only in built releases.
 	std::string const secret = "";
 	if (secret != "") {
-		std::string name_copy = m_name;
+		std::string name_copy = this->name;
 		transform(name_copy.begin(), name_copy.end(), name_copy.begin(), ::tolower);
-		std::string request = "name=" + name_copy + "&points=" + std::to_string(m_points) + "&secret=" + secret;
+		std::string request = "name=" + name_copy + "&points=" + std::to_string(this->points) + "&secret=" + secret;
 		const char* cRequest = request.c_str();
 
 		CURL* curl;
@@ -186,25 +186,25 @@ void SaveScore::saveScore() {
 		curl_global_cleanup();
 	}
 
-	m_wasSaved = true;
-	m_isSaving = false;
+	this->wasSaved = true;
+	this->isSaving = false;
 }
 
 void SaveScore::reset() {
-	m_name = "";
-	m_wasSaved = false;
-	m_isSaving = false;
+	this->name = "";
+	this->wasSaved = false;
+	this->isSaving = false;
 }
 
 void SaveScore::onTextEntered(char character) {
-	if (m_isSaving && !m_wasSaved) {
-		if ((character != 8 && m_name.length() < 18 && std::isalnum(character)) ||
-			(character == 32 && m_name.length() < 18)) {
-			m_name += character;
-			getItem(0)->setText("Your name: " + m_name);
-		} else if (character == 8 && !m_name.empty()) {
-			m_name.pop_back();
-			getItem(0)->setText("Your name: " + m_name);
+	if (this->isSaving && !this->wasSaved) {
+		if ((character != 8 && this->name.length() < 18 && std::isalnum(character)) ||
+			(character == 32 && this->name.length() < 18)) {
+			this->name += character;
+			getItem(0)->setText("Your name: " + this->name);
+		} else if (character == 8 && !this->name.empty()) {
+			this->name.pop_back();
+			getItem(0)->setText("Your name: " + this->name);
 		}
 	}
 }

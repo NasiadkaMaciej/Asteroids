@@ -23,11 +23,11 @@ class MenuItem {
 	void draw(sf::RenderWindow& window) const;
 
   private:
-	std::string m_text;
-	std::function<void()> m_action;
-	bool m_selected;
-	sf::Text m_displayText;
-	sf::Vector2f m_centeredPosition;
+	std::string text;
+	std::function<void()> action;
+	bool selected;
+	sf::Text displayText;
+	sf::Vector2f centeredPosition;
 
 	void updateText();
 };
