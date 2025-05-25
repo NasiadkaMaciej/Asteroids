@@ -1,26 +1,36 @@
-// src/ui/Menu.hpp
 #pragma once
+#include "MenuItem.hpp"
 #include <SFML/Graphics.hpp>
-#include <string>
+#include <memory>
 #include <vector>
 
 enum MenuDirection { UP = 1, DOWN = 2 };
 
 class Menu {
   public:
-	int activeEntry = 0;
-	int entriesCount;
-	std::vector<sf::Text> entryText;
-	std::vector<std::string> entries;
-
-	Menu(int entriesCount, std::string entries[]);
+	Menu();
 	virtual ~Menu() = default;
 
-	void draw(sf::RenderWindow& window);
-	void reset();
-	void move(int direction);
+	void addItem(const std::string& text, std::function<void()> action = nullptr);
+	void clearItems();
 
+	MenuItem* getItem(size_t index);
+	size_t getItemCount() const;
+
+	void selectItem(size_t index);
+	size_t getSelectedIndex() const;
+
+	void navigate(MenuDirection direction);
+	void handleInput();
+	void handleMouseClick(const sf::Vector2f& position);
+
+	virtual void update();
+	virtual void draw(sf::RenderWindow& window);
 	virtual void show();
-	virtual void click();
-	virtual void mouseClick();
+
+  protected:
+	std::vector<std::unique_ptr<MenuItem>> m_items;
+	size_t m_selectedIndex;
+
+	void updateItemPositions();
 };

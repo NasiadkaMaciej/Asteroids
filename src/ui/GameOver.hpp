@@ -3,7 +3,6 @@
 
 class GameOver : public Menu {
   public:
-	GameOver(int entriesCount, std::string entries[]);
-	void click() override;
+	GameOver();
 	void setScore(int points);
 };

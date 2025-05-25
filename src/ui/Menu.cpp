@@ -2,132 +2,148 @@
 #include "../utils/GameSettings.hpp"
 #include "../utils/control.hpp"
 #include "../utils/sounds.hpp"
-#include "MenuUtils.hpp"
-#include <SFML/Graphics.hpp>
 
-extern sf::Font font;
-extern char activeState;
-extern void setState(eStates state);
+extern sf::RenderWindow window;
 extern GameTime* delta;
+extern sf::Font font;
 
-Menu::Menu(int entriesCount, std::string entries[])
-  : entriesCount(entriesCount) {
-	entryText.clear();
-	entryText.reserve(entriesCount);
+Menu::Menu()
+  : m_selectedIndex(0) {}
 
-	this->entries.clear();
-	this->entries.reserve(entriesCount);
-	for (int i = 0; i < entriesCount; ++i)
-		this->entries.push_back(entries[i]);
+void Menu::addItem(const std::string& text, std::function<void()> action) {
+	m_items.push_back(std::make_unique<MenuItem>(text, action, font));
+	updateItemPositions();
 
-	for (int i = 0; i < entriesCount; ++i) {
-		entryText.emplace_back(font, this->entries[i], 30);
-		entryText[i].setFillColor(sf::Color::White);
+	if (m_items.size() == 1) m_items[0]->setSelected(true);
+}
 
-		auto bounds = entryText[i].getGlobalBounds();
-		entryText[i].setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
-		entryText[i].setPosition(
-		  sf::Vector2f(gameSettings.resX / 2.f, gameSettings.resY / (entriesCount + 1.f) * (i + 1.f)));
+void Menu::clearItems() {
+	m_items.clear();
+	m_selectedIndex = 0;
+}
+
+MenuItem* Menu::getItem(size_t index) {
+	if (index < m_items.size()) return m_items[index].get();
+	return nullptr;
+}
+
+size_t Menu::getItemCount() const {
+	return m_items.size();
+}
+
+void Menu::selectItem(size_t index) {
+	if (index < m_items.size() && index != m_selectedIndex) {
+		if (m_selectedIndex < m_items.size()) m_items[m_selectedIndex]->setSelected(false);
+
+		m_selectedIndex = index;
+		m_items[m_selectedIndex]->setSelected(true);
 	}
-
-	entryText[activeEntry].setString("> " + entries[activeEntry] + " <");
-	entryText[activeEntry].setFillColor(sf::Color::Red);
-
-	auto bounds = entryText[activeEntry].getGlobalBounds();
-	entryText[activeEntry].setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
 }
 
-void Menu::draw(sf::RenderWindow& window) {
-	for (auto& txt : entryText)
-		window.draw(txt);
+size_t Menu::getSelectedIndex() const {
+	return m_selectedIndex;
 }
 
-void Menu::reset() {
-	do
-		move(UP);
-	while (activeEntry != 0);
-}
+void Menu::navigate(MenuDirection direction) {
+	size_t newIndex = m_selectedIndex;
 
-void Menu::move(int direction) {
-	// Actually move
 	switch (direction) {
 	case UP:
-		if (activeEntry - 1 >= 0)
-			activeEntry--;
+		if (newIndex > 0)
+			newIndex--;
 		else
-			activeEntry = entriesCount - 1;
+			newIndex = m_items.size() - 1;
 		break;
+
 	case DOWN:
-		if (activeEntry + 1 < entriesCount)
-			activeEntry++;
+		if (newIndex + 1 < m_items.size())
+			newIndex++;
 		else
-			activeEntry = 0;
-		break;
-	default:
+			newIndex = 0;
 		break;
 	}
 
-	// Format and color
-	for (int i = 0; i < entriesCount; ++i) {
-		entryText[i].setFillColor(sf::Color::White);
-		entryText[i].setString(entries[i]); // Normal entries
-		auto b = entryText[i].getGlobalBounds();
-		entryText[i].setOrigin(sf::Vector2f(b.size.x / 2.f, b.size.y / 2.f));
+	selectItem(newIndex);
+}
+
+void Menu::handleInput() {
+	bool inputHandled = false;
+
+	if (delta->Menu < 100) return;
+	if (CONTROL::isUP()) {
+		navigate(UP);
+		playSound(&menuSound);
+		inputHandled = true;
+	} else if (CONTROL::isDOWN()) {
+		navigate(DOWN);
+		playSound(&menuSound);
+		inputHandled = true;
+	} else if (CONTROL::isEnter() || CONTROL::isSpace()) {
+		if (m_selectedIndex < m_items.size()) {
+			m_items[m_selectedIndex]->execute();
+			playSound(&menuSound);
+		}
+		inputHandled = true;
 	}
 
-	entryText[activeEntry].setString("> " + entries[activeEntry] + " <");
-	entryText[activeEntry].setFillColor(sf::Color::Red);
+	delta->Menu = 0;
+}
 
-	// Update origin again since text width changed
-	auto bounds = entryText[activeEntry].getGlobalBounds();
-	entryText[activeEntry].setOrigin(sf::Vector2f(bounds.size.x / 2.f, bounds.size.y / 2.f));
+void Menu::handleMouseClick(const sf::Vector2f& position) {
+	for (size_t i = 0; i < m_items.size(); i++) {
+		if (m_items[i]->getBounds().contains(position)) {
+			if (i == m_selectedIndex)
+				m_items[i]->execute();
+			else
+				selectItem(i);
+			playSound(&menuSound);
+			break;
+		}
+	}
+}
+
+void Menu::update() {}
+
+void Menu::draw(sf::RenderWindow& window) {
+	for (const auto& item : m_items)
+		item->draw(window);
 }
 
 void Menu::show() {
 	while (const std::optional event = window.pollEvent()) {
 		if (event->is<sf::Event::Closed>()) window.close();
 
-		bool clicked = false;
-		if (delta && delta->Menu > 100) { // disallow too quick movement and prevent double clicks
+		if (delta->Menu > 100) {
 			if (CONTROL::isESC()) {
-				if (activeState == menuState)
-					setState(playState);
-				else if (activeState == saveScreenState)
-					setState(gameoverState);
-				else
-					setState(menuState);
-				clicked = true;
+				delta->Menu = 0;
+				break;
 			}
-			if (CONTROL::isUP()) {
-				move(UP);
-				clicked = true;
-			} else if (CONTROL::isDOWN()) {
-				move(DOWN);
-				clicked = true;
-			}
-			if (CONTROL::isEnter()) {
-				click();
-				clicked = true;
-			}
-			delta->Menu = 0;
+
+			handleInput();
 		}
 
-		if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>())
-			clicked = mouseEvent->button == sf::Mouse::Button::Left;
-		if (clicked) {
-			mouseClick();
-			playSound(&menuSound);
+		if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+			if (mouseEvent->button == sf::Mouse::Button::Left) {
+				auto mousePos = sf::Mouse::getPosition(window);
+				auto worldPos = window.mapPixelToCoords(mousePos);
+				handleMouseClick(worldPos);
+			}
 		}
 
 		if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
 			if (mouseWheelScrolled->wheel == sf::Mouse::Wheel::Vertical) {
-				if (mouseWheelScrolled->delta > 0)
-					move(UP);
-				else if (mouseWheelScrolled->delta < 0)
-					move(DOWN);
+				if (mouseWheelScrolled->delta > 0) {
+					navigate(UP);
+					playSound(&menuSound);
+				} else if (mouseWheelScrolled->delta < 0) {
+					navigate(DOWN);
+					playSound(&menuSound);
+				}
 			}
 		}
 	}
+
+	update();
 
 	window.clear();
 	draw(window);
@@ -135,38 +151,15 @@ void Menu::show() {
 	window.display();
 }
 
-void Menu::click() {
-	switch (activeEntry) {
-	case 0:
-		setState(playState);
-		break;
-	case 1:
-		setState(leaderBoardState);
-		break;
-	case 2:
-		setState(settingsState);
-		break;
-	case 3:
-		openInBrowser("https://github.com/NasiadkaMaciej/Asteroids");
-		break;
-	case 4:
-		window.close();
-		break;
-	}
-}
+void Menu::updateItemPositions() {
+	if (m_items.empty()) return;
 
-void Menu::mouseClick() {
-	auto mouse_pos = sf::Mouse::getPosition(window);
-	auto translated_pos = window.mapPixelToCoords(mouse_pos);
+	float screenWidth = window.isOpen() ? window.getSize().x : static_cast<float>(gameSettings.resX);
+	float screenHeight = window.isOpen() ? window.getSize().y : static_cast<float>(gameSettings.resY);
+	float itemCount = static_cast<float>(m_items.size());
 
-	for (int i = 0; i < entriesCount; i++) {
-		if (entryText[i].getGlobalBounds().contains(translated_pos)) {
-			if (activeEntry == i)
-				click();
-			else
-				do
-					move(UP);
-				while (activeEntry != i);
-		}
+	for (size_t i = 0; i < m_items.size(); i++) {
+		float y = screenHeight / (itemCount + 1.0f) * (i + 1.0f);
+		m_items[i]->setPosition(sf::Vector2f(screenWidth / 2.0f, y));
 	}
 }

@@ -1,13 +1,7 @@
 #pragma once
 
-#include "../utils/GameSettings.hpp"
-#include "../utils/control.hpp"
-#include "../utils/sounds.hpp"
-#include "../utils/textures.hpp"
 #include <SFML/Audio.hpp>
 #include <SFML/System/Angle.hpp>
-#include <list>
-#include <memory>
 
 // Forward declaration
 class Entity;

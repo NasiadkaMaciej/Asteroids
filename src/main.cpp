@@ -1,13 +1,11 @@
 #include "entities/Asteroid.hpp"
-#include "entities/Bullet.hpp"
 #include "entities/Player.hpp"
 #include "entities/PowerUp.hpp"
 #include "entities/UFO.hpp"
 #include "entities/utils.hpp"
 #include "ui/GameOver.hpp"
-#include "ui/GlobalMenuData.hpp"
 #include "ui/LeaderBoard.hpp"
-#include "ui/Menu.hpp"
+#include "ui/MainMenu.hpp"
 #include "ui/MenuUtils.hpp"
 #include "ui/ProgressBar.hpp"
 #include "ui/SaveScore.hpp"
@@ -38,15 +36,16 @@ int main() {
 	// writeScoreBoard();
 
 	// create objects and lists
-	Menu menu(menuEntriesCount, menuEntries);
-	GameOver gameOver(gameOverEntriesCount, gameOverEntries);
-	Settings settings(settingEntriesCount, settingEntries);
-	SaveScore saveScore(saveScoreEntriesCount, saveScoreEntries);
-	LeaderBoard leaderBoard(leaderBoardEntriesCount, leaderBoardEntries);
 	sf::Sprite background(tBackground);
 	ProgressBar progressBar(15), placeholder(0);
 	background.setTextureRect(
 	  sf::IntRect({ 0, 0 }, { static_cast<int>(gameSettings.resX), static_cast<int>(gameSettings.resY) }));
+
+	MainMenu mainMenu;
+	Settings settingsMenu;
+	GameOver gameOverMenu;
+	LeaderBoard leaderBoardMenu;
+	SaveScore saveScoreMenu;
 
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
@@ -63,7 +62,6 @@ int main() {
 		delta = new GameTime;
 		p = std::make_unique<Player>();
 		u = std::make_unique<UFO>();
-		saveScore.reset();
 		progressBar.reset();
 	};
 
@@ -95,39 +93,34 @@ int main() {
 	reset();
 
 	while (window.isOpen()) {
-		delta->Menu += delta->timer.ms();
-		mute(&settings);
+		delta->update();
 		switch (activeState) {
 		case menuState:
-			menu.show();
+			mainMenu.show();
 			if (p->lifes <= 0) reset();
 			break;
 		case gameoverState:
-			gameOver.setScore(p->points);
-			gameOver.show();
+			gameOverMenu.setScore(p->points);
+			gameOverMenu.show();
 			if (activeState == playState) // returned to playing from some menu
 				reset();
 			break;
 		case settingsState:
-			settings.show();
+			settingsMenu.show();
 			break;
 		case saveScreenState:
-			saveScore.setScore(p->points);
-			saveScore.show();
+			saveScoreMenu.setScore(p->points);
+			saveScoreMenu.show();
 			break;
 		case leaderBoardState:
-			leaderBoard.setScore();
-			leaderBoard.show();
+			leaderBoardMenu.show();
 			break;
 		case playState:
-			delta->update();
-			delta->UFO += delta->timer.ms();
 			std::thread worker(checkCollision);
 			while (const std::optional event = window.pollEvent()) {
 				if (event->is<sf::Event::Closed>()) window.close();
 				if (CONTROL::isESC()) setState(menuState);
 				if (CONTROL::isReset()) reset();
-				if (CONTROL::isFS()) settings.toggleFS();
 				p->getControl();
 			}
 			p->shoot(&bullets);

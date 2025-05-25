@@ -62,6 +62,7 @@ void Player::shoot(std::list<std::unique_ptr<Entity>>* list) {
 }
 
 void Player::update() {
+	if (activeState == playState && !isIdle) aliveTime += delta->Move;
 	if (!life) {
 		sprite.setPosition(sf::Vector2f(gameSettings.resX / 2, gameSettings.resY / 2));
 		x = sprite.getPosition().x, y = sprite.getPosition().y;
@@ -76,7 +77,6 @@ void Player::update() {
 			life = true;
 		isIdle = true;
 	}
-	aliveTime += delta->Move;
 
 	float rotateSpeed = 18 * delta->Move / 100;
 	if (CONTROL::getAxisPos(sf::Joystick::Axis::X) != 0)

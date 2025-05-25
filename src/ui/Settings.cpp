@@ -1,45 +1,41 @@
 #include "Settings.hpp"
+#include "../utils/GameSettings.hpp"
+#include "../utils/control.hpp"
 #include "../utils/sounds.hpp"
 #include "MenuUtils.hpp"
 
-extern sf::RenderWindow window;
 extern void setState(eStates state);
 
-Settings::Settings(int entriesCount, std::string entries[])
-  : Menu(entriesCount, entries) {}
+Settings::Settings()
+  : Menu() {
+	addItem("Frame rate limit: " + std::to_string(gameSettings.frames), [this]() { switchRefreshRate(); });
 
-void Settings::click() {
-	switch (activeEntry) {
-	case 0:
-		switchRefreshRate();
-		break;
-	case 1:
-		toggleVsync();
-		break;
-	case 2:
-		toggleFS();
-		break;
-	case 3:
-		toggleSFX();
-		break;
-	case 4:
+	addItem("VSync: " + returnBool(gameSettings.vsync), [this]() { toggleVsync(); });
+
+	addItem("Fullscreen: " + returnBool(gameSettings.fs), [this]() { toggleFS(); });
+
+	addItem("Sound: " + returnBool(gameSettings.sfx), [this]() { toggleSFX(); });
+
+	addItem("Music: " + returnBool(gameSettings.music), [this]() { toggleMusic(); });
+
+	addItem("Background: " + returnBool(gameSettings.background), [this]() { toggleBackground(); });
+
+	addItem("Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY),
+			[this]() { switchResolution(); });
+
+	addItem("Antialiasing: " + std::to_string(gameSettings.antialias), [this]() { switchAA(); });
+
+	addItem("Menu", []() { setState(menuState); });
+}
+
+void Settings::update() {
+	Menu::update();
+
+	if (CONTROL::mute() && delta->Menu > 300) {
 		toggleMusic();
-		break;
-	case 5:
-		toggleBackground();
-		break;
-	case 6:
-		switchResolution();
-		break;
-	case 7:
-		switchAA();
-		break;
-	case 8:
-		setState(menuState);
-		break;
+		delta->Menu = 0;
+		gameSettings.saveSettings();
 	}
-	move(0);
-	gameSettings.saveSettings();
 }
 
 void Settings::switchRefreshRate() {
@@ -66,62 +62,99 @@ void Settings::switchRefreshRate() {
 		gameSettings.frames = 60;
 		break;
 	}
-	window.setFramerateLimit(gameSettings.frames);
-	entries[0] = "Frame rate limit: " + std::to_string(gameSettings.frames);
+
+	updateMenuTexts();
+	gameSettings.saveSettings();
 }
 
 void Settings::toggleVsync() {
 	gameSettings.vsync = !gameSettings.vsync;
-	window.setVerticalSyncEnabled(gameSettings.vsync);
-	entries[1] = "VSync: " + returnBool(gameSettings.vsync);
+	gameSettings.reloadWindow();
+	updateMenuTexts();
+	gameSettings.saveSettings();
 }
 
 void Settings::toggleFS() {
 	gameSettings.fs = !gameSettings.fs;
 	gameSettings.reloadWindow();
-	entries[2] = "Fullscreen: " + returnBool(gameSettings.fs);
+	updateMenuTexts();
+	gameSettings.saveSettings();
 }
 
 void Settings::toggleSFX() {
 	gameSettings.sfx = !gameSettings.sfx;
-	entries[3] = "Sound: " + returnBool(gameSettings.sfx);
+	updateMenuTexts();
+	gameSettings.saveSettings();
 }
 
 void Settings::toggleMusic() {
 	gameSettings.music = !gameSettings.music;
-	entries[4] = "Music: " + returnBool(gameSettings.music);
+	updateMenuTexts();
 	playMusic();
+	gameSettings.saveSettings();
 }
 
 void Settings::toggleBackground() {
 	gameSettings.background = !gameSettings.background;
-	entries[5] = "Background: " + returnBool(gameSettings.background);
+	updateMenuTexts();
+	gameSettings.saveSettings();
 }
 
 void Settings::switchResolution() {
-	if (gameSettings.availRes.end()->size.x == gameSettings.resX &&
-		gameSettings.availRes.end()->size.y == gameSettings.resY) {
-		gameSettings.resX = gameSettings.availRes.begin()->size.x;
-		gameSettings.resY = gameSettings.availRes.begin()->size.y;
-	} else
-		for (auto it = gameSettings.availRes.begin(); it != gameSettings.availRes.end(); it++)
-			if (it->size.x == gameSettings.resX && it->size.y == gameSettings.resY) {
-				it++;
-				gameSettings.resX = it->size.x;
-				gameSettings.resY = it->size.y;
-				break;
-			}
-	entries[6] = "Resolution: " + std::to_string(gameSettings.resX) + "x" + std::to_string(gameSettings.resY);
+	// Cycle through available resolutions
+	if (gameSettings.availRes.empty()) return;
+
+	for (size_t i = 0; i < gameSettings.availRes.size(); i++) {
+		if (gameSettings.availRes[i].size.x == gameSettings.resX &&
+			gameSettings.availRes[i].size.y == gameSettings.resY) {
+
+			i = (i + 1) % gameSettings.availRes.size();
+			gameSettings.resX = gameSettings.availRes[i].size.x;
+			gameSettings.resY = gameSettings.availRes[i].size.y;
+			break;
+		}
+	}
+
+	gameSettings.reloadWindow();
+	updateMenuTexts();
+	updateItemPositions();
+	gameSettings.saveSettings();
 }
 
 void Settings::switchAA() {
-	if (gameSettings.antialias == 0)
+	switch (gameSettings.antialias) {
+	case 0:
 		gameSettings.antialias = 2;
-	else if (gameSettings.antialias < 16)
-		gameSettings.antialias = gameSettings.antialias * 2;
-	else if (gameSettings.antialias == 16)
+		break;
+	case 2:
+		gameSettings.antialias = 4;
+		break;
+	case 4:
+		gameSettings.antialias = 8;
+		break;
+	case 8:
+		gameSettings.antialias = 16;
+		break;
+	case 16:
 		gameSettings.antialias = 0;
+		break;
+	}
 
-	entries[7] = "Antialiasing: " + std::to_string(gameSettings.antialias);
 	gameSettings.reloadWindow();
+	updateMenuTexts();
+	gameSettings.saveSettings();
+}
+
+void Settings::updateMenuTexts() {
+	if (getItemCount() >= 8) {
+		getItem(0)->setText("Frame rate limit: " + std::to_string(gameSettings.frames));
+		getItem(1)->setText("VSync: " + returnBool(gameSettings.vsync));
+		getItem(2)->setText("Fullscreen: " + returnBool(gameSettings.fs));
+		getItem(3)->setText("Sound: " + returnBool(gameSettings.sfx));
+		getItem(4)->setText("Music: " + returnBool(gameSettings.music));
+		getItem(5)->setText("Background: " + returnBool(gameSettings.background));
+		getItem(6)->setText("Resolution: " + std::to_string(gameSettings.resX) + "x" +
+							std::to_string(gameSettings.resY));
+		getItem(7)->setText("Antialiasing: " + std::to_string(gameSettings.antialias));
+	}
 }

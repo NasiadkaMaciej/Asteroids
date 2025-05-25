@@ -1,9 +1,8 @@
 #pragma once
-#include "GameOver.hpp"
+#include "Menu.hpp"
 
-class LeaderBoard : public GameOver {
+class LeaderBoard : public Menu {
   public:
-	LeaderBoard(int entriesCount, std::string entries[]);
-	void click() override;
-	void setScore();
+	LeaderBoard();
+	void update() override;
 };

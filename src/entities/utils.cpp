@@ -11,8 +11,8 @@ void initializeSpeedValues() {
 	speedScale = gameSettings.resY / 200;
 	bulletSpeed = speedScale * 2.5f;
 	asteroidSpeed[0] = speedScale * 0.8f;
-	asteroidSpeed[1] = speedScale * 1.2f;
-	asteroidSpeed[2] = speedScale * 1.6f;
+	asteroidSpeed[1] = speedScale * 1.0f;
+	asteroidSpeed[2] = speedScale * 1.2f;
 	asteroidDiffSpeed[0] = asteroidSpeed[0] / 2;
 	asteroidDiffSpeed[1] = asteroidSpeed[1] / 2;
 	asteroidDiffSpeed[2] = asteroidSpeed[2] / 2;

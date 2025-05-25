@@ -1,28 +1,29 @@
 #include "LeaderBoard.hpp"
 #include "../utils/GameSettings.hpp"
+#include "../utils/control.hpp"
 #include "MenuUtils.hpp"
 
 extern void setState(eStates state);
 extern ScoreBoard scoreBoard[10];
 
-LeaderBoard::LeaderBoard(int entriesCount, std::string entries[])
-  : GameOver(entriesCount, entries) {}
+LeaderBoard::LeaderBoard()
+  : Menu() {
+	for (int i = 0; i < 10; i++)
+		addItem(scoreBoard[i].toString());
 
-void LeaderBoard::click() {
-	switch (activeEntry) {
-	case 10:
-		openInBrowser("https://nasiadka.pl/asteroids/");
-		break;
-	case 11:
-		setState(menuState);
-		break;
-	}
+	addItem("Global leaderboard", []() { openInBrowser("https://nasiadka.pl/asteroids/"); });
+
+	addItem("Menu", []() { setState(menuState); });
 }
 
-void LeaderBoard::setScore() {
+void LeaderBoard::update() {
+	Menu::update();
+
 	for (int i = 0; i < 10; i++)
-		entries[i] = scoreBoard[i].toString();
-	entries[10] = "Global leaderboard";
-	entries[11] = "Menu";
-	move(0);
+		getItem(i)->setText(scoreBoard[i].toString());
+
+	if (CONTROL::isESC() && delta->Menu > 100) {
+		setState(menuState);
+		delta->Menu = 0;
+	}
 }

@@ -1,9 +1,12 @@
 #include "GameSettings.hpp"
+#include "../utils/GameSettings.hpp"
 #include <algorithm>
 #include <curl/curl.h>
 #include <fstream>
 #include <iostream>
 #include <thread>
+
+extern void setState(eStates state);
 
 sf::VideoMode desktopMode;
 sf::RenderWindow window;
@@ -165,4 +168,9 @@ void setState(eStates state) {
 		window.setMouseCursorVisible(true);
 	activeState = state;
 	delta->timer.reset();
+	delta->Move = 0;
+	delta->UFO = 0;
+	// ToDo: reset all timers
+	// Maybe add a reset function to GameTime?
+	// Maybe set modes for GameTime? Game and Menu?
 }
