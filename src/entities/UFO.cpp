@@ -10,7 +10,9 @@ UFO::UFO()
 		   0,
 		   0,
 		   sf::degrees(-90.f),
-		   &tUFO) {}
+		   &tUFO) {
+	lifes = 3;
+}
 
 bool UFO::canShoot() {
 	return delta->ufoShoot > bulletFreq;

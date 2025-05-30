@@ -50,12 +50,17 @@ void Player::shoot(std::list<std::unique_ptr<Entity>>* list) {
 		playSound(&laserSound);
 		delta->Shoot = 0;
 
-		// Create bullet with appropriate speed
-		list->emplace_back(std::make_unique<Bullet>(x, y, angle, &tBullet, bulletScale()));
-
 		// Handle double shooting if active
 		if (isDoubleShooting) {
-			// Create second bullet
+			// Create two bullets at slightly different angles
+			list->emplace_back(std::make_unique<Bullet>(x, y, angle - sf::degrees(2.f), &tBullet, bulletScale()));
+			list->emplace_back(std::make_unique<Bullet>(x, y, angle + sf::degrees(2.f), &tBullet, bulletScale()));
+		} else if (isDoublePenetrating) {
+            auto b = std::make_unique<Bullet>(x, y, angle, &tBullet, bulletScale());
+            b->lifes = 2;
+            list->emplace_back(std::move(b));
+		} else {
+			// Regular single bullet
 			list->emplace_back(std::make_unique<Bullet>(x, y, angle, &tBullet, bulletScale()));
 		}
 	}

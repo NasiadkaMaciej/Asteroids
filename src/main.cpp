@@ -222,14 +222,16 @@ void checkCollision() {
 		if (Collision::PixelPerfectTest(a.get()->sprite, p.get()->sprite) && !p.get()->isIdle) {
 			a.get()->life = false;
 			delta->PowerUp = 0;
-			if (*a == &tBulletUp)
-				p.get()->isPowerBullet = true;
-			else if (*a == &tLifeUp)
-				p.get()->lifes++;
-			else if (*a == &tDoubleBullet)
-				p.get()->isDoubleShooting = true;
-			else if (*a == &tPenetratingBullet)
-				p.get()->isDoublePenetrating = true;
+
+			const sf::Texture& tex = a->sprite.getTexture();
+			if (&tex == &tBulletUp)
+				p->isPowerBullet = true;
+			else if (&tex == &tLifeUp)
+				p->lifes++;
+			else if (&tex == &tDoubleBullet)
+				p->isDoubleShooting = true;
+			else if (&tex == &tPenetratingBullet)
+				p->isDoublePenetrating = true;
 		} else if ((delta->PowerUp > gameVal->powerUpRestore)) {
 			a.get()->life = false;
 			delta->PowerUp = 0;
