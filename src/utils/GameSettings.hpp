@@ -1,6 +1,7 @@
 #pragma once
 #define _USE_MATH_DEFINES
 #include <SFML/Graphics.hpp>
+#include <atomic>
 #include <chrono>
 #include <math.h>
 
@@ -62,7 +63,8 @@ struct GameTime {
 	}
 };
 
-bool checkVersion();
+extern std::atomic<bool> versionCheckComplete;
+void checkVersion();
 extern sf::Text newVersion;
 
 struct GameSettings {

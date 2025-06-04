@@ -23,8 +23,9 @@ size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up) { // callba
 	return size * nmemb; // tell curl how many bytes we handled
 }
 
-bool checkVersion() // Compare local version of the game with the published one
-{
+std::atomic<bool> versionCheckComplete{ false };
+
+void checkVersion() { // Compare local version of the game with the published one
 	CURL* curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -38,7 +39,8 @@ bool checkVersion() // Compare local version of the game with the published one
 		std::cerr << "Error during request: " << curl_easy_strerror(res) << std::endl;
 		curl_easy_cleanup(curl);
 		curl_global_cleanup();
-		return EXIT_FAILURE;
+		versionCheckComplete = true;
+		return;
 	}
 	std::string remoteVersion = data;
 	curl_easy_cleanup(curl);
@@ -50,7 +52,8 @@ bool checkVersion() // Compare local version of the game with the published one
 		newVersion.setCharacterSize(25);
 		newVersion.setFillColor(sf::Color::White);
 	}
-	return EXIT_SUCCESS;
+
+	versionCheckComplete = true;
 }
 
 sf::Text newVersion(font);

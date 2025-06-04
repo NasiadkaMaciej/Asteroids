@@ -31,6 +31,7 @@ int main() {
 	// load all assets TODO: Check if textues and ScoreBoard is ok
 	if (!loadBase() || !loadTextures() || !loadSounds()) return EXIT_FAILURE;
 	std::thread versionChecker(checkVersion);
+	versionChecker.detach();
 	playMusic();
 	loadScoreBoard();
 	// writeScoreBoard();
@@ -50,7 +51,6 @@ int main() {
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
 	initializeSpeedValues();
-	versionChecker.join();
 	// resetting game to base values
 	auto reset = [&]() {
 		asteroids.clear();
@@ -112,6 +112,7 @@ int main() {
 		case menuState:
 			mainMenu.show();
 			if (p->lifes <= 0) reset();
+			if (versionCheckComplete) window.draw(newVersion);
 			break;
 		case gameoverState:
 			gameOverMenu.setScore(p->points);
