@@ -70,7 +70,8 @@ int main() {
 			Entity* e = i->get();
 			e->update();
 			if (!e->life) {
-				if (e == dynamic_cast<Asteroid*>(e)) {
+				Asteroid* asteroid = dynamic_cast<Asteroid*>(e);
+				if (asteroid) {
 					// Generate smaller asteroids after being hit and give points
 					if (*e == &tAsteroid[BIG]) {
 						p->givePoints(20);
@@ -93,6 +94,19 @@ int main() {
 	reset();
 
 	while (window.isOpen()) {
+		if (CONTROL::mute() && delta->Menu > 300) {
+			gameSettings.music = !gameSettings.music;
+			playMusic();
+			gameSettings.saveSettings();
+			delta->Menu = 0;
+		}
+
+		if (CONTROL::isFS() && delta->Menu > 300) {
+			gameSettings.fs = !gameSettings.fs;
+			gameSettings.reloadWindow();
+			gameSettings.saveSettings();
+			delta->Menu = 0;
+		}
 		delta->update();
 		switch (activeState) {
 		case menuState:
@@ -208,6 +222,7 @@ void checkCollision() {
 				b.get()->lifes--;
 				if (!b->lifes) b->life = false;
 				progressBar.retractPoint();
+				break;
 			}
 		// Check asteroids and player collisions
 		if (Collision::PixelPerfectTest(a.get()->sprite, p.get()->sprite) && !p->isIdle) {
@@ -215,6 +230,7 @@ void checkCollision() {
 			a.get()->life = false;
 			p.get()->life = false;
 			progressBar.retractPoint();
+			continue;
 		}
 	}
 	// Check power ups and player collisions

@@ -32,11 +32,3 @@ void ProgressBar::reset() {
 }
 
 ProgressBar progressBar(15), placeholder(0);
-
-void mute(Settings* s) {
-	if (CONTROL::mute() && delta->Menu > 300) {
-		s->toggleMusic();
-		delta->Menu = 0;
-		gameSettings.saveSettings();
-	}
-}

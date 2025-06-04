@@ -22,7 +22,7 @@ class Player : public Entity {
 	bool isRotatingLeft = false;
 	bool thrust = false;
 	bool isShooting = false;
-	bool isIdle = false;
+	bool isIdle = true;
 	bool isPowerBullet = false;
 	bool isDoubleShooting = false;
 	bool isDoublePenetrating = false;

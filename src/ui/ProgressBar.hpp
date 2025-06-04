@@ -17,7 +17,4 @@ struct ProgressBar {
 	void reset();
 };
 
-// External mute function for controlling settings during play
-void mute(class Settings* s);
-
 extern ProgressBar progressBar, placeholder;
