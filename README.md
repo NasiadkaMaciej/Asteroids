@@ -1,6 +1,6 @@
 # Asteroids
 
-![Game screenshot](https://nasiadka.pl/projects/Asteroids/Asteroids.png)
+![Game screenshot](https://nasiadka.pl/project/asteroids/Asteroids.png)
 
 Asteroids game clone. Written in C++ with SFML.  
 Destroy as many asteroids as you can with your spaceship's missiles, but be careful, they come from all sides, at different speeds and, when destroyed, they break into more, even faster and more dangerous fragments. Be cautious! Once in a while, a mysterious evil UFO shows up and starts shooting to you.

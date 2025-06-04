@@ -19,228 +19,312 @@
 #include <memory>
 #include <thread>
 
+// Game entities
 std::unique_ptr<Player> p;
 std::unique_ptr<UFO> u;
 
+// Entity collections
 std::list<std::unique_ptr<Entity>> asteroids;
 std::list<std::unique_ptr<Entity>> bullets;
 std::list<std::unique_ptr<Entity>> powerUps;
 
-int main() {
+// Forward declarations
+void checkCollision();
+void resetGame(ProgressBar& progressBar);
+void updateEntities(std::list<std::unique_ptr<Entity>>& list, ProgressBar& progressBar);
+void handleGlobalControls();
+void loadGameResources();
+void runGameLoop();
+void handlePlayState(ProgressBar& progressBar, sf::Sprite& background, sf::Text& text);
 
-	// load all assets TODO: Check if textues and ScoreBoard is ok
+int main() {
+	// Load all game resources
 	if (!loadBase() || !loadTextures() || !loadSounds()) return EXIT_FAILURE;
+
+	// Start version checking in background
 	std::thread versionChecker(checkVersion);
 	versionChecker.detach();
-	playMusic();
-	loadScoreBoard();
-	// writeScoreBoard();
 
-	// create objects and lists
+	// Initialize game resources
+	loadGameResources();
+
+	// Create game objects
 	sf::Sprite background(tBackground);
-	ProgressBar progressBar(15), placeholder(0);
 	background.setTextureRect(
 	  sf::IntRect({ 0, 0 }, { static_cast<int>(gameSettings.resX), static_cast<int>(gameSettings.resY) }));
 
+	ProgressBar progressBar(15);
+	ProgressBar placeholder(0);
+	placeholder.pg.setFillColor(sf::Color::White);
+	placeholder.update();
+
+	// Initialize game state
+	resetGame(progressBar);
+
+	// Run the main game loop
+	runGameLoop();
+
+	return 0;
+}
+
+void loadGameResources() {
+	playMusic();
+	loadScoreBoard();
+	initializeSpeedValues();
+}
+
+void resetGame(ProgressBar& progressBar) {
+	// Clear entity collections
+	asteroids.clear();
+	bullets.clear();
+	powerUps.clear();
+
+	// Reset game values and timers
+	delete gameVal;
+	delete delta;
+
+	// Create new objects with raw pointers
+	gameVal = new GameValues();
+	delta = new GameTime();
+
+	// Create player and UFO
+	p = std::make_unique<Player>();
+	u = std::make_unique<UFO>();
+
+	// Reset progress bar
+	progressBar.reset();
+}
+
+void updateEntities(std::list<std::unique_ptr<Entity>>& list, ProgressBar& progressBar) {
+	for (auto i = list.begin(); i != list.end();) {
+		Entity* e = i->get();
+		e->update();
+		if (!e->life) {
+			Asteroid* asteroid = dynamic_cast<Asteroid*>(e);
+			if (asteroid) {
+				// Generate smaller asteroids after being hit and give points
+				if (*e == &tAsteroid[BIG]) {
+					p->givePoints(20);
+					list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
+					list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
+					progressBar.retractPoint();
+				} else if (*e == &tAsteroid[MEDIUM]) {
+					p->givePoints(50);
+					list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
+					list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
+					progressBar.retractPoint();
+				} else if (*e == &tAsteroid[SMALL]) {
+					p->givePoints(100);
+				}
+			}
+			i = list.erase(i);
+		} else
+			++i;
+	}
+}
+
+void handleGlobalControls() {
+	if (CONTROL::mute() && delta->Menu > 300) {
+		gameSettings.music = !gameSettings.music;
+		playMusic();
+		gameSettings.saveSettings();
+		delta->Menu = 0;
+	}
+
+	if (CONTROL::isFS() && delta->Menu > 300) {
+		gameSettings.fs = !gameSettings.fs;
+		gameSettings.reloadWindow();
+		gameSettings.saveSettings();
+		delta->Menu = 0;
+	}
+}
+
+void handlePlayState(ProgressBar& progressBar, sf::Sprite& background, sf::Text& text) {
+	// Handle collisions in a separate thread
+	std::thread collisionThread(checkCollision);
+
+	// Process window events
+	while (const std::optional event = window.pollEvent()) {
+		if (event->is<sf::Event::Closed>()) window.close();
+		if (CONTROL::isESC()) setState(menuState);
+		if (CONTROL::isReset()) resetGame(progressBar);
+		p->getControl();
+	}
+
+	// Player actions
+	p->shoot(&bullets);
+
+	// Spawn random power ups
+	PowerUp::generate(&powerUps, p);
+
+	// UFO actions
+	u->activate();
+
+	// Wait for collision detection to finish
+	collisionThread.join();
+
+	// Update all entities
+	updateEntities(asteroids, progressBar);
+	updateEntities(bullets, progressBar);
+	updateEntities(powerUps, progressBar);
+	updateEntities(u->ufoBullets, progressBar);
+
+	// Update player and UFO
+	p->update();
+	u->update(p->x, p->y);
+
+	// Reset UFO if destroyed
+	if (!u->life) {
+		delta->UFO = 0;
+		u = std::make_unique<UFO>();
+		p->givePoints(1000);
+	}
+
+	// Start new level after clearing all asteroids
+	if (asteroids.empty()) {
+		gameVal->bigAsteroids += 2;
+		gameVal->roundNum++;
+		for (int i = 0; i < gameVal->bigAsteroids; i++)
+			asteroids.emplace_back(Asteroid::generateBig());
+		progressBar.reset();
+	}
+
+	// Update UI elements
+	progressBar.update();
+
+	// Format display text
+	std::string sPoints = std::to_string(p->points);
+	std::string sTime = std::to_string(p->aliveTime / 10);
+	std::string sLevel = std::to_string(gameVal->roundNum);
+	std::string sLifes = std::to_string(p->lifes) + (p->lifes == 1 ? " life" : " lifes");
+
+	if (sTime.length() > 2)
+		sTime.insert(sTime.length() - 2, ".");
+	else
+		sTime = "0." + sTime;
+
+	text.setString(sTime + " sec" + "\n" + sPoints + " points" + "\n" + "Round: " + sLevel + "\n" + sLifes);
+
+	// Render game state
+	window.clear();
+
+	if (gameSettings.background) window.draw(background);
+
+	// Draw all entities
+	for (auto& i : asteroids)
+		i->draw(window);
+	for (auto& i : bullets)
+		i->draw(window);
+	for (auto& i : powerUps)
+		i->draw(window);
+	for (auto& i : u->ufoBullets)
+		i->draw(window);
+
+	// Draw player and UFO
+	p->draw(window);
+	if (u->isActive) u->draw(window);
+
+	// Draw UI elements
+	window.draw(text);
+	window.draw(placeholder.pg);
+	window.draw(progressBar.pg);
+
+	window.display();
+	delta->Move = 0;
+}
+
+void runGameLoop() {
+	// Create menu objects
 	MainMenu mainMenu;
 	Settings settingsMenu;
 	GameOver gameOverMenu;
 	LeaderBoard leaderBoardMenu;
 	SaveScore saveScoreMenu;
 
+	// Create game objects
+	sf::Sprite background(tBackground);
+	background.setTextureRect(
+	  sf::IntRect({ 0, 0 }, { static_cast<int>(gameSettings.resX), static_cast<int>(gameSettings.resY) }));
+
+	ProgressBar progressBar(15);
+	ProgressBar placeholder(0);
 	placeholder.pg.setFillColor(sf::Color::White);
 	placeholder.update();
-	initializeSpeedValues();
-	// resetting game to base values
-	auto reset = [&]() {
-		asteroids.clear();
-		bullets.clear();
-		powerUps.clear();
-		delete gameVal;
-		delete delta;
-		gameVal = new GameValues;
-		delta = new GameTime;
-		p = std::make_unique<Player>();
-		u = std::make_unique<UFO>();
-		progressBar.reset();
-	};
 
-	auto updateList = [&](std::list<std::unique_ptr<Entity>>& list) {
-		for (auto i = list.begin(); i != list.end();) {
-			Entity* e = i->get();
-			e->update();
-			if (!e->life) {
-				Asteroid* asteroid = dynamic_cast<Asteroid*>(e);
-				if (asteroid) {
-					// Generate smaller asteroids after being hit and give points
-					if (*e == &tAsteroid[BIG]) {
-						p->givePoints(20);
-						list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
-						list.emplace_back(Asteroid::generate(e->x, e->y, MEDIUM));
-						progressBar.retractPoint();
-					} else if (*e == &tAsteroid[MEDIUM]) {
-						p->givePoints(50);
-						list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
-						list.emplace_back(Asteroid::generate(e->x, e->y, SMALL));
-						progressBar.retractPoint();
-					} else if (*e == &tAsteroid[SMALL])
-						p->givePoints(100);
-				}
-				i = list.erase(i);
-			} else
-				i++;
-		}
-	};
-	reset();
-
+	// Main game loop
 	while (window.isOpen()) {
-		if (CONTROL::mute() && delta->Menu > 300) {
-			gameSettings.music = !gameSettings.music;
-			playMusic();
-			gameSettings.saveSettings();
-			delta->Menu = 0;
-		}
+		// Handle global controls
+		handleGlobalControls();
 
-		if (CONTROL::isFS() && delta->Menu > 300) {
-			gameSettings.fs = !gameSettings.fs;
-			gameSettings.reloadWindow();
-			gameSettings.saveSettings();
-			delta->Menu = 0;
-		}
+		// Update timers
 		delta->update();
+
+		// State machine for game states
 		switch (activeState) {
 		case menuState:
 			mainMenu.show();
-			if (p->lifes <= 0) reset();
+			if (p->lifes <= 0) resetGame(progressBar);
 			if (versionCheckComplete) window.draw(newVersion);
 			break;
+
 		case gameoverState:
 			gameOverMenu.setScore(p->points);
 			gameOverMenu.show();
-			if (activeState == playState) // returned to playing from some menu
-				reset();
+			if (activeState == playState) resetGame(progressBar);
 			break;
+
 		case settingsState:
 			settingsMenu.show();
 			break;
+
 		case saveScreenState:
 			saveScoreMenu.setScore(p->points);
 			saveScoreMenu.show();
 			break;
+
 		case leaderBoardState:
 			leaderBoardMenu.show();
 			break;
+
 		case playState:
-			std::thread worker(checkCollision);
-			while (const std::optional event = window.pollEvent()) {
-				if (event->is<sf::Event::Closed>()) window.close();
-				if (CONTROL::isESC()) setState(menuState);
-				if (CONTROL::isReset()) reset();
-				p->getControl();
-			}
-			p->shoot(&bullets);
-
-			// Spawn random power up evey 10 seconds and clear old
-			PowerUp::generate(&powerUps, p);
-
-			u->activate();
-
-			worker.join();
-			// Update all entities and remove dead ones
-			updateList(asteroids);
-			updateList(bullets);
-			updateList(powerUps);
-			updateList(u->ufoBullets);
-
-			p->update();
-			u->update(p->x, p->y);
-
-			if (!u->life) {
-				delta->UFO = 0;
-				u = std::make_unique<UFO>();
-				p->givePoints(1000);
-			}
-
-			// Start new level after clearing all asteroids
-			if (!asteroids.size()) {
-				gameVal->bigAsteroids += 2;
-				gameVal->roundNum++;
-				for (int i = 0; i < gameVal->bigAsteroids; i++)
-					asteroids.emplace_back(Asteroid::generateBig());
-				progressBar.reset();
-			}
-
-			progressBar.update();
-			std::string sPoints = std::to_string(p->points);
-			std::string sTime = std::to_string(p->aliveTime / 10);
-			std::string sLevel = std::to_string(gameVal->roundNum);
-			std::string sLifes;
-			if (p->lifes == 1)
-				sLifes = std::to_string(p->lifes) + " life";
-			else
-				sLifes = std::to_string(p->lifes) + " lifes";
-
-			if (sTime.length() > 2)
-				sTime.insert(sTime.length() - 2, ".");
-			else
-				sTime = "0." + sTime;
-			text.setString(sTime + " sec" + "\n" + sPoints + " points" + "\n" + "Round: " + sLevel + "\n" + sLifes);
-			window.clear();
-			if (gameSettings.background) window.draw(background);
-			for (auto& i : asteroids)
-				i->draw(window);
-			for (auto& i : bullets)
-				i->draw(window);
-			for (auto& i : powerUps)
-				i->draw(window);
-			for (auto& i : u->ufoBullets)
-				i->draw(window);
-			p->draw(window);
-			if (u->isActive) u->draw(window);
-			window.draw(text);
-			window.draw(placeholder.pg);
-			window.draw(progressBar.pg);
-			window.display();
-			delta->Move = 0;
+			handlePlayState(progressBar, background, text);
 			break;
 		}
 	}
-
-	asteroids.clear();
-	bullets.clear();
-	powerUps.clear();
-	u->ufoBullets.clear();
-	return 0;
 }
 
 void checkCollision() {
+	// Check asteroid collisions
 	for (auto& a : asteroids) {
-		for (auto& b : bullets)
-			// Check bullets and asteroids collisons
-			if (Collision::PixelPerfectTest(a.get()->sprite, b.get()->sprite) && b.get()->life) {
+		// Check bullets vs asteroids
+		for (auto& b : bullets) {
+			if (Collision::PixelPerfectTest(a->sprite, b->sprite) && b->life) {
 				playSound(&destroySound);
-				a.get()->life = false;
-				b.get()->lifes--;
+				a->life = false;
+				b->lifes--;
 				if (!b->lifes) b->life = false;
 				progressBar.retractPoint();
 				break;
 			}
-		// Check asteroids and player collisions
-		if (Collision::PixelPerfectTest(a.get()->sprite, p.get()->sprite) && !p->isIdle) {
+		}
+
+		// Check player vs asteroids
+		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle) {
 			playSound(&deathSound);
-			a.get()->life = false;
-			p.get()->life = false;
+			a->life = false;
+			p->life = false;
 			progressBar.retractPoint();
 			continue;
 		}
 	}
-	// Check power ups and player collisions
-	for (auto& a : powerUps) {
-		if (Collision::PixelPerfectTest(a.get()->sprite, p.get()->sprite) && !p.get()->isIdle) {
-			a.get()->life = false;
+
+	// Check power-up collisions
+	for (auto& powerUp : powerUps) {
+		if (Collision::PixelPerfectTest(powerUp->sprite, p->sprite) && !p->isIdle) {
+			powerUp->life = false;
 			delta->PowerUp = 0;
 
-			const sf::Texture& tex = a->sprite.getTexture();
+			const sf::Texture& tex = powerUp->sprite.getTexture();
 			if (&tex == &tBulletUp)
 				p->isPowerBullet = true;
 			else if (&tex == &tLifeUp)
@@ -249,30 +333,32 @@ void checkCollision() {
 				p->isDoubleShooting = true;
 			else if (&tex == &tPenetratingBullet)
 				p->isDoublePenetrating = true;
-		} else if ((delta->PowerUp > gameVal->powerUpRestore)) {
-			a.get()->life = false;
+		} else if (delta->PowerUp > gameVal->powerUpRestore) {
+			powerUp->life = false;
 			delta->PowerUp = 0;
 		}
 	}
-	for (auto& a : u->ufoBullets) {
-		// Check ufoBullets and player collisons
-		if (Collision::PixelPerfectTest(a->sprite, p->sprite) && !p->isIdle) {
+
+	// Check UFO bullet collisions
+	for (auto& ufoBullet : u->ufoBullets) {
+		if (Collision::PixelPerfectTest(ufoBullet->sprite, p->sprite) && !p->isIdle) {
 			playSound(&destroySound);
-			a.get()->life = false;
-			p.get()->life = false;
-			a.get()->lifes--;
-			if (!a->lifes) a.get()->life = false;
-			if (!p->lifes) p.get()->life = false;
+			ufoBullet->life = false;
+			p->life = false;
+			ufoBullet->lifes--;
+			if (!ufoBullet->lifes) ufoBullet->life = false;
+			if (!p->lifes) p->life = false;
 		}
 	}
-	for (auto& b : bullets) {
-		// Check bullets and UFO collisons
-		if (Collision::PixelPerfectTest(b->sprite, u->sprite) && !p->isIdle && u->isActive) {
+
+	// Check player bullet vs UFO collisions
+	for (auto& bullet : bullets) {
+		if (Collision::PixelPerfectTest(bullet->sprite, u->sprite) && !p->isIdle && u->isActive) {
 			playSound(&destroySound);
-			u.get()->lifes--;
-			b.get()->lifes--;
-			if (!b.get()->lifes) b.get()->life = false;
-			if (!u.get()->lifes) u.get()->life = false;
+			u->lifes--;
+			bullet->lifes--;
+			if (!bullet->lifes) bullet->life = false;
+			if (!u->lifes) u->life = false;
 		}
 	}
 }
